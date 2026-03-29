@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kekboard Warrior — Key Discovery</title>
+<title>Kekboard Warrior — Mapping for HONOR</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -191,13 +191,13 @@
     gap: 3px;
   }
 
-  /* column stagger — Corne has columnar stagger on each column */
-  .corne-right .main-rows .row .key:nth-child(1) { margin-top: 8px; }   /* outer col */
-  .corne-right .main-rows .row .key:nth-child(2) { margin-top: 2px; }
-  .corne-right .main-rows .row .key:nth-child(3) { margin-top: 0px; }   /* home col */
-  .corne-right .main-rows .row .key:nth-child(4) { margin-top: 4px; }
-  .corne-right .main-rows .row .key:nth-child(5) { margin-top: 12px; }
-  .corne-right .main-rows .row .key:nth-child(6) { margin-top: 16px; }  /* pinky col */
+  /* column stagger — mirrored: pinky on left, index on right */
+  .corne-right .main-rows .row .key:nth-child(1) { margin-top: 16px; }  /* pinky col */
+  .corne-right .main-rows .row .key:nth-child(2) { margin-top: 12px; }
+  .corne-right .main-rows .row .key:nth-child(3) { margin-top: 4px; }
+  .corne-right .main-rows .row .key:nth-child(4) { margin-top: 0px; }   /* home col */
+  .corne-right .main-rows .row .key:nth-child(5) { margin-top: 2px; }
+  .corne-right .main-rows .row .key:nth-child(6) { margin-top: 8px; }   /* inner col */
 
   .corne-right .extra-col {
     display: flex;
@@ -558,13 +558,15 @@
 </head>
 <body>
 
-<h1>Kekboard Warrior — Key Discovery</h1>
+<h1>Kekboard Warrior — Mapping for <span style="color:#8b0000;">HONOR</span></h1>
 <div class="subtitle">press keys to map them — unknown codes appear on the right</div>
 
 <div class="device-selector">
   <label>device:</label>
   <select id="deviceSelect" onchange="switchDevice(this.value)">
+    <option value="corne-both">Corne Choc — Both Halves</option>
     <option value="corne-r">Corne Choc — Right Half</option>
+    <option value="corne-l">Corne Choc — Left Half</option>
     <option value="k585">K585 DITI</option>
   </select>
 </div>
@@ -587,41 +589,178 @@
     </div>
     <div class="corne-inner">
       <div class="corne-body">
+        <div class="main-rows">
+          <div class="row">
+            <div class="key" data-key="CR_R0C5" data-pos="0,5">JS7</div>
+            <div class="key" data-key="CR_R0C4" data-pos="0,4">JS6</div>
+            <div class="key" data-key="CR_R0C3" data-pos="0,3">JS5</div>
+            <div class="key" data-key="CR_R0C2" data-pos="0,2">JS4</div>
+            <div class="key" data-key="CR_R0C1" data-pos="0,1">JS3</div>
+            <div class="key" data-key="CR_R0C0" data-pos="0,0">JS2</div>
+          </div>
+          <div class="row">
+            <div class="key" data-key="CR_R1C5" data-pos="1,5">JS13</div>
+            <div class="key" data-key="CR_R1C4" data-pos="1,4">JS12</div>
+            <div class="key" data-key="CR_R1C3" data-pos="1,3">JS11</div>
+            <div class="key" data-key="CR_R1C2" data-pos="1,2">JS10</div>
+            <div class="key" data-key="CR_R1C1" data-pos="1,1">JS9</div>
+            <div class="key" data-key="CR_R1C0" data-pos="1,0">JS8</div>
+          </div>
+          <div class="row">
+            <div class="key" data-key="CR_R2C5" data-pos="2,5">JS19</div>
+            <div class="key" data-key="CR_R2C4" data-pos="2,4">JS18</div>
+            <div class="key" data-key="CR_R2C3" data-pos="2,3">JS17</div>
+            <div class="key" data-key="CR_R2C2" data-pos="2,2">JS16</div>
+            <div class="key" data-key="CR_R2C1" data-pos="2,1">JS15</div>
+            <div class="key" data-key="CR_R2C0" data-pos="2,0">JS14</div>
+          </div>
+        </div>
         <div class="extra-col">
           <div class="key thumb-key" data-key="CR_EX0" data-pos="e,0" style="width:44px;height:38px;">JS0</div>
           <div class="key thumb-key" data-key="CR_EX1" data-pos="e,1" style="width:44px;height:38px;">JS1</div>
         </div>
+      </div>
+      <div class="thumb-row">
+        <div class="key thumb-key" data-key="CR_T2" data-pos="3,2">JS22</div>
+        <div class="key thumb-key" data-key="CR_T1" data-pos="3,1">JS21</div>
+        <div class="key thumb-key" data-key="CR_T0" data-pos="3,0">JS20</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Corne Left Half ── -->
+  <div class="device-layout corne-right" id="layout-corne-l">
+    <div class="layer-tabs">
+      <div class="layer-tab active" data-layer="0">JOYSTICK — 23 buttons (LEFT)</div>
+    </div>
+    <div class="corne-inner">
+      <div class="corne-body">
         <div class="main-rows">
           <div class="row">
-            <div class="key" data-key="CR_R0C0" data-pos="0,0">JS2</div>
-            <div class="key" data-key="CR_R0C1" data-pos="0,1">JS3</div>
-            <div class="key" data-key="CR_R0C2" data-pos="0,2">JS4</div>
-            <div class="key" data-key="CR_R0C3" data-pos="0,3">JS5</div>
-            <div class="key" data-key="CR_R0C4" data-pos="0,4">JS6</div>
-            <div class="key" data-key="CR_R0C5" data-pos="0,5">JS7</div>
+            <div class="key" data-key="CL_R0C0" data-pos="0,0">JS2</div>
+            <div class="key" data-key="CL_R0C1" data-pos="0,1">JS3</div>
+            <div class="key" data-key="CL_R0C2" data-pos="0,2">JS4</div>
+            <div class="key" data-key="CL_R0C3" data-pos="0,3">JS5</div>
+            <div class="key" data-key="CL_R0C4" data-pos="0,4">JS6</div>
+            <div class="key" data-key="CL_R0C5" data-pos="0,5">JS0</div>
           </div>
           <div class="row">
-            <div class="key" data-key="CR_R1C0" data-pos="1,0">JS8</div>
-            <div class="key" data-key="CR_R1C1" data-pos="1,1">JS9</div>
-            <div class="key" data-key="CR_R1C2" data-pos="1,2">JS10</div>
-            <div class="key" data-key="CR_R1C3" data-pos="1,3">JS11</div>
-            <div class="key" data-key="CR_R1C4" data-pos="1,4">JS12</div>
-            <div class="key" data-key="CR_R1C5" data-pos="1,5">JS13</div>
+            <div class="key" data-key="CL_R1C0" data-pos="1,0">JS8</div>
+            <div class="key" data-key="CL_R1C1" data-pos="1,1">JS9</div>
+            <div class="key" data-key="CL_R1C2" data-pos="1,2">JS10</div>
+            <div class="key" data-key="CL_R1C3" data-pos="1,3">JS11</div>
+            <div class="key" data-key="CL_R1C4" data-pos="1,4">JS12</div>
+            <div class="key" data-key="CL_R1C5" data-pos="1,5">JS13</div>
           </div>
           <div class="row">
-            <div class="key" data-key="CR_R2C0" data-pos="2,0">JS14</div>
-            <div class="key" data-key="CR_R2C1" data-pos="2,1">JS15</div>
-            <div class="key" data-key="CR_R2C2" data-pos="2,2">JS16</div>
-            <div class="key" data-key="CR_R2C3" data-pos="2,3">JS17</div>
-            <div class="key" data-key="CR_R2C4" data-pos="2,4">JS18</div>
-            <div class="key" data-key="CR_R2C5" data-pos="2,5">JS19</div>
+            <div class="key" data-key="CL_R2C0" data-pos="2,0">JS14</div>
+            <div class="key" data-key="CL_R2C1" data-pos="2,1">JS15</div>
+            <div class="key" data-key="CL_R2C2" data-pos="2,2">JS16</div>
+            <div class="key" data-key="CL_R2C3" data-pos="2,3">JS17</div>
+            <div class="key" data-key="CL_R2C4" data-pos="2,4">JS18</div>
+            <div class="key" data-key="CL_R2C5" data-pos="2,5">JS19</div>
           </div>
+        </div>
+        <div class="extra-col">
+          <div class="key thumb-key" data-key="CL_EX0" data-pos="e,0" style="width:44px;height:38px;">JS1</div>
+          <div class="key thumb-key" data-key="CL_EX1" data-pos="e,1" style="width:44px;height:38px;">JS7</div>
         </div>
       </div>
       <div class="thumb-row">
-        <div class="key thumb-key" data-key="CR_T0" data-pos="3,0">JS20</div>
-        <div class="key thumb-key" data-key="CR_T1" data-pos="3,1">JS21</div>
-        <div class="key thumb-key" data-key="CR_T2" data-pos="3,2">JS22</div>
+        <div class="key thumb-key" data-key="CL_T0" data-pos="3,0">JS20</div>
+        <div class="key thumb-key" data-key="CL_T1" data-pos="3,1">JS21</div>
+        <div class="key thumb-key" data-key="CL_T2" data-pos="3,2">JS22</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Corne Both Halves ── -->
+  <div class="device-layout" id="layout-corne-both" style="display:none;">
+    <div class="layer-tabs">
+      <div class="layer-tab active" data-layer="0">JOYSTICK — 46 buttons (BOTH)</div>
+    </div>
+    <div style="display:flex;gap:40px;align-items:flex-start;">
+      <!-- Left half (mirrored - extra keys on right) -->
+      <div class="corne-inner">
+        <div style="color:#888;font-size:11px;margin-bottom:6px;">LEFT</div>
+        <div class="corne-body">
+          <div class="main-rows">
+            <div class="row">
+              <div class="key" data-key="CB_L_R0C0">JS2</div>
+              <div class="key" data-key="CB_L_R0C1">JS3</div>
+              <div class="key" data-key="CB_L_R0C2">JS4</div>
+              <div class="key" data-key="CB_L_R0C3">JS5</div>
+              <div class="key" data-key="CB_L_R0C4">JS6</div>
+              <div class="key" data-key="CB_L_R0C5">JS0</div>
+            </div>
+            <div class="row">
+              <div class="key" data-key="CB_L_R1C0">JS8</div>
+              <div class="key" data-key="CB_L_R1C1">JS9</div>
+              <div class="key" data-key="CB_L_R1C2">JS10</div>
+              <div class="key" data-key="CB_L_R1C3">JS11</div>
+              <div class="key" data-key="CB_L_R1C4">JS12</div>
+              <div class="key" data-key="CB_L_R1C5">JS13</div>
+            </div>
+            <div class="row">
+              <div class="key" data-key="CB_L_R2C0">JS14</div>
+              <div class="key" data-key="CB_L_R2C1">JS15</div>
+              <div class="key" data-key="CB_L_R2C2">JS16</div>
+              <div class="key" data-key="CB_L_R2C3">JS17</div>
+              <div class="key" data-key="CB_L_R2C4">JS18</div>
+              <div class="key" data-key="CB_L_R2C5">JS19</div>
+            </div>
+          </div>
+          <div class="extra-col">
+            <div class="key thumb-key" data-key="CB_L_EX0" style="width:44px;height:38px;">JS1</div>
+            <div class="key thumb-key" data-key="CB_L_EX1" style="width:44px;height:38px;">JS7</div>
+          </div>
+        </div>
+        <div class="thumb-row">
+          <div class="key thumb-key" data-key="CB_L_T0">JS20</div>
+          <div class="key thumb-key" data-key="CB_L_T1">JS21</div>
+          <div class="key thumb-key" data-key="CB_L_T2">JS22</div>
+        </div>
+      </div>
+      <!-- Right half -->
+      <div class="corne-inner">
+        <div style="color:#888;font-size:11px;margin-bottom:6px;">RIGHT</div>
+        <div class="corne-body">
+          <div class="extra-col">
+            <div class="key thumb-key" data-key="CB_R_EX0" style="width:44px;height:38px;">JS0</div>
+            <div class="key thumb-key" data-key="CB_R_EX1" style="width:44px;height:38px;">JS1</div>
+          </div>
+          <div class="main-rows">
+            <div class="row">
+              <div class="key" data-key="CB_R_R0C0">JS2</div>
+              <div class="key" data-key="CB_R_R0C1">JS3</div>
+              <div class="key" data-key="CB_R_R0C2">JS4</div>
+              <div class="key" data-key="CB_R_R0C3">JS5</div>
+              <div class="key" data-key="CB_R_R0C4">JS6</div>
+              <div class="key" data-key="CB_R_R0C5">JS7</div>
+            </div>
+            <div class="row">
+              <div class="key" data-key="CB_R_R1C0">JS8</div>
+              <div class="key" data-key="CB_R_R1C1">JS9</div>
+              <div class="key" data-key="CB_R_R1C2">JS10</div>
+              <div class="key" data-key="CB_R_R1C3">JS11</div>
+              <div class="key" data-key="CB_R_R1C4">JS12</div>
+              <div class="key" data-key="CB_R_R1C5">JS13</div>
+            </div>
+            <div class="row">
+              <div class="key" data-key="CB_R_R2C0">JS14</div>
+              <div class="key" data-key="CB_R_R2C1">JS15</div>
+              <div class="key" data-key="CB_R_R2C2">JS16</div>
+              <div class="key" data-key="CB_R_R2C3">JS17</div>
+              <div class="key" data-key="CB_R_R2C4">JS18</div>
+              <div class="key" data-key="CB_R_R2C5">JS19</div>
+            </div>
+          </div>
+        </div>
+        <div class="thumb-row">
+          <div class="key thumb-key" data-key="CB_R_T0">JS20</div>
+          <div class="key thumb-key" data-key="CB_R_T1">JS21</div>
+          <div class="key thumb-key" data-key="CB_R_T2">JS22</div>
+        </div>
       </div>
     </div>
   </div>
@@ -1301,13 +1440,19 @@ let activeDevice = 'corne-r'
 
 function switchDevice(device) {
   activeDevice = device
-  document.querySelectorAll('.device-layout').forEach(el => el.classList.remove('active'))
+  document.querySelectorAll('.device-layout').forEach(el => {
+    el.classList.remove('active')
+    el.style.display = 'none'
+  })
   const target = document.getElementById('layout-' + device)
-  if (target) target.classList.add('active')
+  if (target) {
+    target.classList.add('active')
+    target.style.display = ''
+  }
 }
 
-// index corne keys too
-document.querySelectorAll('#layout-corne-r .key[data-key]').forEach(el => {
+// index all corne keys
+document.querySelectorAll('.device-layout .key[data-key]').forEach(el => {
   keyElements[el.dataset.key] = el
 })
 

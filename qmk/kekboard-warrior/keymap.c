@@ -1,41 +1,28 @@
-// Corne v4 Right Half — All Joystick Buttons
+// Corne v4 — All Joystick Buttons
 // Firmware: crkbd/rev4_0/standard
 // Layout:  LAYOUT_split_3x6_3_ex2
-//
-// Flash with:
-//   qmk flash -kb crkbd/rev4_0/standard -km kekboard-warrior
-//
-// The right half sends JS_BUTTON0–JS_BUTTON22.
-// The left half is KC_NO (unused / separate device).
 
 #include QMK_KEYBOARD_H
 
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [0] = LAYOUT_split_3x6_3_ex2(
-        // ── Left half (unused — will be its own device) ──
-        //  ex1    ex2
-            KC_NO, KC_NO,
-        //  row0
-            KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
-        //  row1
-            KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
-        //  row2
-            KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
-        //  thumb
-                           KC_NO, KC_NO, KC_NO,
-
-        // ── Right half — joystick buttons ──
-        //  ex1          ex2
-            JS_BUTTON0,  JS_BUTTON1,
-        //  row0
-            JS_BUTTON2,  JS_BUTTON3,  JS_BUTTON4,  JS_BUTTON5,  JS_BUTTON6,  JS_BUTTON7,
-        //  row1
-            JS_BUTTON8,  JS_BUTTON9,  JS_BUTTON10, JS_BUTTON11, JS_BUTTON12, JS_BUTTON13,
-        //  row2
-            JS_BUTTON14, JS_BUTTON15, JS_BUTTON16, JS_BUTTON17, JS_BUTTON18, JS_BUTTON19,
-        //  thumb
-                           JS_BUTTON20, JS_BUTTON21, JS_BUTTON22
+        // [ 0- 6] Left: row0(6) + ex1
+            JS_7,  JS_6,  JS_5,  JS_4,  JS_3,  JS_2,  JS_0,
+        // [ 7-13] Right: ex1, row0
+            JS_0,  JS_2,  JS_3,  JS_4,  JS_5,  JS_6,  JS_7,
+        // [14-20] Left: row1(6) + ex2
+            JS_13, JS_12, JS_11, JS_10, JS_9,  JS_8,  JS_1,
+        // [21-27] Right: ex2, row1
+            JS_1,  JS_8,  JS_9,  JS_10, JS_11, JS_12, JS_13,
+        // [28-33] Left: row2(6)
+            JS_19, JS_18, JS_17, JS_16, JS_15, JS_14,
+        // [34-39] Right: row2
+            JS_14, JS_15, JS_16, JS_17, JS_18, JS_19,
+        // [40-42] Left: thumb
+            JS_22, JS_21, JS_20,
+        // [43-45] Right: thumb
+            JS_20, JS_21, JS_22
     ),
 };
 // clang-format on
