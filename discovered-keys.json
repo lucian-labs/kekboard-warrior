@@ -1,0 +1,95 @@
+{
+  "device": "Evision RGB Keyboard",
+  "vendor_id": "0x320f",
+  "product_id": "0x5000",
+  "discovered_at": "2026-03-06T19:01:43.292709",
+  "devices_monitored": [
+    {
+      "path": "/dev/input/event18",
+      "name": "Evision RGB Keyboard Mouse",
+      "phys": "usb-0000:00:14.0-1.1/input1"
+    },
+    {
+      "path": "/dev/input/event16",
+      "name": "Evision RGB Keyboard",
+      "phys": "usb-0000:00:14.0-1.1/input1"
+    },
+    {
+      "path": "/dev/input/event15",
+      "name": "Evision RGB Keyboard",
+      "phys": "usb-0000:00:14.0-1.1/input0"
+    }
+  ],
+  "keys": {
+    "KEY_F1": {
+      "code": 59,
+      "device_paths": [
+        "/dev/input/event15"
+      ],
+      "press_count": 1
+    },
+    "KEY_F2": {
+      "code": 60,
+      "device_paths": [
+        "/dev/input/event15"
+      ],
+      "press_count": 1
+    },
+    "KEY_F3": {
+      "code": 61,
+      "device_paths": [
+        "/dev/input/event15"
+      ],
+      "press_count": 1
+    },
+    "KEY_F4": {
+      "code": 62,
+      "device_paths": [
+        "/dev/input/event15"
+      ],
+      "press_count": 1
+    },
+    "KEY_F5": {
+      "code": 63,
+      "device_paths": [
+        "/dev/input/event15"
+      ],
+      "press_count": 1
+    },
+    "KEY_F6": {
+      "code": 64,
+      "device_paths": [
+        "/dev/input/event15"
+      ],
+      "press_count": 1
+    },
+    "KEY_F7": {
+      "code": 65,
+      "device_paths": [
+        "/dev/input/event15"
+      ],
+      "press_count": 1
+    },
+    "KEY_F8": {
+      "code": 66,
+      "device_paths": [
+        "/dev/input/event15"
+      ],
+      "press_count": 1
+    },
+    "KEY_F9": {
+      "code": 67,
+      "device_paths": [
+        "/dev/input/event15"
+      ],
+      "press_count": 1
+    },
+    "KEY_F10": {
+      "code": 68,
+      "device_paths": [
+        "/dev/input/event15"
+      ],
+      "press_count": 1
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "name": "k585-default",
+  "device": {
+    "vendor_id": "0x320f",
+    "product_id": "0x5000",
+    "name": "Evision RGB Keyboard"
+  },
+  "hold_threshold_ms": 150,
+  "layers": [
+    {
+      "name": "base",
+      "map": {
+        "KEY_CAPSLOCK": "KEY_ESC",
+        "KEY_ESC": "KEY_GRAVE"
+      }
+    },
+    {
+      "name": "nav",
+      "map": {
+        "KEY_H": "KEY_LEFT",
+        "KEY_J": "KEY_DOWN",
+        "KEY_K": "KEY_UP",
+        "KEY_L": "KEY_RIGHT",
+        "KEY_U": "KEY_PAGEUP",
+        "KEY_D": "KEY_PAGEDOWN",
+        "KEY_0": "KEY_HOME",
+        "KEY_4": "KEY_END"
+      }
+    },
+    {
+      "name": "macros",
+      "map": {}
+    }
+  ],
+  "chord_keys": {},
+  "macros": {}
+}

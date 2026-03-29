@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K585 Key Discovery</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0a0f;
+    color: #c0c0c0;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    padding: 20px;
+    min-height: 100vh;
+  }
+
+  h1 {
+    color: #e0e0e0;
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+
+  .subtitle {
+    color: #666;
+    font-size: 12px;
+    margin-bottom: 20px;
+  }
+
+  .toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    align-items: center;
+  }
+
+  .toolbar button {
+    background: #1a1a2e;
+    color: #aaa;
+    border: 1px solid #333;
+    padding: 6px 14px;
+    font-family: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  .toolbar button:hover { background: #252545; color: #fff; border-color: #555; }
+  .toolbar button.danger:hover { border-color: #c44; color: #f88; }
+
+  .stats {
+    margin-left: auto;
+    font-size: 12px;
+    color: #666;
+  }
+
+  .stats span { color: #8f8; }
+
+  /* ── keyboard layout ── */
+  .keyboard-container {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 30px;
+  }
+
+  .keyboard {
+    display: flex;
+    gap: 3px;
+  }
+
+  .g-column {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding-top: 30px; /* offset for M-row */
+  }
+
+  .main-area {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .row {
+    display: flex;
+    gap: 3px;
+  }
+
+  .key {
+    width: 44px;
+    height: 38px;
+    background: #141420;
+    border: 1px solid #2a2a3a;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: #555;
+    transition: all 0.15s ease;
+    position: relative;
+    user-select: none;
+  }
+
+  .key.wide-1_25 { width: 56px; }
+  .key.wide-1_5 { width: 68px; }
+  .key.wide-1_75 { width: 80px; }
+  .key.wide-2 { width: 92px; }
+  .key.wide-2_25 { width: 100px; }
+  .key.wide-2_75 { width: 124px; }
+  .key.space { width: 170px; }
+
+  .key.g-key {
+    width: 38px;
+    height: 38px;
+    background: #1a1025;
+    border-color: #3a2a4a;
+  }
+
+  .key.m-key {
+    width: 34px;
+    height: 26px;
+    background: #1a1a1a;
+    border-color: #2a2a2a;
+    font-size: 9px;
+  }
+
+  .m-row {
+    display: flex;
+    gap: 3px;
+    margin-bottom: 4px;
+  }
+
+  /* key states */
+  .key.discovered {
+    background: #0a2a1a;
+    border-color: #1a6a3a;
+    color: #4aea8a;
+    box-shadow: 0 0 8px rgba(74, 234, 138, 0.15);
+  }
+
+  .key.active {
+    background: #1a4a2a;
+    border-color: #4aea8a;
+    color: #fff;
+    box-shadow: 0 0 15px rgba(74, 234, 138, 0.4);
+    transform: scale(0.95);
+  }
+
+  .key.g-key.discovered {
+    background: #2a1a3a;
+    border-color: #8a4aea;
+    color: #c09af8;
+    box-shadow: 0 0 8px rgba(138, 74, 234, 0.15);
+  }
+
+  .key.g-key.active {
+    background: #3a2a5a;
+    border-color: #c09af8;
+    color: #fff;
+    box-shadow: 0 0 15px rgba(192, 154, 248, 0.4);
+  }
+
+  .key .count {
+    position: absolute;
+    top: 2px;
+    right: 3px;
+    font-size: 7px;
+    color: #4a8a5a;
+  }
+
+  /* ── unknown keys panel ── */
+  .panels {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .panel {
+    flex: 1;
+    background: #0f0f18;
+    border: 1px solid #1a1a2e;
+    border-radius: 6px;
+    padding: 12px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .panel h2 {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .panel h2 .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .dot.green { background: #4aea8a; }
+  .dot.orange { background: #eaaa4a; }
+  .dot.red { background: #ea4a4a; }
+
+  .unknown-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 8px;
+    margin-bottom: 2px;
+    background: #141420;
+    border-radius: 3px;
+    font-size: 11px;
+    border-left: 3px solid #eaaa4a;
+    animation: slideIn 0.3s ease;
+  }
+
+  .unknown-item .name { color: #eaaa4a; font-weight: bold; }
+  .unknown-item .meta { color: #666; font-size: 10px; }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* ── log ── */
+  .log {
+    font-size: 10px;
+    color: #444;
+    line-height: 1.6;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .log .entry { white-space: pre; }
+  .log .entry.down { color: #4aea8a; }
+  .log .entry.up { color: #335; }
+  .log .entry.unknown { color: #eaaa4a; }
+
+  /* ── connection status ── */
+  .connection {
+    position: fixed;
+    top: 10px;
+    right: 20px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .connection .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+
+  .pulse {
+    animation: pulse 1s ease infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+</style>
+</head>
+<body>
+
+<h1>K585 DITI — Key Discovery</h1>
+<div class="subtitle">press keys to map them — unknown codes appear on the right</div>
+
+<div class="toolbar">
+  <button onclick="clearAll()" class="danger">Clear All</button>
+  <button onclick="saveMap()">Save Map</button>
+  <div class="stats">
+    discovered: <span id="knownCount">0</span> |
+    unknown: <span id="unknownCount" style="color:#eaaa4a">0</span> |
+    total events: <span id="eventCount">0</span>
+  </div>
+</div>
+
+<div class="keyboard-container">
+  <div class="keyboard">
+    <div class="g-column" id="gColumn">
+      <div class="key g-key" data-key="G1">G1</div>
+      <div class="key g-key" data-key="G2">G2</div>
+      <div class="key g-key" data-key="G3">G3</div>
+      <div class="key g-key" data-key="G4">G4</div>
+      <div class="key g-key" data-key="G5">G5</div>
+    </div>
+
+    <div class="main-area">
+      <div class="m-row">
+        <div class="key m-key" data-key="M1">M1</div>
+        <div class="key m-key" data-key="M2">M2</div>
+        <div class="key m-key" data-key="M3">M3</div>
+        <div class="key m-key" data-key="M4">M4</div>
+        <div class="key m-key" data-key="REC">REC</div>
+      </div>
+
+      <div class="row" id="row0">
+        <div class="key" data-key="KEY_ESC">Esc</div>
+        <div class="key" data-key="KEY_1">1</div>
+        <div class="key" data-key="KEY_2">2</div>
+        <div class="key" data-key="KEY_3">3</div>
+        <div class="key" data-key="KEY_4">4</div>
+        <div class="key" data-key="KEY_5">5</div>
+        <div class="key" data-key="KEY_6">6</div>
+        <div class="key" data-key="KEY_7">7</div>
+      </div>
+
+      <div class="row" id="row1">
+        <div class="key wide-1_25" data-key="KEY_TAB">Tab</div>
+        <div class="key" data-key="KEY_Q">Q</div>
+        <div class="key" data-key="KEY_W">W</div>
+        <div class="key" data-key="KEY_E">E</div>
+        <div class="key" data-key="KEY_R">R</div>
+        <div class="key" data-key="KEY_T">T</div>
+        <div class="key" data-key="KEY_Y">Y</div>
+        <div class="key" data-key="KEY_U">U</div>
+      </div>
+
+      <div class="row" id="row2">
+        <div class="key wide-1_5" data-key="KEY_CAPSLOCK">Caps</div>
+        <div class="key" data-key="KEY_A">A</div>
+        <div class="key" data-key="KEY_S">S</div>
+        <div class="key" data-key="KEY_D">D</div>
+        <div class="key" data-key="KEY_F">F</div>
+        <div class="key" data-key="KEY_G">G</div>
+      </div>
+
+      <div class="row" id="row3">
+        <div class="key wide-1_75" data-key="KEY_LEFTSHIFT">Shift</div>
+        <div class="key" data-key="KEY_Z">Z</div>
+        <div class="key" data-key="KEY_X">X</div>
+        <div class="key" data-key="KEY_C">C</div>
+        <div class="key" data-key="KEY_V">V</div>
+        <div class="key" data-key="KEY_B">B</div>
+      </div>
+
+      <div class="row" id="row4">
+        <div class="key wide-1_25" data-key="KEY_LEFTCTRL">Ctrl</div>
+        <div class="key" data-key="KEY_LEFTALT">Alt</div>
+        <div class="key space" data-key="KEY_SPACE">Space</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="panels">
+  <div class="panel">
+    <h2><span class="dot orange"></span> Unknown / Unmatched Keys</h2>
+    <div id="unknownList"></div>
+    <div id="emptyUnknown" style="color:#333;font-size:11px;padding:20px;text-align:center">
+      press keys — anything not in the layout shows up here
+    </div>
+  </div>
+  <div class="panel">
+    <h2><span class="dot green"></span> Event Log</h2>
+    <div class="log" id="eventLog"></div>
+  </div>
+</div>
+
+<div class="connection" id="connStatus">
+  <span class="dot red"></span>
+  <span>connecting...</span>
+</div>
+
+<script>
+const keyElements = {}
+let totalEvents = 0
+let knownCount = 0
+const unknownKeys = {}
+
+// index all key elements by data-key
+document.querySelectorAll('.key[data-key]').forEach(el => {
+  keyElements[el.dataset.key] = el
+})
+
+// G-key code mapping — we don't know these yet, so we'll match dynamically
+// any key that comes in and doesn't match a layout key might be a G-key
+const gKeySlots = ['G1', 'G2', 'G3', 'G4', 'G5']
+const gKeyMap = {} // evdev name -> G slot
+let nextGSlot = 0
+
+function updateStats() {
+  document.getElementById('knownCount').textContent = knownCount
+  document.getElementById('unknownCount').textContent = Object.keys(unknownKeys).length
+  document.getElementById('eventCount').textContent = totalEvents
+}
+
+function addLogEntry(text, cls) {
+  const log = document.getElementById('eventLog')
+  const entry = document.createElement('div')
+  entry.className = 'entry ' + cls
+  entry.textContent = text
+  log.appendChild(entry)
+  log.scrollTop = log.scrollHeight
+
+  // keep last 100
+  while (log.children.length > 100) log.removeChild(log.firstChild)
+}
+
+function addUnknownKey(name, code, device, ts) {
+  const key = name + '_' + code
+  const list = document.getElementById('unknownList')
+  document.getElementById('emptyUnknown').style.display = 'none'
+
+  if (unknownKeys[key]) {
+    unknownKeys[key].count++
+    const countEl = document.getElementById('unk_count_' + key.replace(/[^a-zA-Z0-9]/g, '_'))
+    if (countEl) countEl.textContent = 'x' + unknownKeys[key].count
+    return
+  }
+
+  unknownKeys[key] = { name, code, count: 1 }
+
+  const item = document.createElement('div')
+  item.className = 'unknown-item'
+  const safeKey = key.replace(/[^a-zA-Z0-9]/g, '_')
+  item.innerHTML = `
+    <div>
+      <span class="name">${name}</span>
+      <span class="meta">code=${code} · ${device.split('/').pop()}</span>
+    </div>
+    <span class="meta" id="unk_count_${safeKey}">x1</span>
+  `
+  list.appendChild(item)
+}
+
+function flashKey(keyName, isDown) {
+  const el = keyElements[keyName]
+  if (!el) return false
+
+  if (isDown) {
+    el.classList.add('active', 'discovered')
+    if (!el.dataset.discovered) {
+      el.dataset.discovered = 'true'
+      knownCount++
+    }
+    // update count
+    el.dataset.count = (parseInt(el.dataset.count || '0') + 1)
+    let countEl = el.querySelector('.count')
+    if (!countEl) {
+      countEl = document.createElement('span')
+      countEl.className = 'count'
+      el.appendChild(countEl)
+    }
+    countEl.textContent = el.dataset.count
+  } else {
+    el.classList.remove('active')
+  }
+  return true
+}
+
+// SSE connection
+function connect() {
+  const status = document.getElementById('connStatus')
+  const evtSource = new EventSource('/events')
+
+  evtSource.onopen = () => {
+    status.innerHTML = '<span class="dot green pulse"></span><span>listening</span>'
+  }
+
+  evtSource.onerror = () => {
+    status.innerHTML = '<span class="dot red"></span><span>disconnected</span>'
+    setTimeout(connect, 2000)
+  }
+
+  evtSource.onmessage = (e) => {
+    const evt = JSON.parse(e.data)
+    totalEvents++
+
+    if (evt.type === 'key') {
+      const isDown = evt.value === 1
+      const matched = flashKey(evt.name, isDown)
+
+      if (!matched && isDown) {
+        // didn't match layout — unknown key
+        addUnknownKey(evt.name, evt.code, evt.device, evt.ts)
+      }
+
+      const cls = !matched ? 'unknown' : (isDown ? 'down' : 'up')
+      addLogEntry(`${evt.ts}  ${evt.state}  ${evt.name}  code=${evt.code}  ${evt.device.split('/').pop()}`, cls)
+    } else if (evt.type === 'rel') {
+      addUnknownKey(evt.name, evt.code, evt.device, evt.ts)
+      addLogEntry(`${evt.ts}  REL   ${evt.name}  value=${evt.value}  ${evt.device.split('/').pop()}`, 'unknown')
+    } else {
+      addUnknownKey(evt.name, '?', evt.device, evt.ts)
+      addLogEntry(`${evt.ts}  ???   ${evt.name}  value=${evt.value}  ${evt.device.split('/').pop()}`, 'unknown')
+    }
+
+    updateStats()
+  }
+}
+
+async function clearAll() {
+  await fetch('/clear')
+  // reset UI
+  document.querySelectorAll('.key').forEach(el => {
+    el.classList.remove('discovered', 'active')
+    delete el.dataset.discovered
+    delete el.dataset.count
+    const c = el.querySelector('.count')
+    if (c) c.remove()
+  })
+  document.getElementById('unknownList').innerHTML = ''
+  document.getElementById('emptyUnknown').style.display = 'block'
+  document.getElementById('eventLog').innerHTML = ''
+  Object.keys(unknownKeys).forEach(k => delete unknownKeys[k])
+  totalEvents = 0
+  knownCount = 0
+  updateStats()
+}
+
+async function saveMap() {
+  const res = await fetch('/save')
+  const data = await res.json()
+  addLogEntry(`Saved to ${data.path}`, 'down')
+}
+
+// block F5, Ctrl+R, etc. — prevent accidental reload
+document.addEventListener('keydown', (e) => {
+  // block ALL browser defaults — this page is a key sink
+  e.preventDefault()
+  e.stopPropagation()
+
+  const mods = []
+  if (e.ctrlKey) mods.push('Ctrl')
+  if (e.shiftKey) mods.push('Shift')
+  if (e.altKey) mods.push('Alt')
+  if (e.metaKey) mods.push('Meta')
+  const combo = [...mods, e.code].join('+')
+
+  // mark as browser-detected in log
+  addLogEntry(`BROWSER  DOWN  ${combo}  key="${e.key}"  code=${e.code}`, 'down')
+
+  // try to match to layout via browser code -> evdev name mapping
+  const browserKey = browserToEvdev(e.code)
+  if (browserKey) flashKey(browserKey, true)
+})
+
+document.addEventListener('keyup', (e) => {
+  e.preventDefault()
+  const browserKey = browserToEvdev(e.code)
+  if (browserKey) flashKey(browserKey, false)
+})
+
+// map browser KeyboardEvent.code to evdev key names
+function browserToEvdev(code) {
+  const map = {
+    'Escape': 'KEY_ESC', 'Backquote': 'KEY_GRAVE', 'Backspace': 'KEY_BACKSPACE',
+    'Tab': 'KEY_TAB', 'Enter': 'KEY_ENTER', 'Space': 'KEY_SPACE',
+    'CapsLock': 'KEY_CAPSLOCK',
+    'ShiftLeft': 'KEY_LEFTSHIFT', 'ShiftRight': 'KEY_RIGHTSHIFT',
+    'ControlLeft': 'KEY_LEFTCTRL', 'ControlRight': 'KEY_RIGHTCTRL',
+    'AltLeft': 'KEY_LEFTALT', 'AltRight': 'KEY_RIGHTALT',
+    'ArrowUp': 'KEY_UP', 'ArrowDown': 'KEY_DOWN',
+    'ArrowLeft': 'KEY_LEFT', 'ArrowRight': 'KEY_RIGHT',
+    'Digit1': 'KEY_1', 'Digit2': 'KEY_2', 'Digit3': 'KEY_3', 'Digit4': 'KEY_4',
+    'Digit5': 'KEY_5', 'Digit6': 'KEY_6', 'Digit7': 'KEY_7',
+    'F1': 'KEY_F1', 'F2': 'KEY_F2', 'F3': 'KEY_F3', 'F4': 'KEY_F4',
+    'F5': 'KEY_F5', 'F6': 'KEY_F6', 'F7': 'KEY_F7', 'F8': 'KEY_F8',
+    'F9': 'KEY_F9', 'F10': 'KEY_F10', 'F11': 'KEY_F11', 'F12': 'KEY_F12',
+  }
+  // letter keys: KeyA -> KEY_A, etc.
+  if (code.startsWith('Key')) return 'KEY_' + code.slice(3)
+  return map[code] || null
+}
+
+// warn before leaving page
+window.addEventListener('beforeunload', (e) => {
+  if (totalEvents > 0) {
+    e.preventDefault()
+    e.returnValue = ''
+  }
+})
+
+connect()
+</script>
+</body>
+</html>
