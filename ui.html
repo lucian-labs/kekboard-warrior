@@ -271,6 +271,153 @@
     color: #6a3aaa;
   }
 
+  /* ── chord mapping panel ── */
+  .chord-panel {
+    margin-top: 20px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 16px;
+  }
+
+  .chord-panel h2 {
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .chord-status {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    background: #f8f8fa;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+
+  .chord-status .gamepad-name {
+    color: #888;
+    font-size: 11px;
+  }
+
+  .chord-status .held-buttons {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .chord-status .btn-pill {
+    background: #e0f5ea;
+    border: 1px solid #4aea8a;
+    color: #1a6a3a;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: bold;
+  }
+
+  .chord-status .btn-pill.recording {
+    background: #fff0e0;
+    border-color: #e8a020;
+    color: #a06800;
+    animation: pulse 0.6s ease infinite;
+  }
+
+  .chord-record-btn {
+    background: #fff;
+    color: #555;
+    border: 1px solid #ccc;
+    padding: 6px 16px;
+    font-family: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  .chord-record-btn:hover { background: #e8e8ee; color: #222; }
+  .chord-record-btn.active {
+    background: #fff0e0;
+    border-color: #e8a020;
+    color: #a06800;
+  }
+
+  .chord-map-list {
+    margin-top: 12px;
+  }
+
+  .chord-entry {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px;
+    margin-bottom: 4px;
+    background: #f8f8fa;
+    border-radius: 4px;
+    font-size: 12px;
+    border-left: 3px solid #4aea8a;
+  }
+
+  .chord-entry .chord-combo {
+    display: flex;
+    gap: 3px;
+    min-width: 100px;
+  }
+
+  .chord-entry .chord-combo .btn-pill {
+    background: #e8e8ee;
+    border: 1px solid #ccc;
+    color: #555;
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-size: 10px;
+  }
+
+  .chord-entry .chord-arrow {
+    color: #bbb;
+    font-size: 14px;
+  }
+
+  .chord-entry .chord-action {
+    flex: 1;
+  }
+
+  .chord-entry .chord-action select,
+  .chord-entry .chord-action input {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 3px 8px;
+    font-family: inherit;
+    font-size: 11px;
+    border-radius: 3px;
+    color: #333;
+  }
+
+  .chord-entry .chord-action select { width: 100px; }
+  .chord-entry .chord-action input { width: 140px; }
+
+  .chord-entry .chord-delete {
+    background: none;
+    border: none;
+    color: #ccc;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 2px 6px;
+  }
+
+  .chord-entry .chord-delete:hover { color: #c44; }
+
+  .no-gamepad {
+    color: #aaa;
+    font-size: 12px;
+    padding: 20px;
+    text-align: center;
+  }
+
   /* key states */
   .key.discovered {
     background: #e0f5ea;
@@ -563,6 +710,30 @@
   </div>
 </div>
 
+<!-- ── Chord Mapping ── -->
+<div class="chord-panel" id="chordPanel">
+  <h2>Chord Mapping</h2>
+  <div class="chord-status">
+    <div>
+      <span id="gamepadStatus">No gamepad detected — plug in your flashed Corne</span>
+      <div class="gamepad-name" id="gamepadName"></div>
+    </div>
+    <div class="held-buttons" id="heldButtons"></div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+    <button class="chord-record-btn" id="recordBtn" onclick="toggleRecord()">Record Chord</button>
+    <span id="recordHint" style="color:#aaa;font-size:11px;">press buttons on the device, release to capture chord</span>
+  </div>
+  <div class="chord-map-list" id="chordMapList">
+    <div class="no-gamepad" id="emptyChords">no chords mapped yet — hit Record and press some buttons</div>
+  </div>
+  <div style="margin-top:12px;display:flex;gap:8px;">
+    <button class="chord-record-btn" onclick="exportProfile()">Export Profile</button>
+    <button class="chord-record-btn" onclick="importProfile()">Import Profile</button>
+    <button class="chord-record-btn" onclick="clearChords()" style="margin-left:auto;">Clear All Chords</button>
+  </div>
+</div>
+
 <div class="connection" id="connStatus">
   <span class="dot red"></span>
   <span>connecting...</span>
@@ -777,6 +948,307 @@ window.addEventListener('beforeunload', (e) => {
     e.returnValue = ''
   }
 })
+
+// ── Gamepad + Chord Engine ──
+let gamepad = null
+let heldButtons = new Set()
+let peakChord = new Set() // tracks the max buttons held during a press
+let recording = false
+let chordMap = [] // [{combo: [0,2,8], type: 'key', action: 'r'}, ...]
+
+// gamepad detection
+window.addEventListener('gamepadconnected', (e) => {
+  gamepad = e.gamepad
+  document.getElementById('gamepadStatus').textContent = 'Gamepad connected'
+  document.getElementById('gamepadName').textContent = e.gamepad.id
+  document.getElementById('gamepadStatus').style.color = '#1a6a3a'
+  requestAnimationFrame(pollGamepad)
+})
+
+window.addEventListener('gamepaddisconnected', () => {
+  gamepad = null
+  document.getElementById('gamepadStatus').textContent = 'Gamepad disconnected'
+  document.getElementById('gamepadStatus').style.color = '#c44'
+  document.getElementById('gamepadName').textContent = ''
+  document.getElementById('heldButtons').innerHTML = ''
+})
+
+function pollGamepad() {
+  if (!gamepad) return
+
+  // refresh gamepad state (required in Chrome)
+  const gp = navigator.getGamepads()[gamepad.index]
+  if (!gp) { requestAnimationFrame(pollGamepad); return }
+
+  const nowHeld = new Set()
+  for (let i = 0; i < gp.buttons.length; i++) {
+    if (gp.buttons[i].pressed) nowHeld.add(i)
+  }
+
+  // detect newly pressed
+  for (const btn of nowHeld) {
+    if (!heldButtons.has(btn)) {
+      onButtonDown(btn)
+    }
+  }
+
+  // detect released
+  for (const btn of heldButtons) {
+    if (!nowHeld.has(btn)) {
+      onButtonUp(btn)
+    }
+  }
+
+  // check if all released (chord complete)
+  if (heldButtons.size > 0 && nowHeld.size === 0) {
+    onChordComplete()
+  }
+
+  heldButtons = nowHeld
+
+  // update held display
+  const heldEl = document.getElementById('heldButtons')
+  if (nowHeld.size > 0) {
+    heldEl.innerHTML = [...nowHeld].sort((a,b) => a-b)
+      .map(b => `<span class="btn-pill${recording ? ' recording' : ''}">JS${b}</span>`)
+      .join('')
+  } else {
+    heldEl.innerHTML = ''
+  }
+
+  // highlight keys on the visual layout
+  document.querySelectorAll('#layout-corne-r .key').forEach(el => {
+    const jsNum = parseInt(el.textContent.replace('JS', ''))
+    if (!isNaN(jsNum)) {
+      el.classList.toggle('active', nowHeld.has(jsNum))
+      if (nowHeld.has(jsNum)) el.classList.add('discovered')
+    }
+  })
+
+  requestAnimationFrame(pollGamepad)
+}
+
+function onButtonDown(btn) {
+  peakChord.add(btn)
+}
+
+function onButtonUp(btn) {
+  // nothing special per-button
+}
+
+function onChordComplete() {
+  if (peakChord.size === 0) return
+  const combo = [...peakChord].sort((a, b) => a - b)
+  peakChord.clear()
+
+  if (recording) {
+    recording = false
+    document.getElementById('recordBtn').classList.remove('active')
+    document.getElementById('recordHint').textContent = ''
+    addChordEntry(combo)
+  } else {
+    // try to fire matched chord
+    fireChord(combo)
+  }
+}
+
+function toggleRecord() {
+  recording = !recording
+  const btn = document.getElementById('recordBtn')
+  const hint = document.getElementById('recordHint')
+  btn.classList.toggle('active', recording)
+  hint.textContent = recording
+    ? 'press buttons on the device, release to capture chord'
+    : ''
+  peakChord.clear()
+}
+
+function addChordEntry(combo) {
+  // check if this combo already exists
+  const comboKey = combo.join('+')
+  const existing = chordMap.find(c => c.combo.join('+') === comboKey)
+  if (existing) {
+    // flash the existing entry
+    const entries = document.querySelectorAll('.chord-entry')
+    for (const entry of entries) {
+      if (entry.dataset.combo === comboKey) {
+        entry.style.background = '#fff0e0'
+        setTimeout(() => entry.style.background = '', 500)
+      }
+    }
+    return
+  }
+
+  document.getElementById('emptyChords').style.display = 'none'
+
+  const entry = { combo, type: 'key', action: '' }
+  chordMap.push(entry)
+
+  const div = document.createElement('div')
+  div.className = 'chord-entry'
+  div.dataset.combo = comboKey
+
+  const pills = combo.map(b => `<span class="btn-pill">JS${b}</span>`).join('')
+
+  div.innerHTML = `
+    <div class="chord-combo">${pills}</div>
+    <span class="chord-arrow">\u2192</span>
+    <div class="chord-action">
+      <select onchange="updateChordType(this, '${comboKey}')">
+        <option value="key">Keystroke</option>
+        <option value="midi_note">MIDI Note</option>
+        <option value="midi_cc">MIDI CC</option>
+        <option value="osc">OSC</option>
+        <option value="command">Command</option>
+      </select>
+      <input type="text" placeholder="e.g. Ctrl+R" onchange="updateChordAction(this, '${comboKey}')" />
+    </div>
+    <button class="chord-delete" onclick="removeChord('${comboKey}', this)">\u00d7</button>
+  `
+
+  document.getElementById('chordMapList').appendChild(div)
+  saveChords()
+}
+
+function updateChordType(select, comboKey) {
+  const entry = chordMap.find(c => c.combo.join('+') === comboKey)
+  if (entry) {
+    entry.type = select.value
+    const input = select.parentElement.querySelector('input')
+    const placeholders = {
+      key: 'e.g. Ctrl+R',
+      midi_note: 'e.g. C4 or 60',
+      midi_cc: 'e.g. CC1=127',
+      osc: 'e.g. /track/1/mute',
+      command: 'e.g. play, stop, record',
+    }
+    input.placeholder = placeholders[entry.type] || ''
+    saveChords()
+  }
+}
+
+function updateChordAction(input, comboKey) {
+  const entry = chordMap.find(c => c.combo.join('+') === comboKey)
+  if (entry) {
+    entry.action = input.value
+    saveChords()
+  }
+}
+
+function removeChord(comboKey, btn) {
+  chordMap = chordMap.filter(c => c.combo.join('+') !== comboKey)
+  btn.closest('.chord-entry').remove()
+  if (chordMap.length === 0) {
+    document.getElementById('emptyChords').style.display = ''
+  }
+  saveChords()
+}
+
+function clearChords() {
+  chordMap = []
+  const list = document.getElementById('chordMapList')
+  list.querySelectorAll('.chord-entry').forEach(e => e.remove())
+  document.getElementById('emptyChords').style.display = ''
+  saveChords()
+}
+
+function fireChord(combo) {
+  const comboKey = combo.join('+')
+  const entry = chordMap.find(c => c.combo.join('+') === comboKey)
+  if (!entry || !entry.action) return
+
+  // flash the matched entry
+  const entries = document.querySelectorAll('.chord-entry')
+  for (const el of entries) {
+    if (el.dataset.combo === comboKey) {
+      el.style.borderLeftColor = '#4aea8a'
+      el.style.background = '#e0f5ea'
+      setTimeout(() => { el.style.borderLeftColor = ''; el.style.background = '' }, 300)
+    }
+  }
+
+  addLogEntry(`CHORD  ${combo.map(b => 'JS' + b).join('+')}  \u2192  [${entry.type}] ${entry.action}`, 'down')
+}
+
+// persist to localStorage
+function saveChords() {
+  localStorage.setItem('kekboard-chords', JSON.stringify(chordMap))
+}
+
+function loadChords() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('kekboard-chords'))
+    if (saved && saved.length) {
+      for (const entry of saved) {
+        addChordEntry(entry.combo)
+        // set type and action
+        const comboKey = entry.combo.join('+')
+        const el = document.querySelector(`.chord-entry[data-combo="${comboKey}"]`)
+        if (el) {
+          const select = el.querySelector('select')
+          const input = el.querySelector('input')
+          select.value = entry.type
+          input.value = entry.action || ''
+          // update in-memory
+          const m = chordMap.find(c => c.combo.join('+') === comboKey)
+          if (m) { m.type = entry.type; m.action = entry.action }
+        }
+      }
+    }
+  } catch (e) {}
+}
+
+function exportProfile() {
+  const profile = {
+    name: 'kekboard-warrior',
+    device: 'Corne Choc v4 Right Half',
+    buttons: 23,
+    chords: chordMap,
+    exported: new Date().toISOString(),
+  }
+  const blob = new Blob([JSON.stringify(profile, null, 2)], { type: 'application/json' })
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(blob)
+  a.download = 'kekboard-profile.json'
+  a.click()
+}
+
+function importProfile() {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = '.json'
+  input.onchange = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    const text = await file.text()
+    try {
+      const profile = JSON.parse(text)
+      if (profile.chords) {
+        clearChords()
+        for (const entry of profile.chords) {
+          addChordEntry(entry.combo)
+          const comboKey = entry.combo.join('+')
+          const el = document.querySelector(`.chord-entry[data-combo="${comboKey}"]`)
+          if (el) {
+            const select = el.querySelector('select')
+            const inp = el.querySelector('input')
+            select.value = entry.type
+            inp.value = entry.action || ''
+            const m = chordMap.find(c => c.combo.join('+') === comboKey)
+            if (m) { m.type = entry.type; m.action = entry.action }
+          }
+        }
+        saveChords()
+      }
+    } catch (err) {
+      alert('Invalid profile file')
+    }
+  }
+  input.click()
+}
+
+// load saved chords on startup
+loadChords()
 
 // ── Corne right half layer definitions ──
 const corneLayers = {
