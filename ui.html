@@ -1201,11 +1201,13 @@ function loadPreset(name) {
     updateLayerDropdowns()
 
     // set up default sequences for layer switching
+    // [[22],[21]] = JS22 → JS21 (sequential)
+    // [[22,21]] = JS22 +> JS21 (chord)
     sequences = [
-      { seq: [22, 21], type: 'layer', action: '1', layer: 0 },
-      { seq: [21, 22], type: 'layer', action: '2', layer: 0 },
-      { seq: [20, 21], type: 'layer', action: '0', layer: 1 },
-      { seq: [20, 21], type: 'layer', action: '0', layer: 2 },
+      { seq: [[22],[21]], type: 'layer', action: '1', layer: 0 },
+      { seq: [[21],[22]], type: 'layer', action: '2', layer: 0 },
+      { seq: [[20],[21]], type: 'layer', action: '0', layer: 1 },
+      { seq: [[20],[21]], type: 'layer', action: '0', layer: 2 },
     ]
 
     // rebuild sequence UI
@@ -1213,7 +1215,7 @@ function loadPreset(name) {
     document.getElementById('emptyChords').style.display = 'none'
     for (const entry of sequences) {
       addSequenceEntry(entry.seq)
-      const seqKey = entry.seq.join('\u2192')
+      const seqKey = seqToKey(entry.seq)
       const el = document.querySelector(`.chord-entry[data-combo="${seqKey}"]`)
       if (el) {
         el.querySelector('select').value = entry.type
@@ -1304,8 +1306,12 @@ window.addEventListener('beforeunload', (e) => {
 let gamepad = null
 let heldButtons = new Set()
 let recording = false
-let recordedSequence = []  // ordered list of button presses
+// Sequence = array of steps. Each step = array of buttons held together.
+// [[22,21], [5]] = JS22+>JS21 → JS5
+let recordedSteps = []     // array of steps being built
+let currentChord = []      // buttons in the current chord group
 let sequenceTimeout = null
+let allReleased = true     // track if all buttons were released between presses
 const SEQ_TIMEOUT = 500    // ms after last release to finalize sequence
 
 // layers
@@ -1413,9 +1419,9 @@ function pollGamepad() {
     }
   }
 
-  // all buttons released — sequence timeout handles completion
-  if (heldButtons.size > 0 && nowHeld.size === 0 && recordedSequence.length === 0) {
-    // no sequence in progress, nothing to do
+  // all buttons released
+  if (heldButtons.size > 0 && nowHeld.size === 0) {
+    onAllReleased()
   }
 
   heldButtons = nowHeld
@@ -1442,65 +1448,106 @@ function pollGamepad() {
   requestAnimationFrame(pollGamepad)
 }
 
-let lastCompletedSeq = null // the latest completed sequence, ready to save
+let lastCompletedSeq = null // the latest completed sequence (array of steps)
 
 function onButtonDown(btn) {
-  // key mapping — show last pressed in mapping mode
   if (currentMode === 'mapping') {
     onGamepadKeyForMapping(btn)
   }
 
-  // always capture sequences
-  recordedSequence.push(btn)
-  updateRecordingDisplay()
   clearTimeout(sequenceTimeout)
   sequenceTimeout = null
+
+  if (allReleased && currentChord.length > 0) {
+    // all buttons were released before this press → new step
+    recordedSteps.push([...currentChord])
+    currentChord = []
+  }
+
+  // add to current chord group
+  if (!currentChord.includes(btn)) {
+    currentChord.push(btn)
+  }
+  allReleased = false
+  updateRecordingDisplay()
 }
 
 function onButtonUp(btn) {
-  if (recordedSequence.length > 0) {
-    clearTimeout(sequenceTimeout)
-    sequenceTimeout = setTimeout(() => {
-      onSequenceComplete()
-      sequenceTimeout = null
-    }, SEQ_TIMEOUT)
-  }
+  // check if ALL buttons are now released
+  // (heldButtons is updated after this call in pollGamepad, so check nowHeld)
+}
+
+// called from pollGamepad when all buttons released
+function onAllReleased() {
+  if (currentChord.length === 0) return
+  allReleased = true
+
+  clearTimeout(sequenceTimeout)
+  sequenceTimeout = setTimeout(() => {
+    // finalize: push last chord group and complete
+    if (currentChord.length > 0) {
+      recordedSteps.push([...currentChord])
+      currentChord = []
+    }
+    onSequenceComplete()
+    sequenceTimeout = null
+  }, SEQ_TIMEOUT)
 }
 
 function updateRecordingDisplay() {
   const el = document.getElementById('recordingSeq')
-  el.innerHTML = recordedSequence
-    .map(b => `<span class="btn-pill recording">JS${b}</span>`)
-    .join('<span style="color:#ccc;margin:0 1px;">\u2192</span>')
+  const parts = []
+  for (const step of recordedSteps) {
+    parts.push(step.map(b => `<span class="btn-pill recording">JS${b}</span>`).join('<span style="color:#a080d0;margin:0 1px;">+&gt;</span>'))
+  }
+  if (currentChord.length > 0) {
+    parts.push(currentChord.map(b => `<span class="btn-pill recording">JS${b}</span>`).join('<span style="color:#a080d0;margin:0 1px;">+&gt;</span>'))
+  }
+  el.innerHTML = parts.join('<span style="color:#ccc;margin:0 3px;">\u2192</span>')
 }
 
 function onSequenceComplete() {
-  if (recordedSequence.length === 0) return
-  const seq = [...recordedSequence]
-  recordedSequence = []
+  if (recordedSteps.length === 0) return
+  const seq = recordedSteps.map(s => [...s])
+  recordedSteps = []
+  currentChord = []
   document.getElementById('recordingSeq').innerHTML = ''
 
-  // always try to match first
+  // try to match
   matchSequence(seq)
 
-  // show as latest sequence in the editor (only in mapping mode with 2+ buttons)
-  if (currentMode === 'mapping' && seq.length >= 2) {
+  // show in editor if in mapping mode and has substance (2+ steps or chord)
+  const totalButtons = seq.reduce((n, s) => n + s.length, 0)
+  if (currentMode === 'mapping' && totalButtons >= 2) {
     lastCompletedSeq = seq
     showLastSeq(seq)
   }
 }
 
+// serialize a sequence (array of steps) to a string key
+function seqToKey(seq) {
+  return seq.map(step => step.join('+>')).join('\u2192')
+}
+
+// render a sequence as HTML pills
+function seqToHTML(seq, pillClass) {
+  const cls = pillClass || ''
+  return seq.map(step =>
+    step.map(b => `<span class="btn-pill ${cls}">JS${b}</span>`)
+      .join('<span style="color:#a080d0;margin:0 1px;">+&gt;</span>')
+  ).join('<span style="color:#ccc;margin:0 3px;">\u2192</span>')
+}
+
 function showLastSeq(seq) {
   const display = document.getElementById('lastSeqDisplay')
-  display.innerHTML = seq.map(b => `<span class="btn-pill">JS${b}</span>`)
-    .join('<span style="color:#ccc;margin:0 2px;">\u2192</span>')
+  display.innerHTML = seqToHTML(seq)
 
   // show editor
   document.getElementById('lastSeqEditor').style.display = 'flex'
 
   // check if this sequence already has a mapping
-  const seqKey = seq.join('\u2192')
-  const existing = sequences.find(s => s.seq.join('\u2192') === seqKey)
+  const seqKey = seqToKey(seq)
+  const existing = sequences.find(s => seqToKey(s.seq) === seqKey)
   if (existing) {
     document.getElementById('seqType').value = existing.type
     document.getElementById('seqAction').value = existing.action || ''
@@ -1521,7 +1568,7 @@ function autoSaveLastSeq() {
   const action = document.getElementById('seqAction').value
   const note = document.getElementById('seqNote').value
 
-  const existing = sequences.find(s => s.seq.join('\u2192') === seqKey)
+  const existing = sequences.find(s => seqToKey(s.seq) === seqKey)
   if (existing) {
     existing.type = type
     existing.action = action
@@ -1533,7 +1580,7 @@ function autoSaveLastSeq() {
     }
   } else {
     addSequenceEntry(lastCompletedSeq)
-    const m = sequences.find(s => s.seq.join('\u2192') === seqKey)
+    const m = sequences.find(s => seqToKey(s.seq) === seqKey)
     if (m) { m.type = type; m.action = action; m.note = note }
     const el = document.querySelector(`.chord-entry[data-combo="${seqKey}"]`)
     if (el) {
@@ -1546,8 +1593,8 @@ function autoSaveLastSeq() {
 }
 
 function addSequenceEntry(seq) {
-  const seqKey = seq.join('\u2192')
-  const existing = sequences.find(s => s.seq.join('\u2192') === seqKey)
+  const seqKey = seqToKey(seq)
+  const existing = sequences.find(s => seqToKey(s.seq) === seqKey)
   if (existing) {
     const el = document.querySelector(`.chord-entry[data-combo="${seqKey}"]`)
     if (el) { el.style.background = '#fff0e0'; setTimeout(() => el.style.background = '', 500) }
@@ -1562,8 +1609,7 @@ function addSequenceEntry(seq) {
   div.className = 'chord-entry'
   div.dataset.combo = seqKey
 
-  const pills = seq.map(b => `<span class="btn-pill">JS${b}</span>`)
-    .join('<span style="color:#ccc;margin:0 2px;">\u2192</span>')
+  const pills = seqToHTML(seq)
 
   div.innerHTML = `
     <div class="chord-combo">${pills}</div>
@@ -1586,7 +1632,7 @@ function addSequenceEntry(seq) {
 }
 
 function updateSeqType(select, seqKey) {
-  const entry = sequences.find(s => s.seq.join('\u2192') === seqKey)
+  const entry = sequences.find(s => seqToKey(s.seq) === seqKey)
   if (!entry) return
   entry.type = select.value
   const input = select.parentElement.querySelector('input')
@@ -1596,12 +1642,12 @@ function updateSeqType(select, seqKey) {
 }
 
 function updateSeqAction(input, seqKey) {
-  const entry = sequences.find(s => s.seq.join('\u2192') === seqKey)
+  const entry = sequences.find(s => seqToKey(s.seq) === seqKey)
   if (entry) { entry.action = input.value; saveProfile() }
 }
 
 function removeSeq(seqKey, btn) {
-  sequences = sequences.filter(s => s.seq.join('\u2192') !== seqKey)
+  sequences = sequences.filter(s => seqToKey(s.seq) !== seqKey)
   btn.closest('.chord-entry').remove()
   if (sequences.length === 0) document.getElementById('emptyChords').style.display = ''
   saveProfile()
@@ -1615,9 +1661,9 @@ function clearChords() {
 }
 
 function matchSequence(seq) {
-  const seqKey = seq.join('\u2192')
-  const entry = sequences.find(s => s.seq.join('\u2192') === seqKey && s.layer === activeLayer)
-    || sequences.find(s => s.seq.join('\u2192') === seqKey)
+  const seqKey = seqToKey(seq)
+  const entry = sequences.find(s => seqToKey(s.seq) === seqKey && s.layer === activeLayer)
+    || sequences.find(s => seqToKey(s.seq) === seqKey)
   if (!entry || !entry.action) return
 
   if (entry.type === 'layer') {
@@ -1626,7 +1672,7 @@ function matchSequence(seq) {
       activeLayer = idx
       document.getElementById('keyMapLayerSelect').value = idx
       updateKeyLabels()
-      addLogEntry(`SEQ  ${seq.map(b=>'JS'+b).join('\u2192')}  \u2192 LAYER ${layers[idx].name}`, 'down')
+      addLogEntry(`SEQ  ${seqKey}  \u2192 LAYER ${layers[idx].name}`, 'down')
     }
     return
   }
@@ -1636,7 +1682,7 @@ function matchSequence(seq) {
     el.style.borderLeftColor = '#4aea8a'; el.style.background = '#e0f5ea'
     setTimeout(() => { el.style.borderLeftColor = ''; el.style.background = '' }, 300)
   }
-  addLogEntry(`SEQ  ${seq.map(b=>'JS'+b).join('\u2192')}  \u2192 [${entry.type}] ${entry.action}`, 'down')
+  addLogEntry(`SEQ  ${seqKey}  \u2192 [${entry.type}] ${entry.action}`, 'down')
 }
 
 // ── Persistence ──
@@ -1654,13 +1700,13 @@ function loadProfile() {
     if (saved.sequences) {
       for (const entry of saved.sequences) {
         addSequenceEntry(entry.seq)
-        const seqKey = entry.seq.join('\u2192')
+        const seqKey = seqToKey(entry.seq)
         const el = document.querySelector(`.chord-entry[data-combo="${seqKey}"]`)
         if (el) {
           el.querySelector('select').value = entry.type
           el.querySelector('input').value = entry.action || ''
         }
-        const m = sequences.find(s => s.seq.join('\u2192') === seqKey)
+        const m = sequences.find(s => seqToKey(s.seq) === seqKey)
         if (m) { m.type = entry.type; m.action = entry.action; m.layer = entry.layer }
       }
     }
