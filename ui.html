@@ -935,10 +935,26 @@
       </div>
       <div class="held-buttons" id="heldButtons"></div>
     </div>
-    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
-      <button class="chord-record-btn" id="recordBtn" onclick="toggleRecord()">Record Sequence</button>
-      <span id="recordHint" style="color:#aaa;font-size:11px;"></span>
-      <div id="recordingSeq" style="display:flex;gap:2px;"></div>
+    <div id="lastSeqPanel" style="padding:10px;background:#f8f8fa;border-radius:4px;margin-bottom:8px;">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <span style="color:#888;font-size:12px;">Last sequence:</span>
+        <div id="lastSeqDisplay" style="display:flex;gap:2px;align-items:center;">
+          <span style="color:#aaa;font-size:11px;">press buttons on the device...</span>
+        </div>
+        <div id="lastSeqEditor" style="display:none;margin-left:auto;display:flex;gap:6px;align-items:center;">
+          <select id="seqType" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;">
+            <option value="key">Keystroke</option>
+            <option value="layer">Activate Layer</option>
+            <option value="midi_note">MIDI Note</option>
+            <option value="midi_cc">MIDI CC</option>
+            <option value="osc">OSC</option>
+            <option value="command">Command</option>
+          </select>
+          <input id="seqAction" type="text" placeholder="e.g. Ctrl+R" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;width:140px;" />
+          <button class="chord-record-btn" onclick="saveLastSeq()" style="padding:3px 10px;">Save</button>
+        </div>
+      </div>
+      <div id="recordingSeq" style="display:flex;gap:2px;margin-top:4px;"></div>
     </div>
     <div class="chord-map-list" id="chordMapList">
       <div class="no-gamepad" id="emptyChords">no sequences mapped yet — hit Record and press buttons in order</div>
@@ -1445,18 +1461,19 @@ function pollGamepad() {
   requestAnimationFrame(pollGamepad)
 }
 
+let lastCompletedSeq = null // the latest completed sequence, ready to save
+
 function onButtonDown(btn) {
   // key mapping — show last pressed in mapping mode
   if (currentMode === 'mapping') {
     onGamepadKeyForMapping(btn)
   }
 
-  if (recording || sequenceTimeout) {
-    recordedSequence.push(btn)
-    updateRecordingDisplay()
-    clearTimeout(sequenceTimeout)
-    sequenceTimeout = null
-  }
+  // always capture sequences
+  recordedSequence.push(btn)
+  updateRecordingDisplay()
+  clearTimeout(sequenceTimeout)
+  sequenceTimeout = null
 }
 
 function onButtonUp(btn) {
@@ -1482,26 +1499,66 @@ function onSequenceComplete() {
   recordedSequence = []
   document.getElementById('recordingSeq').innerHTML = ''
 
-  if (recording) {
-    recording = false
-    document.getElementById('recordBtn').classList.remove('active')
-    document.getElementById('recordHint').textContent = ''
-    addSequenceEntry(seq)
-  } else {
-    matchSequence(seq)
+  // always try to match first
+  matchSequence(seq)
+
+  // show as latest sequence in the editor (only in mapping mode with 2+ buttons)
+  if (currentMode === 'mapping' && seq.length >= 2) {
+    lastCompletedSeq = seq
+    showLastSeq(seq)
   }
 }
 
-function toggleRecord() {
-  recording = !recording
-  const btn = document.getElementById('recordBtn')
-  const hint = document.getElementById('recordHint')
-  btn.classList.toggle('active', recording)
-  hint.textContent = recording ? 'press buttons in order \u2014 sequence captured after 500ms pause' : ''
-  recordedSequence = []
-  document.getElementById('recordingSeq').innerHTML = ''
-  clearTimeout(sequenceTimeout)
-  sequenceTimeout = null
+function showLastSeq(seq) {
+  const display = document.getElementById('lastSeqDisplay')
+  display.innerHTML = seq.map(b => `<span class="btn-pill">JS${b}</span>`)
+    .join('<span style="color:#ccc;margin:0 2px;">\u2192</span>')
+
+  // show editor
+  document.getElementById('lastSeqEditor').style.display = 'flex'
+
+  // check if this sequence already has a mapping
+  const seqKey = seq.join('\u2192')
+  const existing = sequences.find(s => s.seq.join('\u2192') === seqKey)
+  if (existing) {
+    document.getElementById('seqType').value = existing.type
+    document.getElementById('seqAction').value = existing.action || ''
+  } else {
+    document.getElementById('seqType').value = 'key'
+    document.getElementById('seqAction').value = ''
+  }
+}
+
+function saveLastSeq() {
+  if (!lastCompletedSeq) return
+  const seqKey = lastCompletedSeq.join('\u2192')
+
+  // update existing or add new
+  const existing = sequences.find(s => s.seq.join('\u2192') === seqKey)
+  const type = document.getElementById('seqType').value
+  const action = document.getElementById('seqAction').value
+
+  if (existing) {
+    existing.type = type
+    existing.action = action
+    // update the UI entry
+    const el = document.querySelector(`.chord-entry[data-combo="${seqKey}"]`)
+    if (el) {
+      el.querySelector('select').value = type
+      el.querySelector('input').value = action
+    }
+  } else {
+    addSequenceEntry(lastCompletedSeq)
+    const m = sequences.find(s => s.seq.join('\u2192') === seqKey)
+    if (m) { m.type = type; m.action = action }
+    const el = document.querySelector(`.chord-entry[data-combo="${seqKey}"]`)
+    if (el) {
+      el.querySelector('select').value = type
+      el.querySelector('input').value = action
+    }
+  }
+
+  saveProfile()
 }
 
 function addSequenceEntry(seq) {
