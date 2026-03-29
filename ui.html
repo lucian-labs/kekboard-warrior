@@ -567,7 +567,7 @@
 <h1>Kekboard Warrior — Mapping for <span style="color:#8b0000;">HONOR</span></h1>
 <div class="subtitle">customize any QMK device in minutes!</div>
 
-<div class="device-selector">
+<div class="device-selector" style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
   <label>device:</label>
   <select id="deviceSelect" onchange="switchDevice(this.value)">
     <option value="corne-both">Corne Choc — Both Halves</option>
@@ -575,12 +575,15 @@
     <option value="corne-l">Corne Choc — Left Half</option>
     <option value="k585">K585 DITI</option>
   </select>
-</div>
-
-<!-- ── Mode Toggle ── -->
-<div style="display:flex;gap:4px;margin-bottom:16px;">
-  <button class="chord-record-btn" id="modeDiscovery" onclick="setMode('discovery')" style="background:#e0f5ea;border-color:#4aea8a;color:#1a6a3a;">Discovery</button>
-  <button class="chord-record-btn" id="modeMapping" onclick="setMode('mapping')">Mapping</button>
+  <label style="margin-left:8px;">preset:</label>
+  <select id="presetSelect" onchange="loadPreset(this.value)" style="background:#fff;color:#333;border:1px solid #ccc;padding:5px 10px;font-family:inherit;font-size:12px;border-radius:4px;">
+    <option value="">— none —</option>
+    <option value="kekboard">Kekboard Mapping</option>
+  </select>
+  <div style="margin-left:auto;display:flex;gap:4px;">
+    <button class="chord-record-btn" id="modeDiscovery" onclick="setMode('discovery')" style="background:#e0f5ea;border-color:#4aea8a;color:#1a6a3a;">Discovery</button>
+    <button class="chord-record-btn" id="modeMapping" onclick="setMode('mapping')">Mapping</button>
+  </div>
 </div>
 
 <div class="toolbar" id="discoveryToolbar">
@@ -892,7 +895,30 @@
           <option value="osc">OSC</option>
           <option value="command">Command</option>
         </select>
-        <input id="keyMapAction" type="text" placeholder="e.g. Ctrl+R" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;width:160px;" />
+        <input id="keyMapAction" type="text" placeholder="e.g. Ctrl+R" list="keystrokeList" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;width:160px;" />
+        <datalist id="keystrokeList">
+          <option value="a"><option value="b"><option value="c"><option value="d"><option value="e">
+          <option value="f"><option value="g"><option value="h"><option value="i"><option value="j">
+          <option value="k"><option value="l"><option value="m"><option value="n"><option value="o">
+          <option value="p"><option value="q"><option value="r"><option value="s"><option value="t">
+          <option value="u"><option value="v"><option value="w"><option value="x"><option value="y"><option value="z">
+          <option value="0"><option value="1"><option value="2"><option value="3"><option value="4">
+          <option value="5"><option value="6"><option value="7"><option value="8"><option value="9">
+          <option value="Space"><option value="Enter"><option value="Escape"><option value="Tab">
+          <option value="Backspace"><option value="Delete"><option value="Insert">
+          <option value="Up"><option value="Down"><option value="Left"><option value="Right">
+          <option value="Home"><option value="End"><option value="PageUp"><option value="PageDown">
+          <option value="F1"><option value="F2"><option value="F3"><option value="F4"><option value="F5"><option value="F6">
+          <option value="F7"><option value="F8"><option value="F9"><option value="F10"><option value="F11"><option value="F12">
+          <option value="Ctrl+A"><option value="Ctrl+C"><option value="Ctrl+V"><option value="Ctrl+X">
+          <option value="Ctrl+Z"><option value="Ctrl+Y"><option value="Ctrl+S"><option value="Ctrl+R">
+          <option value="Ctrl+Shift+Z"><option value="Ctrl+Shift+S">
+          <option value="Alt+Tab"><option value="Alt+F4">
+          <option value="Shift+Space"><option value="Ctrl+Space">
+          <option value="Play"><option value="Pause"><option value="Stop"><option value="Record">
+          <option value="Mute"><option value="VolumeUp"><option value="VolumeDown">
+          <option value="NextTrack"><option value="PrevTrack">
+        </datalist>
         <button class="chord-record-btn" onclick="saveKeyMap()" style="padding:3px 10px;">Save</button>
       </div>
     </div>
@@ -1157,10 +1183,59 @@ function setMode(mode) {
     updateKeyMapList()
     updateLayerDropdowns()
   }
+  localStorage.setItem('kekboard-mode', mode)
+}
+
+// ── Presets ──
+function loadPreset(name) {
+  if (!name) return
+  if (name === 'kekboard') {
+    // select Corne right half
+    activeDevice = 'corne-r'
+    document.getElementById('deviceSelect').value = 'corne-r'
+    switchDevice('corne-r')
+
+    // switch to mapping mode
+    setMode('mapping')
+
+    // set up default layers
+    layers = [
+      { name: 'base', color: '#e0f5ea' },
+      { name: 'nav', color: '#e0e8f8' },
+      { name: 'media', color: '#f8e8e0' },
+    ]
+    activeLayer = 0
+    updateLayerDropdowns()
+
+    // set up default sequences for layer switching
+    sequences = [
+      { seq: [22, 21], type: 'layer', action: '1', layer: 0 },
+      { seq: [21, 22], type: 'layer', action: '2', layer: 0 },
+      { seq: [20, 21], type: 'layer', action: '0', layer: 1 },
+      { seq: [20, 21], type: 'layer', action: '0', layer: 2 },
+    ]
+
+    // rebuild sequence UI
+    document.getElementById('chordMapList').querySelectorAll('.chord-entry').forEach(e => e.remove())
+    document.getElementById('emptyChords').style.display = 'none'
+    for (const entry of sequences) {
+      addSequenceEntry(entry.seq)
+      const seqKey = entry.seq.join('\u2192')
+      const el = document.querySelector(`.chord-entry[data-combo="${seqKey}"]`)
+      if (el) {
+        el.querySelector('select').value = entry.type
+        el.querySelector('input').value = entry.action || ''
+      }
+    }
+
+    saveProfile()
+    updateKeyMapList()
+  }
 }
 
 // ── Key Mapping (single key → action) ──
 let lastPressedBtn = null
+let lastKeyMapType = 'key' // persists between unmapped keys
 
 function onGamepadKeyForMapping(btn) {
   lastPressedBtn = btn
@@ -1169,10 +1244,10 @@ function onGamepadKeyForMapping(btn) {
   document.getElementById('keyMapLabel').textContent = label
   document.getElementById('keyMapEditor').style.display = ''
 
-  // load existing assignment
+  // load existing assignment, or use last type for unmapped keys
   const key = `${activeLayer}_${label}`
   const a = keyAssignments[key]
-  document.getElementById('keyMapType').value = a ? a.type : 'key'
+  document.getElementById('keyMapType').value = a ? a.type : lastKeyMapType
   document.getElementById('keyMapAction').value = a ? a.action : ''
 }
 
@@ -1180,8 +1255,9 @@ function saveKeyMap() {
   if (lastPressedBtn === null) return
   const label = 'JS' + lastPressedBtn
   const key = `${activeLayer}_${label}`
+  lastKeyMapType = document.getElementById('keyMapType').value
   keyAssignments[key] = {
-    type: document.getElementById('keyMapType').value,
+    type: lastKeyMapType,
     action: document.getElementById('keyMapAction').value,
   }
   saveProfile()
@@ -1573,6 +1649,18 @@ function importProfile() {
 
 loadProfile()
 
+// restore UI state
+;(function restoreUIState() {
+  const savedDevice = localStorage.getItem('kekboard-device')
+  if (savedDevice) {
+    activeDevice = savedDevice
+    document.getElementById('deviceSelect').value = savedDevice
+    switchDevice(savedDevice)
+  }
+  const savedMode = localStorage.getItem('kekboard-mode')
+  if (savedMode) setMode(savedMode)
+})()
+
 // ── Corne right half layer definitions ──
 const corneLayers = {
   0: { // JOYSTICK — all keys are joystick buttons
@@ -1624,6 +1712,7 @@ let activeDevice = 'corne-r'
 
 function switchDevice(device) {
   activeDevice = device
+  localStorage.setItem('kekboard-device', device)
   document.querySelectorAll('.device-layout').forEach(el => {
     el.classList.remove('active')
     el.style.display = 'none'
