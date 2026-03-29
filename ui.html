@@ -3,26 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>K585 Key Discovery</title>
+<title>Kekboard Warrior — Key Discovery</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    background: #0a0a0f;
-    color: #c0c0c0;
+    background: #f0f0f2;
+    color: #333;
     font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
     padding: 20px;
     min-height: 100vh;
   }
 
   h1 {
-    color: #e0e0e0;
+    color: #222;
     font-size: 18px;
     margin-bottom: 4px;
   }
 
   .subtitle {
-    color: #666;
+    color: #888;
     font-size: 12px;
     margin-bottom: 20px;
   }
@@ -35,9 +35,9 @@
   }
 
   .toolbar button {
-    background: #1a1a2e;
-    color: #aaa;
-    border: 1px solid #333;
+    background: #fff;
+    color: #555;
+    border: 1px solid #ccc;
     padding: 6px 14px;
     font-family: inherit;
     font-size: 12px;
@@ -45,16 +45,16 @@
     border-radius: 4px;
   }
 
-  .toolbar button:hover { background: #252545; color: #fff; border-color: #555; }
-  .toolbar button.danger:hover { border-color: #c44; color: #f88; }
+  .toolbar button:hover { background: #e8e8ee; color: #222; border-color: #999; }
+  .toolbar button.danger:hover { border-color: #c44; color: #c44; }
 
   .stats {
     margin-left: auto;
     font-size: 12px;
-    color: #666;
+    color: #888;
   }
 
-  .stats span { color: #8f8; }
+  .stats span { color: #2a8a4a; }
 
   /* ── keyboard layout ── */
   .keyboard-container {
@@ -89,17 +89,18 @@
   .key {
     width: 44px;
     height: 38px;
-    background: #141420;
-    border: 1px solid #2a2a3a;
+    background: #fff;
+    border: 1px solid #ccc;
     border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 10px;
-    color: #555;
+    color: #666;
     transition: all 0.15s ease;
     position: relative;
     user-select: none;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
   }
 
   .key.wide-1_25 { width: 56px; }
@@ -113,15 +114,15 @@
   .key.g-key {
     width: 38px;
     height: 38px;
-    background: #1a1025;
-    border-color: #3a2a4a;
+    background: #f3eef8;
+    border-color: #c4b0d8;
   }
 
   .key.m-key {
     width: 34px;
     height: 26px;
-    background: #1a1a1a;
-    border-color: #2a2a2a;
+    background: #f5f5f5;
+    border-color: #ccc;
     font-size: 9px;
   }
 
@@ -131,34 +132,173 @@
     margin-bottom: 4px;
   }
 
+  /* ── device selector ── */
+  .device-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .device-selector label {
+    color: #666;
+    font-size: 12px;
+  }
+
+  .device-selector select {
+    background: #fff;
+    color: #333;
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    font-family: inherit;
+    font-size: 12px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .device-selector select:hover { border-color: #999; color: #111; }
+
+  .device-layout { display: none; }
+  .device-layout.active { display: flex; }
+
+  /* ── corne layout ── */
+  .corne-right {
+    flex-direction: column;
+    gap: 0;
+    align-items: flex-start;
+  }
+
+  .corne-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .corne-body {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .corne-right .main-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .corne-right .row {
+    display: flex;
+    gap: 3px;
+  }
+
+  /* column stagger — Corne has columnar stagger on each column */
+  .corne-right .main-rows .row .key:nth-child(1) { margin-top: 8px; }   /* outer col */
+  .corne-right .main-rows .row .key:nth-child(2) { margin-top: 2px; }
+  .corne-right .main-rows .row .key:nth-child(3) { margin-top: 0px; }   /* home col */
+  .corne-right .main-rows .row .key:nth-child(4) { margin-top: 4px; }
+  .corne-right .main-rows .row .key:nth-child(5) { margin-top: 12px; }
+  .corne-right .main-rows .row .key:nth-child(6) { margin-top: 16px; }  /* pinky col */
+
+  .corne-right .extra-col {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .corne-right .thumb-row {
+    display: flex;
+    gap: 3px;
+    margin-top: 6px;
+    margin-left: 0;
+  }
+
+  .corne-right .thumb-row .key:nth-child(1) { margin-top: 0; }
+  .corne-right .thumb-row .key:nth-child(2) { margin-top: 0; }
+  .corne-right .thumb-row .key:nth-child(3) { margin-top: 0; }
+
+  .key.thumb-key {
+    width: 52px;
+    height: 38px;
+    background: #ece6f3;
+    border-color: #c4b0d8;
+    border-radius: 6px;
+  }
+
+  .key.thumb-key.discovered {
+    background: #dcc8f0;
+    border-color: #8a4aea;
+    color: #6a3aaa;
+    box-shadow: 0 1px 4px rgba(138, 74, 234, 0.15);
+  }
+
+  .key.thumb-key.active {
+    background: #8a4aea;
+    border-color: #6a3aaa;
+    color: #fff;
+    box-shadow: 0 1px 8px rgba(192, 154, 248, 0.4);
+  }
+
+  /* layer indicator for corne */
+  .layer-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 10px;
+  }
+
+  .layer-tab {
+    padding: 4px 12px;
+    font-size: 11px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    color: #888;
+    cursor: pointer;
+  }
+
+  .layer-tab.active {
+    background: #e0f5ea;
+    border-color: #4aea8a;
+    color: #1a6a3a;
+  }
+
+  .layer-tab.midi {
+    border-color: #d4c0e8;
+  }
+
+  .layer-tab.midi.active {
+    background: #ece0f8;
+    border-color: #8a4aea;
+    color: #6a3aaa;
+  }
+
   /* key states */
   .key.discovered {
-    background: #0a2a1a;
-    border-color: #1a6a3a;
-    color: #4aea8a;
-    box-shadow: 0 0 8px rgba(74, 234, 138, 0.15);
+    background: #e0f5ea;
+    border-color: #4aea8a;
+    color: #1a6a3a;
+    box-shadow: 0 1px 4px rgba(74, 234, 138, 0.2);
   }
 
   .key.active {
-    background: #1a4a2a;
-    border-color: #4aea8a;
+    background: #4aea8a;
+    border-color: #2aaa5a;
     color: #fff;
-    box-shadow: 0 0 15px rgba(74, 234, 138, 0.4);
+    box-shadow: 0 1px 8px rgba(74, 234, 138, 0.4);
     transform: scale(0.95);
   }
 
   .key.g-key.discovered {
-    background: #2a1a3a;
+    background: #ece0f8;
     border-color: #8a4aea;
-    color: #c09af8;
-    box-shadow: 0 0 8px rgba(138, 74, 234, 0.15);
+    color: #6a3aaa;
+    box-shadow: 0 1px 4px rgba(138, 74, 234, 0.15);
   }
 
   .key.g-key.active {
-    background: #3a2a5a;
-    border-color: #c09af8;
+    background: #8a4aea;
+    border-color: #6a3aaa;
     color: #fff;
-    box-shadow: 0 0 15px rgba(192, 154, 248, 0.4);
+    box-shadow: 0 1px 8px rgba(192, 154, 248, 0.4);
   }
 
   .key .count {
@@ -178,8 +318,8 @@
 
   .panel {
     flex: 1;
-    background: #0f0f18;
-    border: 1px solid #1a1a2e;
+    background: #fff;
+    border: 1px solid #ddd;
     border-radius: 6px;
     padding: 12px;
     max-height: 300px;
@@ -188,7 +328,7 @@
 
   .panel h2 {
     font-size: 13px;
-    color: #888;
+    color: #555;
     margin-bottom: 8px;
     display: flex;
     align-items: center;
@@ -212,15 +352,15 @@
     align-items: center;
     padding: 4px 8px;
     margin-bottom: 2px;
-    background: #141420;
+    background: #faf5ee;
     border-radius: 3px;
     font-size: 11px;
-    border-left: 3px solid #eaaa4a;
+    border-left: 3px solid #d9a030;
     animation: slideIn 0.3s ease;
   }
 
-  .unknown-item .name { color: #eaaa4a; font-weight: bold; }
-  .unknown-item .meta { color: #666; font-size: 10px; }
+  .unknown-item .name { color: #b88a20; font-weight: bold; }
+  .unknown-item .meta { color: #999; font-size: 10px; }
 
   @keyframes slideIn {
     from { opacity: 0; transform: translateX(-10px); }
@@ -230,16 +370,16 @@
   /* ── log ── */
   .log {
     font-size: 10px;
-    color: #444;
+    color: #888;
     line-height: 1.6;
     max-height: 200px;
     overflow-y: auto;
   }
 
   .log .entry { white-space: pre; }
-  .log .entry.down { color: #4aea8a; }
-  .log .entry.up { color: #335; }
-  .log .entry.unknown { color: #eaaa4a; }
+  .log .entry.down { color: #2a8a4a; }
+  .log .entry.up { color: #aab; }
+  .log .entry.unknown { color: #b88a20; }
 
   /* ── connection status ── */
   .connection {
@@ -247,6 +387,7 @@
     top: 10px;
     right: 20px;
     font-size: 11px;
+    color: #888;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -270,8 +411,16 @@
 </head>
 <body>
 
-<h1>K585 DITI — Key Discovery</h1>
+<h1>Kekboard Warrior — Key Discovery</h1>
 <div class="subtitle">press keys to map them — unknown codes appear on the right</div>
+
+<div class="device-selector">
+  <label>device:</label>
+  <select id="deviceSelect" onchange="switchDevice(this.value)">
+    <option value="corne-r">Corne Choc — Right Half</option>
+    <option value="k585">K585 DITI</option>
+  </select>
+</div>
 
 <div class="toolbar">
   <button onclick="clearAll()" class="danger">Clear All</button>
@@ -284,6 +433,54 @@
 </div>
 
 <div class="keyboard-container">
+  <!-- ── Corne Right Half ── -->
+  <div class="device-layout corne-right active" id="layout-corne-r">
+    <div class="layer-tabs" id="corneLayers">
+      <div class="layer-tab active" data-layer="0">JOYSTICK — 23 buttons</div>
+    </div>
+    <div class="corne-inner">
+      <div class="corne-body">
+        <div class="extra-col">
+          <div class="key thumb-key" data-key="CR_EX0" data-pos="e,0" style="width:44px;height:38px;">JS0</div>
+          <div class="key thumb-key" data-key="CR_EX1" data-pos="e,1" style="width:44px;height:38px;">JS1</div>
+        </div>
+        <div class="main-rows">
+          <div class="row">
+            <div class="key" data-key="CR_R0C0" data-pos="0,0">JS2</div>
+            <div class="key" data-key="CR_R0C1" data-pos="0,1">JS3</div>
+            <div class="key" data-key="CR_R0C2" data-pos="0,2">JS4</div>
+            <div class="key" data-key="CR_R0C3" data-pos="0,3">JS5</div>
+            <div class="key" data-key="CR_R0C4" data-pos="0,4">JS6</div>
+            <div class="key" data-key="CR_R0C5" data-pos="0,5">JS7</div>
+          </div>
+          <div class="row">
+            <div class="key" data-key="CR_R1C0" data-pos="1,0">JS8</div>
+            <div class="key" data-key="CR_R1C1" data-pos="1,1">JS9</div>
+            <div class="key" data-key="CR_R1C2" data-pos="1,2">JS10</div>
+            <div class="key" data-key="CR_R1C3" data-pos="1,3">JS11</div>
+            <div class="key" data-key="CR_R1C4" data-pos="1,4">JS12</div>
+            <div class="key" data-key="CR_R1C5" data-pos="1,5">JS13</div>
+          </div>
+          <div class="row">
+            <div class="key" data-key="CR_R2C0" data-pos="2,0">JS14</div>
+            <div class="key" data-key="CR_R2C1" data-pos="2,1">JS15</div>
+            <div class="key" data-key="CR_R2C2" data-pos="2,2">JS16</div>
+            <div class="key" data-key="CR_R2C3" data-pos="2,3">JS17</div>
+            <div class="key" data-key="CR_R2C4" data-pos="2,4">JS18</div>
+            <div class="key" data-key="CR_R2C5" data-pos="2,5">JS19</div>
+          </div>
+        </div>
+      </div>
+      <div class="thumb-row">
+        <div class="key thumb-key" data-key="CR_T0" data-pos="3,0">JS20</div>
+        <div class="key thumb-key" data-key="CR_T1" data-pos="3,1">JS21</div>
+        <div class="key thumb-key" data-key="CR_T2" data-pos="3,2">JS22</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── K585 DITI ── -->
+  <div class="device-layout" id="layout-k585">
   <div class="keyboard">
     <div class="g-column" id="gColumn">
       <div class="key g-key" data-key="G1">G1</div>
@@ -349,6 +546,7 @@
       </div>
     </div>
   </div>
+  </div><!-- /layout-k585 -->
 </div>
 
 <div class="panels">
@@ -578,6 +776,67 @@ window.addEventListener('beforeunload', (e) => {
     e.preventDefault()
     e.returnValue = ''
   }
+})
+
+// ── Corne right half layer definitions ──
+const corneLayers = {
+  0: { // JOYSTICK — all keys are joystick buttons
+    name: 'JOYSTICK', type: 'joystick',
+    keys: {
+      'CR_EX0': 'JS0',  'CR_EX1': 'JS1',
+      'CR_R0C0': 'JS2',  'CR_R0C1': 'JS3',  'CR_R0C2': 'JS4',  'CR_R0C3': 'JS5',  'CR_R0C4': 'JS6',  'CR_R0C5': 'JS7',
+      'CR_R1C0': 'JS8',  'CR_R1C1': 'JS9',  'CR_R1C2': 'JS10', 'CR_R1C3': 'JS11', 'CR_R1C4': 'JS12', 'CR_R1C5': 'JS13',
+      'CR_R2C0': 'JS14', 'CR_R2C1': 'JS15', 'CR_R2C2': 'JS16', 'CR_R2C3': 'JS17', 'CR_R2C4': 'JS18', 'CR_R2C5': 'JS19',
+      'CR_T0': 'JS20',   'CR_T1': 'JS21',   'CR_T2': 'JS22',
+    }
+  },
+}
+
+let activeCorneLayer = 0
+
+function switchCorneLayer(layerIdx) {
+  activeCorneLayer = layerIdx
+  const layer = corneLayers[layerIdx]
+  const isMidi = layer.type === 'midi'
+
+  // update tabs
+  document.querySelectorAll('.layer-tab').forEach(tab => {
+    tab.classList.toggle('active', parseInt(tab.dataset.layer) === layerIdx)
+  })
+
+  // update key labels
+  for (const [key, label] of Object.entries(layer.keys)) {
+    const el = document.querySelector(`[data-key="${key}"]`)
+    if (el) {
+      el.textContent = label
+      // style midi keys differently
+      if (isMidi && label !== '___') {
+        el.style.borderColor = '#3a2a4a'
+        if (!el.classList.contains('discovered')) {
+          el.style.color = '#8a6ab8'
+        }
+      } else {
+        el.style.borderColor = ''
+        if (!el.classList.contains('discovered')) {
+          el.style.color = ''
+        }
+      }
+    }
+  }
+}
+
+let activeDevice = 'corne-r'
+
+function switchDevice(device) {
+  activeDevice = device
+  document.querySelectorAll('.device-layout').forEach(el => el.classList.remove('active'))
+  const target = document.getElementById('layout-' + device)
+  if (target) target.classList.add('active')
+}
+
+// index corne keys too
+document.querySelectorAll('#layout-corne-r .key[data-key]').forEach(el => {
+  keyElements[el.dataset.key] = el
 })
 
 connect()
