@@ -847,41 +847,81 @@
   </div><!-- /layout-k585 -->
 </div>
 
-<div class="panels">
-  <div class="panel">
-    <h2><span class="dot orange"></span> Unknown / Unmatched Keys</h2>
-    <div id="unknownList"></div>
-    <div id="emptyUnknown" style="color:#333;font-size:11px;padding:20px;text-align:center">
-      press keys — anything not in the layout shows up here
+<!-- ══ DISCOVERY MODE ══ -->
+<div id="discoverySection">
+  <div class="panels">
+    <div class="panel">
+      <h2><span class="dot orange"></span> Unknown / Unmatched Keys</h2>
+      <div id="unknownList"></div>
+      <div id="emptyUnknown" style="color:#333;font-size:11px;padding:20px;text-align:center">
+        press keys — anything not in the layout shows up here
+      </div>
     </div>
-  </div>
-  <div class="panel">
-    <h2><span class="dot green"></span> Event Log</h2>
-    <div class="log" id="eventLog"></div>
+    <div class="panel">
+      <h2><span class="dot green"></span> Event Log</h2>
+      <div class="log" id="eventLog"></div>
+    </div>
   </div>
 </div>
 
-<!-- ── Chord Mapping ── -->
-<div class="chord-panel" id="chordPanel">
-  <h2>Chord Mapping</h2>
-  <div class="chord-status">
-    <div>
-      <span id="gamepadStatus">No gamepad detected — plug in your flashed Corne</span>
-      <div class="gamepad-name" id="gamepadName"></div>
+<!-- ══ MAPPING MODE ══ -->
+<div id="mappingSection" style="display:none;">
+  <!-- Key Mapping -->
+  <div class="chord-panel" style="margin-bottom:16px;">
+    <h2>Key Mapping <span style="font-size:11px;color:#888;font-weight:normal;">— press a key or click one above</span></h2>
+    <div class="chord-status">
+      <div>
+        <span style="color:#888;">Last pressed:</span>
+        <span id="lastPressed" style="font-weight:bold;color:#1a6a3a;">—</span>
+      </div>
+      <div>
+        <span style="color:#888;">Layer:</span>
+        <select id="keyMapLayerSelect" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;" onchange="setActiveLayer(this.value)">
+          <option value="0">Layer 0 (base)</option>
+        </select>
+        <button class="chord-record-btn" onclick="addLayer()" style="padding:3px 8px;font-size:11px;">+ Layer</button>
+      </div>
     </div>
-    <div class="held-buttons" id="heldButtons"></div>
+    <div id="keyMapEditor" style="display:none;padding:10px;background:#f8f8fa;border-radius:4px;margin-top:8px;">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <span id="keyMapLabel" style="font-weight:bold;color:#8b0000;min-width:40px;"></span>
+        <select id="keyMapType" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;">
+          <option value="key">Keystroke</option>
+          <option value="midi_note">MIDI Note</option>
+          <option value="midi_cc">MIDI CC</option>
+          <option value="osc">OSC</option>
+          <option value="command">Command</option>
+        </select>
+        <input id="keyMapAction" type="text" placeholder="e.g. Ctrl+R" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;width:160px;" />
+        <button class="chord-record-btn" onclick="saveKeyMap()" style="padding:3px 10px;">Save</button>
+      </div>
+    </div>
+    <div id="keyMapList" style="margin-top:10px;"></div>
   </div>
-  <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
-    <button class="chord-record-btn" id="recordBtn" onclick="toggleRecord()">Record Chord</button>
-    <span id="recordHint" style="color:#aaa;font-size:11px;">press buttons on the device, release to capture chord</span>
-  </div>
-  <div class="chord-map-list" id="chordMapList">
-    <div class="no-gamepad" id="emptyChords">no chords mapped yet — hit Record and press some buttons</div>
-  </div>
-  <div style="margin-top:12px;display:flex;gap:8px;">
-    <button class="chord-record-btn" onclick="exportProfile()">Export Profile</button>
-    <button class="chord-record-btn" onclick="importProfile()">Import Profile</button>
-    <button class="chord-record-btn" onclick="clearChords()" style="margin-left:auto;">Clear All Chords</button>
+
+  <!-- Sequence Mapping -->
+  <div class="chord-panel">
+    <h2>Sequence Mapping <span style="font-size:11px;color:#888;font-weight:normal;">(order matters: JS22→JS21 ≠ JS21→JS22)</span></h2>
+    <div class="chord-status">
+      <div>
+        <span id="gamepadStatus">No gamepad detected — plug in your flashed Corne</span>
+        <div class="gamepad-name" id="gamepadName"></div>
+      </div>
+      <div class="held-buttons" id="heldButtons"></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+      <button class="chord-record-btn" id="recordBtn" onclick="toggleRecord()">Record Sequence</button>
+      <span id="recordHint" style="color:#aaa;font-size:11px;"></span>
+      <div id="recordingSeq" style="display:flex;gap:2px;"></div>
+    </div>
+    <div class="chord-map-list" id="chordMapList">
+      <div class="no-gamepad" id="emptyChords">no sequences mapped yet — hit Record and press buttons in order</div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px;">
+      <button class="chord-record-btn" onclick="exportProfile()">Export Profile</button>
+      <button class="chord-record-btn" onclick="importProfile()">Import Profile</button>
+      <button class="chord-record-btn" onclick="clearChords()" style="margin-left:auto;">Clear All</button>
+    </div>
   </div>
 </div>
 
@@ -1097,6 +1137,88 @@ function browserToEvdev(code) {
   return map[code] || null
 }
 
+// ── Mode Toggle ──
+let currentMode = 'discovery'
+
+function setMode(mode) {
+  currentMode = mode
+  document.getElementById('discoverySection').style.display = mode === 'discovery' ? '' : 'none'
+  document.getElementById('discoveryToolbar').style.display = mode === 'discovery' ? '' : 'none'
+  document.getElementById('mappingSection').style.display = mode === 'mapping' ? '' : 'none'
+
+  const dBtn = document.getElementById('modeDiscovery')
+  const mBtn = document.getElementById('modeMapping')
+  if (mode === 'discovery') {
+    dBtn.style.background = '#e0f5ea'; dBtn.style.borderColor = '#4aea8a'; dBtn.style.color = '#1a6a3a'
+    mBtn.style.background = ''; mBtn.style.borderColor = ''; mBtn.style.color = ''
+  } else {
+    mBtn.style.background = '#e0f5ea'; mBtn.style.borderColor = '#4aea8a'; mBtn.style.color = '#1a6a3a'
+    dBtn.style.background = ''; dBtn.style.borderColor = ''; dBtn.style.color = ''
+    updateKeyMapList()
+    updateLayerDropdowns()
+  }
+}
+
+// ── Key Mapping (single key → action) ──
+let lastPressedBtn = null
+
+function onGamepadKeyForMapping(btn) {
+  lastPressedBtn = btn
+  const label = 'JS' + btn
+  document.getElementById('lastPressed').textContent = label
+  document.getElementById('keyMapLabel').textContent = label
+  document.getElementById('keyMapEditor').style.display = ''
+
+  // load existing assignment
+  const key = `${activeLayer}_${label}`
+  const a = keyAssignments[key]
+  document.getElementById('keyMapType').value = a ? a.type : 'key'
+  document.getElementById('keyMapAction').value = a ? a.action : ''
+}
+
+function saveKeyMap() {
+  if (lastPressedBtn === null) return
+  const label = 'JS' + lastPressedBtn
+  const key = `${activeLayer}_${label}`
+  keyAssignments[key] = {
+    type: document.getElementById('keyMapType').value,
+    action: document.getElementById('keyMapAction').value,
+  }
+  saveProfile()
+  updateKeyLabels()
+  updateKeyMapList()
+}
+
+function updateKeyMapList() {
+  const list = document.getElementById('keyMapList')
+  list.innerHTML = ''
+  const prefix = `${activeLayer}_`
+  const entries = Object.entries(keyAssignments).filter(([k]) => k.startsWith(prefix))
+  if (entries.length === 0) {
+    list.innerHTML = '<div style="color:#aaa;font-size:11px;padding:8px;">no keys mapped on this layer yet</div>'
+    return
+  }
+  for (const [k, v] of entries) {
+    const jsLabel = k.replace(prefix, '')
+    const div = document.createElement('div')
+    div.className = 'chord-entry'
+    div.innerHTML = `
+      <div class="chord-combo"><span class="btn-pill">${jsLabel}</span></div>
+      <span class="chord-arrow">\u2192</span>
+      <div style="flex:1;font-size:12px;"><span style="color:#888;">[${v.type}]</span> ${v.action}</div>
+      <button class="chord-delete" onclick="deleteKeyMap('${k}', this)">\u00d7</button>
+    `
+    list.appendChild(div)
+  }
+}
+
+function deleteKeyMap(key, btn) {
+  delete keyAssignments[key]
+  btn.closest('.chord-entry').remove()
+  saveProfile()
+  updateKeyLabels()
+}
+
 // warn before leaving page
 window.addEventListener('beforeunload', (e) => {
   if (totalEvents > 0) {
@@ -1121,53 +1243,18 @@ let sequences = []
 // key assignments: {'0_JS2': {type:'key', action:'r'}}
 let keyAssignments = {}
 
-// ── Key click assignment ──
-let selectedKey = null
-
-function onKeyClick(el) {
-  const jsLabel = el.dataset.assignedLabel || el.textContent
-  if (!jsLabel.startsWith('JS')) return
-  selectedKey = jsLabel
-  document.getElementById('assignKeyLabel').textContent = jsLabel
-  document.getElementById('keyAssignPanel').style.display = ''
-  const sel = document.getElementById('assignLayer')
-  sel.innerHTML = layers.map((l, i) =>
-    `<option value="${i}"${i === activeLayer ? ' selected' : ''}>Layer ${i} (${l.name})</option>`
-  ).join('')
-  loadKeyAssignment()
-  document.querySelectorAll('#layout-corne-r .key').forEach(k => k.classList.remove('selected'))
-  el.classList.add('selected')
-}
-
-function loadKeyAssignment() {
-  const layer = document.getElementById('assignLayer').value
-  const key = `${layer}_${selectedKey}`
-  const a = keyAssignments[key]
-  document.getElementById('assignType').value = a ? a.type : 'key'
-  document.getElementById('assignAction').value = a ? a.action : ''
-}
-
-function saveKeyAssignment() {
-  const layer = document.getElementById('assignLayer').value
-  const key = `${layer}_${selectedKey}`
-  keyAssignments[key] = {
-    type: document.getElementById('assignType').value,
-    action: document.getElementById('assignAction').value,
-  }
-  saveProfile()
-  updateKeyLabels()
-}
-
-function closeKeyAssign() {
-  document.getElementById('keyAssignPanel').style.display = 'none'
-  document.querySelectorAll('#layout-corne-r .key').forEach(k => k.classList.remove('selected'))
-  selectedKey = null
-}
-
-// make corne keys clickable
+// make corne keys clickable — opens key map editor in mapping mode
 document.querySelectorAll('#layout-corne-r .key').forEach(el => {
   el.style.cursor = 'pointer'
-  el.addEventListener('click', () => onKeyClick(el))
+  el.addEventListener('click', () => {
+    const jsLabel = el.dataset.assignedLabel || el.textContent
+    if (!jsLabel.startsWith('JS')) return
+    if (currentMode !== 'mapping') setMode('mapping')
+    const btn = parseInt(jsLabel.replace('JS', ''))
+    if (!isNaN(btn)) onGamepadKeyForMapping(btn)
+    document.querySelectorAll('#layout-corne-r .key').forEach(k => k.classList.remove('selected'))
+    el.classList.add('selected')
+  })
 })
 
 // ── Layers ──
@@ -1189,7 +1276,10 @@ function updateLayerDropdowns() {
   const options = layers.map((l, i) =>
     `<option value="${i}"${i === activeLayer ? ' selected' : ''}>Layer ${i} (${l.name})</option>`
   ).join('')
-  document.getElementById('activeLayerSelect').innerHTML = options
+  const activeLayerEl = document.getElementById('keyMapLayerSelect')
+  if (activeLayerEl) activeLayerEl.innerHTML = options
+  const keyMapLayerEl = document.getElementById('keyMapLayerSelect')
+  if (keyMapLayerEl) keyMapLayerEl.innerHTML = options
 }
 
 function updateKeyLabels() {
@@ -1280,6 +1370,11 @@ function pollGamepad() {
 }
 
 function onButtonDown(btn) {
+  // key mapping — show last pressed in mapping mode
+  if (currentMode === 'mapping') {
+    onGamepadKeyForMapping(btn)
+  }
+
   if (recording || sequenceTimeout) {
     recordedSequence.push(btn)
     updateRecordingDisplay()
@@ -1412,7 +1507,7 @@ function matchSequence(seq) {
     const idx = parseInt(entry.action)
     if (idx >= 0 && idx < layers.length) {
       activeLayer = idx
-      document.getElementById('activeLayerSelect').value = idx
+      document.getElementById('keyMapLayerSelect').value = idx
       updateKeyLabels()
       addLogEntry(`SEQ  ${seq.map(b=>'JS'+b).join('\u2192')}  \u2192 LAYER ${layers[idx].name}`, 'down')
     }
