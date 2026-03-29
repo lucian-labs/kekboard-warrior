@@ -191,13 +191,13 @@
     gap: 3px;
   }
 
-  /* column stagger — mirrored: pinky on left, index on right */
-  .corne-right .main-rows .row .key:nth-child(1) { margin-top: 16px; }  /* pinky col */
-  .corne-right .main-rows .row .key:nth-child(2) { margin-top: 12px; }
-  .corne-right .main-rows .row .key:nth-child(3) { margin-top: 4px; }
-  .corne-right .main-rows .row .key:nth-child(4) { margin-top: 0px; }   /* home col */
-  .corne-right .main-rows .row .key:nth-child(5) { margin-top: 2px; }
-  .corne-right .main-rows .row .key:nth-child(6) { margin-top: 8px; }   /* inner col */
+  /* column stagger — inner on left, pinky on right */
+  .corne-right .main-rows .row .key:nth-child(1) { margin-top: 8px; }   /* inner col */
+  .corne-right .main-rows .row .key:nth-child(2) { margin-top: 2px; }
+  .corne-right .main-rows .row .key:nth-child(3) { margin-top: 0px; }   /* home col */
+  .corne-right .main-rows .row .key:nth-child(4) { margin-top: 4px; }
+  .corne-right .main-rows .row .key:nth-child(5) { margin-top: 12px; }
+  .corne-right .main-rows .row .key:nth-child(6) { margin-top: 16px; }  /* pinky col */
 
   .corne-right .extra-col {
     display: flex;
@@ -448,6 +448,12 @@
     box-shadow: 0 1px 8px rgba(192, 154, 248, 0.4);
   }
 
+  .key.selected {
+    border-color: #8b0000;
+    box-shadow: 0 0 8px rgba(139, 0, 0, 0.3);
+    color: #8b0000;
+  }
+
   .key .count {
     position: absolute;
     top: 2px;
@@ -559,7 +565,7 @@
 <body>
 
 <h1>Kekboard Warrior — Mapping for <span style="color:#8b0000;">HONOR</span></h1>
-<div class="subtitle">press keys to map them — unknown codes appear on the right</div>
+<div class="subtitle">customize any QMK device in minutes!</div>
 
 <div class="device-selector">
   <label>device:</label>
@@ -571,7 +577,13 @@
   </select>
 </div>
 
-<div class="toolbar">
+<!-- ── Mode Toggle ── -->
+<div style="display:flex;gap:4px;margin-bottom:16px;">
+  <button class="chord-record-btn" id="modeDiscovery" onclick="setMode('discovery')" style="background:#e0f5ea;border-color:#4aea8a;color:#1a6a3a;">Discovery</button>
+  <button class="chord-record-btn" id="modeMapping" onclick="setMode('mapping')">Mapping</button>
+</div>
+
+<div class="toolbar" id="discoveryToolbar">
   <button onclick="clearAll()" class="danger">Clear All</button>
   <button onclick="saveMap()">Save Map</button>
   <div class="stats">
@@ -589,41 +601,41 @@
     </div>
     <div class="corne-inner">
       <div class="corne-body">
-        <div class="main-rows">
-          <div class="row">
-            <div class="key" data-key="CR_R0C5" data-pos="0,5">JS7</div>
-            <div class="key" data-key="CR_R0C4" data-pos="0,4">JS6</div>
-            <div class="key" data-key="CR_R0C3" data-pos="0,3">JS5</div>
-            <div class="key" data-key="CR_R0C2" data-pos="0,2">JS4</div>
-            <div class="key" data-key="CR_R0C1" data-pos="0,1">JS3</div>
-            <div class="key" data-key="CR_R0C0" data-pos="0,0">JS2</div>
-          </div>
-          <div class="row">
-            <div class="key" data-key="CR_R1C5" data-pos="1,5">JS13</div>
-            <div class="key" data-key="CR_R1C4" data-pos="1,4">JS12</div>
-            <div class="key" data-key="CR_R1C3" data-pos="1,3">JS11</div>
-            <div class="key" data-key="CR_R1C2" data-pos="1,2">JS10</div>
-            <div class="key" data-key="CR_R1C1" data-pos="1,1">JS9</div>
-            <div class="key" data-key="CR_R1C0" data-pos="1,0">JS8</div>
-          </div>
-          <div class="row">
-            <div class="key" data-key="CR_R2C5" data-pos="2,5">JS19</div>
-            <div class="key" data-key="CR_R2C4" data-pos="2,4">JS18</div>
-            <div class="key" data-key="CR_R2C3" data-pos="2,3">JS17</div>
-            <div class="key" data-key="CR_R2C2" data-pos="2,2">JS16</div>
-            <div class="key" data-key="CR_R2C1" data-pos="2,1">JS15</div>
-            <div class="key" data-key="CR_R2C0" data-pos="2,0">JS14</div>
-          </div>
-        </div>
         <div class="extra-col">
           <div class="key thumb-key" data-key="CR_EX0" data-pos="e,0" style="width:44px;height:38px;">JS0</div>
           <div class="key thumb-key" data-key="CR_EX1" data-pos="e,1" style="width:44px;height:38px;">JS1</div>
         </div>
+        <div class="main-rows">
+          <div class="row">
+            <div class="key" data-key="CR_R0C0" data-pos="0,0">JS2</div>
+            <div class="key" data-key="CR_R0C1" data-pos="0,1">JS3</div>
+            <div class="key" data-key="CR_R0C2" data-pos="0,2">JS4</div>
+            <div class="key" data-key="CR_R0C3" data-pos="0,3">JS5</div>
+            <div class="key" data-key="CR_R0C4" data-pos="0,4">JS6</div>
+            <div class="key" data-key="CR_R0C5" data-pos="0,5">JS7</div>
+          </div>
+          <div class="row">
+            <div class="key" data-key="CR_R1C0" data-pos="1,0">JS8</div>
+            <div class="key" data-key="CR_R1C1" data-pos="1,1">JS9</div>
+            <div class="key" data-key="CR_R1C2" data-pos="1,2">JS10</div>
+            <div class="key" data-key="CR_R1C3" data-pos="1,3">JS11</div>
+            <div class="key" data-key="CR_R1C4" data-pos="1,4">JS12</div>
+            <div class="key" data-key="CR_R1C5" data-pos="1,5">JS13</div>
+          </div>
+          <div class="row">
+            <div class="key" data-key="CR_R2C0" data-pos="2,0">JS14</div>
+            <div class="key" data-key="CR_R2C1" data-pos="2,1">JS15</div>
+            <div class="key" data-key="CR_R2C2" data-pos="2,2">JS16</div>
+            <div class="key" data-key="CR_R2C3" data-pos="2,3">JS17</div>
+            <div class="key" data-key="CR_R2C4" data-pos="2,4">JS18</div>
+            <div class="key" data-key="CR_R2C5" data-pos="2,5">JS19</div>
+          </div>
+        </div>
       </div>
       <div class="thumb-row">
-        <div class="key thumb-key" data-key="CR_T2" data-pos="3,2">JS22</div>
-        <div class="key thumb-key" data-key="CR_T1" data-pos="3,1">JS21</div>
         <div class="key thumb-key" data-key="CR_T0" data-pos="3,0">JS20</div>
+        <div class="key thumb-key" data-key="CR_T1" data-pos="3,1">JS21</div>
+        <div class="key thumb-key" data-key="CR_T2" data-pos="3,2">JS22</div>
       </div>
     </div>
   </div>
@@ -965,8 +977,13 @@ function flashKey(keyName, isDown) {
   return true
 }
 
-// SSE connection
+// SSE connection — only when served via HTTP (not file://)
 function connect() {
+  if (location.protocol === 'file:') {
+    const status = document.getElementById('connStatus')
+    status.innerHTML = '<span class="dot green"></span><span>standalone mode</span>'
+    return
+  }
   const status = document.getElementById('connStatus')
   const evtSource = new EventSource('/events')
 
@@ -1088,12 +1105,107 @@ window.addEventListener('beforeunload', (e) => {
   }
 })
 
-// ── Gamepad + Chord Engine ──
+// ── Gamepad + Ordered Sequence Engine ──
 let gamepad = null
 let heldButtons = new Set()
-let peakChord = new Set() // tracks the max buttons held during a press
 let recording = false
-let chordMap = [] // [{combo: [0,2,8], type: 'key', action: 'r'}, ...]
+let recordedSequence = []  // ordered list of button presses
+let sequenceTimeout = null
+const SEQ_TIMEOUT = 500    // ms after last release to finalize sequence
+
+// layers
+let layers = [{ name: 'base', color: '#e0f5ea' }]
+let activeLayer = 0
+// sequences: [{seq: [22,21], type: 'layer', action: '1', layer: 0}]
+let sequences = []
+// key assignments: {'0_JS2': {type:'key', action:'r'}}
+let keyAssignments = {}
+
+// ── Key click assignment ──
+let selectedKey = null
+
+function onKeyClick(el) {
+  const jsLabel = el.dataset.assignedLabel || el.textContent
+  if (!jsLabel.startsWith('JS')) return
+  selectedKey = jsLabel
+  document.getElementById('assignKeyLabel').textContent = jsLabel
+  document.getElementById('keyAssignPanel').style.display = ''
+  const sel = document.getElementById('assignLayer')
+  sel.innerHTML = layers.map((l, i) =>
+    `<option value="${i}"${i === activeLayer ? ' selected' : ''}>Layer ${i} (${l.name})</option>`
+  ).join('')
+  loadKeyAssignment()
+  document.querySelectorAll('#layout-corne-r .key').forEach(k => k.classList.remove('selected'))
+  el.classList.add('selected')
+}
+
+function loadKeyAssignment() {
+  const layer = document.getElementById('assignLayer').value
+  const key = `${layer}_${selectedKey}`
+  const a = keyAssignments[key]
+  document.getElementById('assignType').value = a ? a.type : 'key'
+  document.getElementById('assignAction').value = a ? a.action : ''
+}
+
+function saveKeyAssignment() {
+  const layer = document.getElementById('assignLayer').value
+  const key = `${layer}_${selectedKey}`
+  keyAssignments[key] = {
+    type: document.getElementById('assignType').value,
+    action: document.getElementById('assignAction').value,
+  }
+  saveProfile()
+  updateKeyLabels()
+}
+
+function closeKeyAssign() {
+  document.getElementById('keyAssignPanel').style.display = 'none'
+  document.querySelectorAll('#layout-corne-r .key').forEach(k => k.classList.remove('selected'))
+  selectedKey = null
+}
+
+// make corne keys clickable
+document.querySelectorAll('#layout-corne-r .key').forEach(el => {
+  el.style.cursor = 'pointer'
+  el.addEventListener('click', () => onKeyClick(el))
+})
+
+// ── Layers ──
+function addLayer() {
+  const name = prompt('Layer name:')
+  if (!name) return
+  layers.push({ name, color: '#e0e8f8' })
+  updateLayerDropdowns()
+  saveProfile()
+}
+
+function setActiveLayer(idx) {
+  activeLayer = parseInt(idx)
+  addLogEntry(`Layer -> ${layers[activeLayer].name}`, 'down')
+  updateKeyLabels()
+}
+
+function updateLayerDropdowns() {
+  const options = layers.map((l, i) =>
+    `<option value="${i}"${i === activeLayer ? ' selected' : ''}>Layer ${i} (${l.name})</option>`
+  ).join('')
+  document.getElementById('activeLayerSelect').innerHTML = options
+}
+
+function updateKeyLabels() {
+  document.querySelectorAll('#layout-corne-r .key').forEach(el => {
+    const jsLabel = el.dataset.assignedLabel || el.textContent
+    if (!jsLabel.startsWith('JS')) return
+    const key = `${activeLayer}_${jsLabel}`
+    const a = keyAssignments[key]
+    if (a && a.action) {
+      el.dataset.assignedLabel = jsLabel
+      el.textContent = a.action.length > 5 ? a.action.slice(0, 5) : a.action
+    } else if (el.dataset.assignedLabel) {
+      el.textContent = el.dataset.assignedLabel
+    }
+  })
+}
 
 // gamepad detection
 window.addEventListener('gamepadconnected', (e) => {
@@ -1138,9 +1250,9 @@ function pollGamepad() {
     }
   }
 
-  // check if all released (chord complete)
-  if (heldButtons.size > 0 && nowHeld.size === 0) {
-    onChordComplete()
+  // all buttons released — sequence timeout handles completion
+  if (heldButtons.size > 0 && nowHeld.size === 0 && recordedSequence.length === 0) {
+    // no sequence in progress, nothing to do
   }
 
   heldButtons = nowHeld
@@ -1168,26 +1280,44 @@ function pollGamepad() {
 }
 
 function onButtonDown(btn) {
-  peakChord.add(btn)
+  if (recording || sequenceTimeout) {
+    recordedSequence.push(btn)
+    updateRecordingDisplay()
+    clearTimeout(sequenceTimeout)
+    sequenceTimeout = null
+  }
 }
 
 function onButtonUp(btn) {
-  // nothing special per-button
+  if (recordedSequence.length > 0) {
+    clearTimeout(sequenceTimeout)
+    sequenceTimeout = setTimeout(() => {
+      onSequenceComplete()
+      sequenceTimeout = null
+    }, SEQ_TIMEOUT)
+  }
 }
 
-function onChordComplete() {
-  if (peakChord.size === 0) return
-  const combo = [...peakChord].sort((a, b) => a - b)
-  peakChord.clear()
+function updateRecordingDisplay() {
+  const el = document.getElementById('recordingSeq')
+  el.innerHTML = recordedSequence
+    .map(b => `<span class="btn-pill recording">JS${b}</span>`)
+    .join('<span style="color:#ccc;margin:0 1px;">\u2192</span>')
+}
+
+function onSequenceComplete() {
+  if (recordedSequence.length === 0) return
+  const seq = [...recordedSequence]
+  recordedSequence = []
+  document.getElementById('recordingSeq').innerHTML = ''
 
   if (recording) {
     recording = false
     document.getElementById('recordBtn').classList.remove('active')
     document.getElementById('recordHint').textContent = ''
-    addChordEntry(combo)
+    addSequenceEntry(seq)
   } else {
-    // try to fire matched chord
-    fireChord(combo)
+    matchSequence(seq)
   }
 }
 
@@ -1196,198 +1326,157 @@ function toggleRecord() {
   const btn = document.getElementById('recordBtn')
   const hint = document.getElementById('recordHint')
   btn.classList.toggle('active', recording)
-  hint.textContent = recording
-    ? 'press buttons on the device, release to capture chord'
-    : ''
-  peakChord.clear()
+  hint.textContent = recording ? 'press buttons in order \u2014 sequence captured after 500ms pause' : ''
+  recordedSequence = []
+  document.getElementById('recordingSeq').innerHTML = ''
+  clearTimeout(sequenceTimeout)
+  sequenceTimeout = null
 }
 
-function addChordEntry(combo) {
-  // check if this combo already exists
-  const comboKey = combo.join('+')
-  const existing = chordMap.find(c => c.combo.join('+') === comboKey)
+function addSequenceEntry(seq) {
+  const seqKey = seq.join('\u2192')
+  const existing = sequences.find(s => s.seq.join('\u2192') === seqKey)
   if (existing) {
-    // flash the existing entry
-    const entries = document.querySelectorAll('.chord-entry')
-    for (const entry of entries) {
-      if (entry.dataset.combo === comboKey) {
-        entry.style.background = '#fff0e0'
-        setTimeout(() => entry.style.background = '', 500)
-      }
-    }
+    const el = document.querySelector(`.chord-entry[data-combo="${seqKey}"]`)
+    if (el) { el.style.background = '#fff0e0'; setTimeout(() => el.style.background = '', 500) }
     return
   }
 
   document.getElementById('emptyChords').style.display = 'none'
-
-  const entry = { combo, type: 'key', action: '' }
-  chordMap.push(entry)
+  const entry = { seq, type: 'key', action: '', layer: activeLayer }
+  sequences.push(entry)
 
   const div = document.createElement('div')
   div.className = 'chord-entry'
-  div.dataset.combo = comboKey
+  div.dataset.combo = seqKey
 
-  const pills = combo.map(b => `<span class="btn-pill">JS${b}</span>`).join('')
+  const pills = seq.map(b => `<span class="btn-pill">JS${b}</span>`)
+    .join('<span style="color:#ccc;margin:0 2px;">\u2192</span>')
 
   div.innerHTML = `
     <div class="chord-combo">${pills}</div>
     <span class="chord-arrow">\u2192</span>
     <div class="chord-action">
-      <select onchange="updateChordType(this, '${comboKey}')">
+      <select onchange="updateSeqType(this, '${seqKey}')">
         <option value="key">Keystroke</option>
+        <option value="layer">Activate Layer</option>
         <option value="midi_note">MIDI Note</option>
         <option value="midi_cc">MIDI CC</option>
         <option value="osc">OSC</option>
         <option value="command">Command</option>
       </select>
-      <input type="text" placeholder="e.g. Ctrl+R" onchange="updateChordAction(this, '${comboKey}')" />
+      <input type="text" placeholder="e.g. Ctrl+R" onchange="updateSeqAction(this, '${seqKey}')" />
     </div>
-    <button class="chord-delete" onclick="removeChord('${comboKey}', this)">\u00d7</button>
+    <button class="chord-delete" onclick="removeSeq('${seqKey}', this)">\u00d7</button>
   `
-
   document.getElementById('chordMapList').appendChild(div)
-  saveChords()
+  saveProfile()
 }
 
-function updateChordType(select, comboKey) {
-  const entry = chordMap.find(c => c.combo.join('+') === comboKey)
-  if (entry) {
-    entry.type = select.value
-    const input = select.parentElement.querySelector('input')
-    const placeholders = {
-      key: 'e.g. Ctrl+R',
-      midi_note: 'e.g. C4 or 60',
-      midi_cc: 'e.g. CC1=127',
-      osc: 'e.g. /track/1/mute',
-      command: 'e.g. play, stop, record',
-    }
-    input.placeholder = placeholders[entry.type] || ''
-    saveChords()
-  }
+function updateSeqType(select, seqKey) {
+  const entry = sequences.find(s => s.seq.join('\u2192') === seqKey)
+  if (!entry) return
+  entry.type = select.value
+  const input = select.parentElement.querySelector('input')
+  const ph = { key:'e.g. Ctrl+R', layer:'e.g. 1', midi_note:'e.g. C4', midi_cc:'e.g. CC1=127', osc:'e.g. /track/1/mute', command:'e.g. play' }
+  input.placeholder = ph[entry.type] || ''
+  saveProfile()
 }
 
-function updateChordAction(input, comboKey) {
-  const entry = chordMap.find(c => c.combo.join('+') === comboKey)
-  if (entry) {
-    entry.action = input.value
-    saveChords()
-  }
+function updateSeqAction(input, seqKey) {
+  const entry = sequences.find(s => s.seq.join('\u2192') === seqKey)
+  if (entry) { entry.action = input.value; saveProfile() }
 }
 
-function removeChord(comboKey, btn) {
-  chordMap = chordMap.filter(c => c.combo.join('+') !== comboKey)
+function removeSeq(seqKey, btn) {
+  sequences = sequences.filter(s => s.seq.join('\u2192') !== seqKey)
   btn.closest('.chord-entry').remove()
-  if (chordMap.length === 0) {
-    document.getElementById('emptyChords').style.display = ''
-  }
-  saveChords()
+  if (sequences.length === 0) document.getElementById('emptyChords').style.display = ''
+  saveProfile()
 }
 
 function clearChords() {
-  chordMap = []
-  const list = document.getElementById('chordMapList')
-  list.querySelectorAll('.chord-entry').forEach(e => e.remove())
+  sequences = []
+  document.getElementById('chordMapList').querySelectorAll('.chord-entry').forEach(e => e.remove())
   document.getElementById('emptyChords').style.display = ''
-  saveChords()
+  saveProfile()
 }
 
-function fireChord(combo) {
-  const comboKey = combo.join('+')
-  const entry = chordMap.find(c => c.combo.join('+') === comboKey)
+function matchSequence(seq) {
+  const seqKey = seq.join('\u2192')
+  const entry = sequences.find(s => s.seq.join('\u2192') === seqKey && s.layer === activeLayer)
+    || sequences.find(s => s.seq.join('\u2192') === seqKey)
   if (!entry || !entry.action) return
 
-  // flash the matched entry
-  const entries = document.querySelectorAll('.chord-entry')
-  for (const el of entries) {
-    if (el.dataset.combo === comboKey) {
-      el.style.borderLeftColor = '#4aea8a'
-      el.style.background = '#e0f5ea'
-      setTimeout(() => { el.style.borderLeftColor = ''; el.style.background = '' }, 300)
+  if (entry.type === 'layer') {
+    const idx = parseInt(entry.action)
+    if (idx >= 0 && idx < layers.length) {
+      activeLayer = idx
+      document.getElementById('activeLayerSelect').value = idx
+      updateKeyLabels()
+      addLogEntry(`SEQ  ${seq.map(b=>'JS'+b).join('\u2192')}  \u2192 LAYER ${layers[idx].name}`, 'down')
     }
+    return
   }
 
-  addLogEntry(`CHORD  ${combo.map(b => 'JS' + b).join('+')}  \u2192  [${entry.type}] ${entry.action}`, 'down')
+  const el = document.querySelector(`.chord-entry[data-combo="${seqKey}"]`)
+  if (el) {
+    el.style.borderLeftColor = '#4aea8a'; el.style.background = '#e0f5ea'
+    setTimeout(() => { el.style.borderLeftColor = ''; el.style.background = '' }, 300)
+  }
+  addLogEntry(`SEQ  ${seq.map(b=>'JS'+b).join('\u2192')}  \u2192 [${entry.type}] ${entry.action}`, 'down')
 }
 
-// persist to localStorage
-function saveChords() {
-  localStorage.setItem('kekboard-chords', JSON.stringify(chordMap))
+// ── Persistence ──
+function saveProfile() {
+  localStorage.setItem('kekboard-profile', JSON.stringify({ layers, sequences, keyAssignments, activeLayer }))
 }
 
-function loadChords() {
+function loadProfile() {
   try {
-    const saved = JSON.parse(localStorage.getItem('kekboard-chords'))
-    if (saved && saved.length) {
-      for (const entry of saved) {
-        addChordEntry(entry.combo)
-        // set type and action
-        const comboKey = entry.combo.join('+')
-        const el = document.querySelector(`.chord-entry[data-combo="${comboKey}"]`)
+    const saved = JSON.parse(localStorage.getItem('kekboard-profile'))
+    if (!saved) return
+    if (saved.layers) { layers = saved.layers; updateLayerDropdowns() }
+    if (saved.activeLayer != null) activeLayer = saved.activeLayer
+    if (saved.keyAssignments) { keyAssignments = saved.keyAssignments; updateKeyLabels() }
+    if (saved.sequences) {
+      for (const entry of saved.sequences) {
+        addSequenceEntry(entry.seq)
+        const seqKey = entry.seq.join('\u2192')
+        const el = document.querySelector(`.chord-entry[data-combo="${seqKey}"]`)
         if (el) {
-          const select = el.querySelector('select')
-          const input = el.querySelector('input')
-          select.value = entry.type
-          input.value = entry.action || ''
-          // update in-memory
-          const m = chordMap.find(c => c.combo.join('+') === comboKey)
-          if (m) { m.type = entry.type; m.action = entry.action }
+          el.querySelector('select').value = entry.type
+          el.querySelector('input').value = entry.action || ''
         }
+        const m = sequences.find(s => s.seq.join('\u2192') === seqKey)
+        if (m) { m.type = entry.type; m.action = entry.action; m.layer = entry.layer }
       }
     }
   } catch (e) {}
 }
 
 function exportProfile() {
-  const profile = {
-    name: 'kekboard-warrior',
-    device: 'Corne Choc v4 Right Half',
-    buttons: 23,
-    chords: chordMap,
-    exported: new Date().toISOString(),
-  }
+  const profile = { name:'kekboard-warrior', device:'Corne Choc v4', buttons:23, layers, sequences, keyAssignments, exported:new Date().toISOString() }
   const blob = new Blob([JSON.stringify(profile, null, 2)], { type: 'application/json' })
-  const a = document.createElement('a')
-  a.href = URL.createObjectURL(blob)
-  a.download = 'kekboard-profile.json'
-  a.click()
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'kekboard-profile.json'; a.click()
 }
 
 function importProfile() {
-  const input = document.createElement('input')
-  input.type = 'file'
-  input.accept = '.json'
+  const input = document.createElement('input'); input.type = 'file'; input.accept = '.json'
   input.onchange = async (e) => {
-    const file = e.target.files[0]
-    if (!file) return
-    const text = await file.text()
+    const file = e.target.files[0]; if (!file) return
     try {
-      const profile = JSON.parse(text)
-      if (profile.chords) {
-        clearChords()
-        for (const entry of profile.chords) {
-          addChordEntry(entry.combo)
-          const comboKey = entry.combo.join('+')
-          const el = document.querySelector(`.chord-entry[data-combo="${comboKey}"]`)
-          if (el) {
-            const select = el.querySelector('select')
-            const inp = el.querySelector('input')
-            select.value = entry.type
-            inp.value = entry.action || ''
-            const m = chordMap.find(c => c.combo.join('+') === comboKey)
-            if (m) { m.type = entry.type; m.action = entry.action }
-          }
-        }
-        saveChords()
-      }
-    } catch (err) {
-      alert('Invalid profile file')
-    }
+      const p = JSON.parse(await file.text())
+      if (p.layers) layers = p.layers
+      if (p.sequences) { clearChords(); for (const s of p.sequences) addSequenceEntry(s.seq) }
+      if (p.keyAssignments) keyAssignments = p.keyAssignments
+      updateLayerDropdowns(); updateKeyLabels(); saveProfile()
+    } catch (err) { alert('Invalid profile file') }
   }
   input.click()
 }
 
-// load saved chords on startup
-loadChords()
+loadProfile()
 
 // ── Corne right half layer definitions ──
 const corneLayers = {
