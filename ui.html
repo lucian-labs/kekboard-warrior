@@ -579,7 +579,8 @@
   <select id="presetSelect" onchange="loadPreset(this.value)" style="background:#fff;color:#333;border:1px solid #ccc;padding:5px 10px;font-family:inherit;font-size:12px;border-radius:4px;">
     <option value="">— none —</option>
   </select>
-  <button class="chord-record-btn" onclick="savePreset()" style="padding:5px 10px;font-size:11px;">Save Preset</button>
+  <button class="chord-record-btn" onclick="savePreset()" style="padding:5px 10px;font-size:11px;">Save</button>
+  <button class="chord-record-btn" onclick="newPreset()" style="padding:5px 10px;font-size:11px;">New</button>
   <div style="margin-left:auto;display:flex;gap:4px;">
     <button class="chord-record-btn" id="modeDiscovery" onclick="setMode('discovery')" style="background:#e0f5ea;border-color:#4aea8a;color:#1a6a3a;">Discovery</button>
     <button class="chord-record-btn" id="modeMapping" onclick="setMode('mapping')">Mapping</button>
@@ -587,7 +588,6 @@
 </div>
 
 <div class="toolbar" id="discoveryToolbar">
-  <button onclick="clearAll()" class="danger">Clear All</button>
   <button onclick="saveMap()">Save Map</button>
   <div class="stats">
     discovered: <span id="knownCount">0</span> |
@@ -953,9 +953,6 @@
       <div class="no-gamepad" id="emptyChords">no sequences mapped yet — hit Record and press buttons in order</div>
     </div>
     <div style="margin-top:12px;display:flex;gap:8px;">
-      <button class="chord-record-btn" onclick="exportProfile()">Export Profile</button>
-      <button class="chord-record-btn" onclick="importProfile()">Import Profile</button>
-      <button class="chord-record-btn" onclick="clearAll()" style="margin-left:auto;">Clear All</button>
     </div>
   </div>
 
@@ -1878,14 +1875,6 @@ function clearSequences() {
   document.getElementById('emptyChords').style.display = ''
 }
 
-function clearAll() {
-  clearSequences()
-  keyAssignments = {}
-  document.getElementById('keyMapEditor').style.display = 'none'
-  updateKeyLabels()
-  updateKeyMapList()
-  saveProfile()
-}
 
 function matchSequence(seq) {
   const seqKey = seqToKey(seq)
@@ -1961,25 +1950,29 @@ function loadProfile() {
   } catch (e) {}
 }
 
-function exportProfile() {
-  const profile = { name:'kekboard-warrior', device:'Corne Choc v4', buttons:23, layers, sequences, keyAssignments, presetRules, deviceNotes, exported:new Date().toISOString() }
-  const blob = new Blob([JSON.stringify(profile, null, 2)], { type: 'application/json' })
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'kekboard-profile.json'; a.click()
-}
-
-function importProfile() {
-  const input = document.createElement('input'); input.type = 'file'; input.accept = '.json'
-  input.onchange = async (e) => {
-    const file = e.target.files[0]; if (!file) return
-    try {
-      const p = JSON.parse(await file.text())
-      if (p.layers) layers = p.layers
-      if (p.sequences) { clearSequences(); for (const s of p.sequences) addSequenceEntry(s.seq) }
-      if (p.keyAssignments) keyAssignments = p.keyAssignments
-      updateLayerDropdowns(); updateKeyLabels(); saveProfile()
-    } catch (err) { alert('Invalid profile file') }
+function newPreset() {
+  const name = prompt('New preset name:')
+  if (!name) return
+  const skeleton = {
+    name, device: activeDevice, buttons: 23,
+    layers: [{ name: 'base', color: '#e0f5ea' }],
+    sequences: [], keyAssignments: {}, presetRules: [], deviceNotes: [],
   }
-  input.click()
+  // save to server
+  fetch(`/api/config/${activeDevice}/presets/${name}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(skeleton),
+  }).then(() => {
+    // add to dropdown and select it
+    const sel = document.getElementById('presetSelect')
+    const opt = document.createElement('option')
+    opt.value = name; opt.textContent = name
+    sel.appendChild(opt)
+    sel.value = name
+    loadPreset(name)
+    updateURLParams()
+  }).catch(() => {})
 }
 
 loadProfile()
