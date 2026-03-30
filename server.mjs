@@ -202,12 +202,13 @@ function generateKeymapC(device, preset) {
   // Right row1: ex2(5,6), 5,0..5,5  (slots 21-27)
   // Right row2: 6,0..6,5            (slots 34-39)
   // Right thumb: 7,3, 7,4, 7,5      (slots 43-45)
-  // QMK LAYOUT_split_3x6_3_ex2 right half: cols are REVERSED (6,5,4,3,2,1,0)
+  // rightSlots: UI matrix positions in LAYOUT order
+  // QMK reverses cols internally — rightSlots uses UI notation (matches device.json/gamepad)
   const rightSlots = [
-    '4,6', '4,5', '4,4', '4,3', '4,2', '4,1', '4,0',   // ex1 + row0 (reversed)
-    '5,6', '5,5', '5,4', '5,3', '5,2', '5,1', '5,0',   // ex2 + row1 (reversed)
-    '6,5', '6,4', '6,3', '6,2', '6,1', '6,0',           // row2 (reversed)
-    '7,5', '7,4', '7,3',                                  // thumb (reversed)
+    '4,6', '4,0', '4,1', '4,2', '4,3', '4,4', '4,5',   // ex1 + row0
+    '5,6', '5,0', '5,1', '5,2', '5,3', '5,4', '5,5',   // ex2 + row1
+    '6,0', '6,1', '6,2', '6,3', '6,4', '6,5',           // row2
+    '7,3', '7,4', '7,5',                                  // thumb
   ]
 
   // Left half mirrors: same JS buttons, same layout
