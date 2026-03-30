@@ -230,7 +230,7 @@ function generateKeymapC(device, preset) {
 
     // Build right half keycodes
     const rightCodes = rightSlots.map(matrix => {
-      // force QK_BOOT on layer 2 at 7,3 (hold MO(2) + press 7,3 = bootloader)
+      // force QK_BOOT on layer 2 at UI 7,3 / inner thumb (hold MO(2) + press inner thumb)
       if (li === 2 && matrix === '7,3') return 'QK_BOOT'
       const entry = layerKeys[matrix]
       if (entry) return actionToQMK(entry.type, entry.action)
@@ -284,7 +284,9 @@ function generateKeymapC(device, preset) {
           // skip boot key position — QK_BOOT takes priority
           if (li === 2 && matrix === '7,3') continue
           const [row, col] = matrix.split(',').map(Number)
-          midiCcEntries.push({ layer: li, row, col, cc: parseInt(m.cc), ch: parseInt(m.ch || '1') - 1, val: parseInt(m.val || '127'), mode: m.mode || 'momentary' })
+          // translate UI matrix col to QMK actual matrix col (right half cols are reversed)
+          const qmkCol = col === 6 ? 6 : row === 7 ? (8 - col) : (5 - col)
+          midiCcEntries.push({ layer: li, row, col: qmkCol, cc: parseInt(m.cc), ch: parseInt(m.ch || '1') - 1, val: parseInt(m.val || '127'), mode: m.mode || 'momentary' })
         }
       }
     }
