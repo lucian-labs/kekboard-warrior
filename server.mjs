@@ -292,10 +292,16 @@ ${layerStrings.join(',\n\n')}
   const featureMap = {
     midi: 'MIDI_ENABLE = yes',
     mousekeys: 'MOUSEKEY_ENABLE = yes',
+    extrakeys: 'EXTRAKEY_ENABLE = yes',
     rgb: 'RGB_MATRIX_ENABLE = yes',
     audio: 'AUDIO_ENABLE = yes',
     oled: 'OLED_ENABLE = yes',
-    extrakeys: 'EXTRAKEY_ENABLE = yes',
+    nkro: 'NKRO_ENABLE = yes',
+    tapdance: 'TAP_DANCE_ENABLE = yes',
+    leader: 'LEADER_ENABLE = yes',
+    autocorrect: 'AUTOCORRECT_ENABLE = yes',
+    unicode: 'UNICODE_ENABLE = yes',
+    wpm: 'WPM_ENABLE = yes',
   }
   const presetFeatures = preset.features || {}
   const featureLines = Object.entries(featureMap)

@@ -1070,8 +1070,9 @@ function setMode(mode) {
 
 // ── Presets ──
 function renamePreset(newName) {
-  // just update the in-memory name, save will persist it
-  // actual file rename would need a server endpoint — for now just updates the name field in the JSON
+  const sel = document.getElementById('presetSelect')
+  const opt = sel.options[sel.selectedIndex]
+  if (opt && opt.value) opt.textContent = newName || opt.value
   saveProfile()
 }
 
@@ -1118,12 +1119,16 @@ function loadPreset(name) {
       setMode('mapping')
       const nameInput = document.getElementById('presetNameInput')
       if (nameInput) nameInput.value = profile.name || name
+      // update dropdown text to display name
+      const sel = document.getElementById('presetSelect')
+      const opt = sel.options[sel.selectedIndex]
+      if (opt && profile.name && profile.name !== opt.value) opt.textContent = profile.name
 
-      if (profile.layers) layers = profile.layers
-      if (profile.keymap) keymap = profile.keymap
-      if (profile.presetRules) { presetRules = profile.presetRules; renderRules() }
-      if (profile.deviceNotes) { deviceNotes = profile.deviceNotes; renderDeviceNotes() }
-      if (profile.features) { features = profile.features; renderFeatures() }
+      layers = profile.layers || [{ name: 'base', color: '#e0f5ea' }]
+      keymap = profile.keymap || [{}]
+      presetRules = profile.presetRules || []; renderRules()
+      deviceNotes = profile.deviceNotes || []; renderDeviceNotes()
+      features = profile.features || {}; renderFeatures()
       activeLayer = profile.activeLayer || 0
       updateLayerDropdowns()
       syncLayerInputs()
@@ -1194,10 +1199,16 @@ renderRules()
 const FIRMWARE_FEATURES = [
   { key: 'midi', label: 'MIDI', rule: 'MIDI_ENABLE = yes' },
   { key: 'mousekeys', label: 'Mouse Keys', rule: 'MOUSEKEY_ENABLE = yes' },
-  { key: 'rgb', label: 'RGB', rule: 'RGB_MATRIX_ENABLE = yes' },
+  { key: 'extrakeys', label: 'Media/System', rule: 'EXTRAKEY_ENABLE = yes' },
+  { key: 'rgb', label: 'RGB Matrix', rule: 'RGB_MATRIX_ENABLE = yes' },
   { key: 'audio', label: 'Audio', rule: 'AUDIO_ENABLE = yes' },
   { key: 'oled', label: 'OLED', rule: 'OLED_ENABLE = yes' },
-  { key: 'extrakeys', label: 'Media/System Keys', rule: 'EXTRAKEY_ENABLE = yes' },
+  { key: 'nkro', label: 'N-Key Rollover', rule: 'NKRO_ENABLE = yes' },
+  { key: 'tapdance', label: 'Tap Dance', rule: 'TAP_DANCE_ENABLE = yes' },
+  { key: 'leader', label: 'Leader Key', rule: 'LEADER_ENABLE = yes' },
+  { key: 'autocorrect', label: 'Autocorrect', rule: 'AUTOCORRECT_ENABLE = yes' },
+  { key: 'unicode', label: 'Unicode', rule: 'UNICODE_ENABLE = yes' },
+  { key: 'wpm', label: 'WPM Counter', rule: 'WPM_ENABLE = yes' },
 ]
 
 let features = {}
