@@ -1544,10 +1544,13 @@ window.addEventListener('gamepaddisconnected', () => {
   document.getElementById('heldButtons').innerHTML = ''
 })
 
+// track per-button layer at press time for display
+const heldBtnLayers = {} // btn → layer at press time
+let _prevHeldKey = '' // cache key to skip redundant DOM updates
+
 function pollGamepad() {
   if (!gamepad) return
 
-  // refresh gamepad state (required in Chrome)
   const gp = navigator.getGamepads()[gamepad.index]
   if (!gp) { requestAnimationFrame(pollGamepad); return }
 
@@ -1556,52 +1559,11 @@ function pollGamepad() {
     if (gp.buttons[i].pressed) nowHeld.add(i)
   }
 
-  // detect newly pressed
-  for (const btn of nowHeld) {
-    if (!heldButtons.has(btn)) {
-      onButtonDown(btn)
-    }
-  }
-
-  // detect released
-  for (const btn of heldButtons) {
-    if (!nowHeld.has(btn)) {
-      onButtonUp(btn)
-    }
-  }
-
-  // all buttons released
-  if (heldButtons.size > 0 && nowHeld.size === 0) {
-    onAllReleased()
-  }
-
-  heldButtons = nowHeld
-
-  // update held display
-  const heldEl = document.getElementById('heldButtons')
-  if (nowHeld.size > 0) {
-    heldEl.innerHTML = [...nowHeld].sort((a,b) => a-b)
-      .map(b => `<span class="btn-pill${recording ? ' recording' : ''}">${btnLabelWithLayer(b, activeLayer)}</span>`)
-      .join('')
-  } else {
-    heldEl.innerHTML = ''
-  }
-
-  // highlight keys on the visual layout
-  document.querySelectorAll('#layout-corne-r .key[data-btn]').forEach(el => {
-    const btnIdx = parseInt(el.dataset.btn)
-    el.classList.toggle('active', nowHeld.has(btnIdx))
-    if (nowHeld.has(btnIdx)) el.classList.add('discovered')
-  })
-
-  // ── Live layer switching ──
-  // layer_mo: held = switch to layer, released = back to base
+  // ── Layer switching FIRST (before onButtonDown) so activeLayer is correct ──
   let heldLayer = null
   for (const btn of nowHeld) {
     const matrix = btnToMatrix[btn]
     if (!matrix) continue
-    // check against the base layer (0) for layer_mo keys, not activeLayer
-    // so layer_mo always works regardless of current layer
     const a = getKey(_baseLayer, matrix)
     if (a && (a.type === 'layer_mo' || a.type === 'layer_tap') && a.action) {
       const layerIdx = parseLayerNum(a.action)
@@ -1613,13 +1575,57 @@ function pollGamepad() {
     }
   }
 
-  // set active layer based on held state
   const targetLayer = heldLayer != null ? heldLayer : _baseLayer
   if (targetLayer !== activeLayer) {
     activeLayer = targetLayer
     const sel = document.getElementById('keyMapLayerSelect')
     if (sel) sel.value = activeLayer
-    scheduleUIUpdate()
+    updateKeyLabels()
+  }
+
+  // ── Detect press/release (after layer switch, so activeLayer is current) ──
+  for (const btn of nowHeld) {
+    if (!heldButtons.has(btn)) {
+      // capture layer at press time — layer_mo keys are always on base layer
+      const matrix = btnToMatrix[btn]
+      const a = matrix && getKey(_baseLayer, matrix)
+      heldBtnLayers[btn] = (a && (a.type === 'layer_mo' || a.type === 'layer_tap')) ? _baseLayer : activeLayer
+      onButtonDown(btn)
+    }
+  }
+
+  for (const btn of heldButtons) {
+    if (!nowHeld.has(btn)) {
+      delete heldBtnLayers[btn]
+      onButtonUp(btn)
+    }
+  }
+
+  if (heldButtons.size > 0 && nowHeld.size === 0) {
+    onAllReleased()
+  }
+
+  heldButtons = nowHeld
+
+  // ── DOM updates only when held set changes ──
+  const heldKey = [...nowHeld].sort((a,b) => a-b).join(',')
+  if (heldKey !== _prevHeldKey) {
+    _prevHeldKey = heldKey
+
+    const heldEl = document.getElementById('heldButtons')
+    if (nowHeld.size > 0) {
+      heldEl.innerHTML = [...nowHeld].sort((a,b) => a-b)
+        .map(b => `<span class="btn-pill${recording ? ' recording' : ''}">${btnLabelWithLayer(b, heldBtnLayers[b] != null ? heldBtnLayers[b] : activeLayer)}</span>`)
+        .join('')
+    } else {
+      heldEl.innerHTML = ''
+    }
+
+    document.querySelectorAll('#layout-corne-r .key[data-btn]').forEach(el => {
+      const btnIdx = parseInt(el.dataset.btn)
+      el.classList.toggle('active', nowHeld.has(btnIdx))
+      if (nowHeld.has(btnIdx)) el.classList.add('discovered')
+    })
   }
 
   requestAnimationFrame(pollGamepad)
@@ -1642,14 +1648,19 @@ function onButtonDown(btn) {
         const sel = document.getElementById('keyMapLayerSelect')
         if (sel) sel.value = activeLayer
         updateLayerDropdowns()
-        scheduleUIUpdate()
+        syncLayerInputs()
+        updateKeyLabels() // instant
         addLogEntry(`TG → ${layers[layerIdx].name}`, 'down')
       }
     }
   }
 
   if (currentMode === 'mapping') {
-    onGamepadKeyForMapping(btn)
+    // skip editor open for layer keys — you're switching layers, not editing the hold key
+    const mA = matrix && (getKey(_baseLayer, matrix) || getKey(activeLayer, matrix))
+    if (!mA || (mA.type !== 'layer_mo' && mA.type !== 'layer_tap')) {
+      onGamepadKeyForMapping(btn)
+    }
   }
 
   clearTimeout(sequenceTimeout)
@@ -1663,10 +1674,10 @@ function onButtonDown(btn) {
     currentChordLayers = []
   }
 
-  // add to current chord group with layer context
+  // add to current chord group with layer context (use press-time layer)
   if (!currentChord.includes(btn)) {
     currentChord.push(btn)
-    currentChordLayers.push(activeLayer)
+    currentChordLayers.push(heldBtnLayers[btn] != null ? heldBtnLayers[btn] : activeLayer)
   }
   allReleased = false
   updateRecordingDisplay()

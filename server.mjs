@@ -419,7 +419,6 @@ const server = createServer(async (req, res) => {
         data.savedAt = new Date().toISOString()
         if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
         writeFileSync(file, JSON.stringify(data, null, 2))
-        console.log(`saved: config/${deviceId}/presets/${presetName}.json`)
         return json(res, { ok: true })
       } catch (e) { return json(res, { error: e.message }, 400) }
     }
@@ -468,6 +467,7 @@ const server = createServer(async (req, res) => {
     const device = JSON.parse(readFileSync(deviceFile, 'utf8'))
 
     try {
+      console.log(`compile: joystick mode for ${deviceId}`)
       const joystickSrc = join(QMK_DIR, 'joystick')
       const keymapDst = join(QMK_FIRMWARE, 'keyboards/crkbd/keymaps/kekboard-warrior')
       execSync(`cp -r ${joystickSrc}/* ${keymapDst}/`)
@@ -475,8 +475,10 @@ const server = createServer(async (req, res) => {
         `cd ${QMK_FIRMWARE} && qmk compile -kb ${device.qmk.keyboard} -km kekboard-warrior 2>&1`,
         { timeout: 300000, encoding: 'utf8' }
       )
+      console.log(`compile: joystick OK`)
       return json(res, { ok: true, log: result.slice(-500) })
     } catch (e) {
+      console.log(`compile: joystick FAILED — ${e.message.slice(0, 100)}`)
       return json(res, { error: 'compile failed', log: e.stdout?.slice(-500) || e.message }, 500)
     }
   }
@@ -490,7 +492,7 @@ const server = createServer(async (req, res) => {
     const device = JSON.parse(readFileSync(deviceFile, 'utf8'))
 
     try {
-      // copy keymap
+      console.log(`compile: preset for ${deviceId}`)
       const keymapSrc = join(QMK_DIR, 'kekboard-warrior')
       const keymapDst = join(QMK_FIRMWARE, 'keyboards/crkbd/keymaps/kekboard-warrior')
       execSync(`cp -r ${keymapSrc}/* ${keymapDst}/`)
@@ -500,9 +502,11 @@ const server = createServer(async (req, res) => {
         `cd ${QMK_FIRMWARE} && qmk compile -kb ${device.qmk.keyboard} -km kekboard-warrior 2>&1`,
         { timeout: 300000, encoding: 'utf8' }
       )
+      console.log(`compile: preset OK`)
       const uf2 = join(QMK_FIRMWARE, `crkbd_rev4_0_standard_kekboard-warrior.uf2`)
       return json(res, { ok: true, uf2: existsSync(uf2) ? uf2 : null, log: result.slice(-500) })
     } catch (e) {
+      console.log(`compile: preset FAILED — ${e.message.slice(0, 100)}`)
       return json(res, { error: 'compile failed', log: e.stdout?.slice(-500) || e.message }, 500)
     }
   }
@@ -527,9 +531,12 @@ const server = createServer(async (req, res) => {
     if (mounts.length === 0) return json(res, { error: 'no RPI-RP2 drive found — enter bootloader first' }, 400)
 
     try {
+      console.log(`flash: copying to ${mounts[0]}`)
       execSync(`cp ${uf2} ${mounts[0]}/`)
+      console.log(`flash: done`)
       return json(res, { ok: true, target: mounts[0] })
     } catch (e) {
+      console.log(`flash: FAILED — ${e.message.slice(0, 100)}`)
       return json(res, { error: e.message }, 500)
     }
   }
