@@ -11,33 +11,134 @@
   "sequences": [],
   "keymap": [
     {
-      "4,6": { "type": "basic", "action": "JS_0", "note": "extra 1" },
-      "5,6": { "type": "basic", "action": "JS_1", "note": "extra 2" },
-      "4,0": { "type": "basic", "action": "JS_2", "note": "" },
-      "4,1": { "type": "basic", "action": "JS_3", "note": "" },
-      "4,2": { "type": "basic", "action": "JS_4", "note": "" },
-      "4,3": { "type": "basic", "action": "JS_5", "note": "" },
-      "4,4": { "type": "basic", "action": "JS_6", "note": "" },
-      "4,5": { "type": "basic", "action": "JS_7", "note": "" },
-      "5,0": { "type": "basic", "action": "JS_8", "note": "" },
-      "5,1": { "type": "basic", "action": "JS_9", "note": "" },
-      "5,2": { "type": "basic", "action": "JS_10", "note": "" },
-      "5,3": { "type": "basic", "action": "JS_11", "note": "" },
-      "5,4": { "type": "basic", "action": "JS_12", "note": "" },
-      "5,5": { "type": "basic", "action": "JS_13", "note": "" },
-      "6,0": { "type": "basic", "action": "JS_14", "note": "" },
-      "6,1": { "type": "basic", "action": "JS_15", "note": "" },
-      "6,2": { "type": "basic", "action": "JS_16", "note": "" },
-      "6,3": { "type": "basic", "action": "JS_17", "note": "" },
-      "6,4": { "type": "basic", "action": "JS_18", "note": "" },
-      "6,5": { "type": "basic", "action": "JS_19", "note": "" },
-      "7,3": { "type": "basic", "action": "JS_20", "note": "thumb inner" },
-      "7,4": { "type": "basic", "action": "JS_21", "note": "thumb middle" },
-      "7,5": { "type": "basic", "action": "JS_22", "note": "thumb outer" }
+      "4,6": {
+        "type": "basic",
+        "action": "JS_0",
+        "note": "extra 1"
+      },
+      "5,6": {
+        "type": "basic",
+        "action": "JS_1",
+        "note": "extra 2"
+      },
+      "4,0": {
+        "type": "basic",
+        "action": "JS_2",
+        "note": ""
+      },
+      "4,1": {
+        "type": "basic",
+        "action": "JS_3",
+        "note": ""
+      },
+      "4,2": {
+        "type": "basic",
+        "action": "JS_4",
+        "note": ""
+      },
+      "4,3": {
+        "type": "basic",
+        "action": "JS_5",
+        "note": ""
+      },
+      "4,4": {
+        "type": "basic",
+        "action": "JS_6",
+        "note": ""
+      },
+      "4,5": {
+        "type": "basic",
+        "action": "JS_7",
+        "note": ""
+      },
+      "5,0": {
+        "type": "basic",
+        "action": "JS_8",
+        "note": ""
+      },
+      "5,1": {
+        "type": "basic",
+        "action": "JS_9",
+        "note": ""
+      },
+      "5,2": {
+        "type": "basic",
+        "action": "JS_10",
+        "note": ""
+      },
+      "5,3": {
+        "type": "basic",
+        "action": "JS_11",
+        "note": ""
+      },
+      "5,4": {
+        "type": "basic",
+        "action": "JS_12",
+        "note": ""
+      },
+      "5,5": {
+        "type": "basic",
+        "action": "JS_13",
+        "note": ""
+      },
+      "6,0": {
+        "type": "basic",
+        "action": "JS_14",
+        "note": ""
+      },
+      "6,1": {
+        "type": "basic",
+        "action": "JS_15",
+        "note": ""
+      },
+      "6,2": {
+        "type": "basic",
+        "action": "JS_16",
+        "note": ""
+      },
+      "6,3": {
+        "type": "basic",
+        "action": "JS_17",
+        "note": ""
+      },
+      "6,4": {
+        "type": "basic",
+        "action": "JS_18",
+        "note": ""
+      },
+      "6,5": {
+        "type": "basic",
+        "action": "JS_19",
+        "note": ""
+      },
+      "7,3": {
+        "type": "basic",
+        "action": "JS_20",
+        "note": "thumb inner"
+      },
+      "7,4": {
+        "type": "basic",
+        "action": "JS_21",
+        "note": "thumb middle"
+      },
+      "7,5": {
+        "type": "basic",
+        "action": "JS_22",
+        "note": "thumb outer",
+        "touchedAt": 1774899737474
+      }
     }
   ],
   "activeLayer": 0,
-  "presetRules": ["All keys are joystick buttons — use with Gamepad API for mapping"],
-  "deviceNotes": ["Boot combo: 7,5 + 7,4 + 4,6 + 5,6 (300ms window)"],
-  "savedAt": "2026-03-30T15:53:00.000Z"
+  "presetRules": [
+    "All keys are joystick buttons — use with Gamepad API for mapping"
+  ],
+  "deviceNotes": [
+    "Boot combo: 7,5 + 7,4 + 4,6 + 5,6 (300ms window)"
+  ],
+  "features": {
+    "midi": true,
+    "rgb": true
+  },
+  "savedAt": "2026-03-30T19:42:17.981Z"
 }

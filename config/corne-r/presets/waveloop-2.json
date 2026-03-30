@@ -5,15 +5,15 @@
   "layers": [
     {
       "name": "base",
-      "color": "#e0f5ea"
+      "color": "#0f5fff"
     },
     {
-      "name": "layer 1",
-      "color": "#e0e8f8"
+      "name": "fx",
+      "color": "#e60f0f"
     },
     {
-      "name": "layer 2",
-      "color": "#e0e8f8"
+      "name": "tape",
+      "color": "#dca91e"
     },
     {
       "name": "layer 3",
@@ -43,103 +43,135 @@
         "type": "basic",
         "action": "KC_UP",
         "note": "",
-        "touchedAt": 1774887168157
+        "touchedAt": 1774895477710
       },
       "5,1": {
         "type": "basic",
         "action": "KC_DOWN",
         "note": "",
-        "touchedAt": 1774887168490
+        "touchedAt": 1774895478044
       },
       "6,1": {
         "type": "basic",
         "action": "KC_LEFT",
         "note": "",
-        "touchedAt": 1774887168407
+        "touchedAt": 1774895478394
       },
       "4,1": {
         "type": "basic",
         "action": "KC_RIGHT",
         "note": "",
-        "touchedAt": 1774887168540
+        "touchedAt": 1774895478195
       },
       "4,0": {
         "type": "basic",
         "action": "KC_ENTER",
-        "note": "",
-        "touchedAt": 1774887168223
+        "label": "",
+        "note": ""
       },
       "6,0": {
         "type": "basic",
         "action": "KC_ESCAPE",
         "note": "",
-        "touchedAt": 1774887168054
+        "touchedAt": 1774893990615
       },
       "4,6": {
         "type": "basic",
         "action": "KC_R",
         "note": "",
-        "touchedAt": 1774885281916
+        "touchedAt": 1774893987516
       },
       "5,6": {
         "type": "basic",
         "action": "KC_W",
         "note": "",
-        "touchedAt": 1774885282133
+        "touchedAt": 1774893987766
       },
       "7,3": {
         "type": "basic",
         "action": "KC_SPACE",
         "note": "",
-        "touchedAt": 1774885780956
+        "touchedAt": 1774895096506
       },
       "7,5": {
         "type": "layer_mo",
         "action": "1",
-        "note": "layer 1 while held - leds red",
-        "touchedAt": 1774886700382
+        "note": "fx",
+        "touchedAt": 1774899187731
       },
       "7,4": {
         "type": "layer_mo",
         "action": "2",
-        "note": "layer 2 while held - leds gold",
-        "touchedAt": 1774885806736
+        "note": "tape",
+        "touchedAt": 1774898792268
       },
       "6,2": {
         "type": "basic",
-        "action": "KC_1",
-        "note": "",
-        "touchedAt": 1774885761458
+        "action": "[",
+        "label": "loop in",
+        "note": ""
       },
       "5,2": {
         "type": "basic",
-        "action": "KC_2",
-        "note": "",
-        "touchedAt": 1774885761641
+        "action": "\\",
+        "label": "loop toggle",
+        "note": ""
       },
       "4,2": {
         "type": "basic",
-        "action": "KC_3",
-        "note": "",
-        "touchedAt": 1774885761774
+        "action": "]",
+        "label": "loop out",
+        "note": ""
       },
       "6,3": {
         "type": "basic",
-        "action": "KC_4",
+        "action": "{",
+        "label": "0.5x",
         "note": "",
-        "touchedAt": 1774885760591
+        "touchedAt": 1774895667603
       },
       "5,3": {
         "type": "basic",
-        "action": "KC_5",
+        "action": "|",
+        "label": "1x",
         "note": "",
-        "touchedAt": 1774885761040
+        "touchedAt": 1774895667404
       },
       "4,3": {
         "type": "basic",
-        "action": "KC_6",
+        "action": "}",
+        "label": "2x",
         "note": "",
-        "touchedAt": 1774885761241
+        "touchedAt": 1774895667120
+      },
+      "6,4": {
+        "type": "",
+        "action": "",
+        "note": "",
+        "touchedAt": 1774895664520
+      },
+      "5,4": {
+        "type": "",
+        "action": "",
+        "note": ""
+      },
+      "4,4": {
+        "type": "",
+        "action": "",
+        "note": "",
+        "touchedAt": 1774894356921
+      },
+      "4,5": {
+        "type": "basic",
+        "action": "KC_O",
+        "label": "",
+        "note": ""
+      },
+      "6,5": {
+        "type": "basic",
+        "action": "KC_C",
+        "label": "",
+        "note": ""
       }
     },
     {
@@ -147,52 +179,97 @@
         "type": "basic",
         "action": "KC_F5",
         "note": "",
-        "touchedAt": 1774887470954
+        "touchedAt": 1774898789120
       },
       "5,0": {
         "type": "basic",
         "action": "KC_F6",
         "note": "",
-        "touchedAt": 1774886642248
+        "touchedAt": 1774898789520
       },
       "4,0": {
         "type": "basic",
         "action": "KC_F7",
         "note": "",
-        "touchedAt": 1774886640571
+        "touchedAt": 1774898789837
       },
       "6,1": {
         "type": "basic",
         "action": "KC_F9",
         "note": "",
-        "touchedAt": 1774887472238
+        "touchedAt": 1774898790603
       },
       "5,1": {
         "type": "basic",
         "action": "KC_F10",
         "note": "",
-        "touchedAt": 1774887469676
+        "touchedAt": 1774898790387
       },
       "4,1": {
         "type": "basic",
         "action": "KC_F11",
         "note": "",
-        "touchedAt": 1774885730294
+        "touchedAt": 1774898790103
       },
       "5,6": {
         "type": "basic",
         "action": "KC_F8",
         "note": "",
-        "touchedAt": 1774887891560
+        "touchedAt": 1774893971536
       },
       "4,6": {
         "type": "basic",
         "action": "KC_F12",
         "note": "",
-        "touchedAt": 1774885782756
+        "touchedAt": 1774899187839
       }
     },
-    {},
+    {
+      "6,0": {
+        "type": "basic",
+        "action": "1",
+        "note": "",
+        "touchedAt": 1774891288982
+      },
+      "5,0": {
+        "type": "basic",
+        "action": "2",
+        "note": ""
+      },
+      "4,0": {
+        "type": "basic",
+        "action": "3",
+        "note": "",
+        "touchedAt": 1774893641244
+      },
+      "6,1": {
+        "type": "",
+        "action": "4",
+        "note": ""
+      },
+      "5,1": {
+        "type": "",
+        "action": "5",
+        "note": ""
+      },
+      "4,1": {
+        "type": "",
+        "action": "6",
+        "note": ""
+      },
+      "5,6": {
+        "type": "",
+        "action": "c",
+        "note": "",
+        "touchedAt": 1774893641307
+      },
+      "4,6": {
+        "type": "",
+        "action": "o",
+        "note": "",
+        "touchedAt": 1774893641242
+      }
+    },
     {},
     {},
     {
@@ -209,5 +286,5 @@
     "set colors for the layers, solid, the colors should be tightly aligned with what layer is currently active. [blue,red,gold,green,magenta] - will add more layer"
   ],
   "deviceNotes": [],
-  "savedAt": "2026-03-30T16:24:52.067Z"
+  "savedAt": "2026-03-30T19:33:08.342Z"
 }

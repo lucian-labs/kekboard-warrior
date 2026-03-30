@@ -2049,7 +2049,16 @@ function saveProfile() {
       fetch(`/api/config/${activeDevice}/presets/${preset}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: preset, device: activeDevice, buttons: 23, ...data }),
+        body: JSON.stringify({ name: presetName, device: activeDevice, buttons: 23, ...data }),
+      }).then(r => r.json()).then(res => {
+        if (res.renamed) {
+          // file was renamed — update dropdown
+          const sel = document.getElementById('presetSelect')
+          const opt = [...sel.options].find(o => o.value === preset)
+          if (opt) { opt.value = res.renamed; opt.textContent = presetName }
+          sel.value = res.renamed
+          updateURLParams()
+        }
       }).catch(() => {})
     }
   }, 500)

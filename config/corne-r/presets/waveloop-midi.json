@@ -1,0 +1,61 @@
+{
+  "name": "waveloop-midi",
+  "device": "corne-r",
+  "buttons": 23,
+  "layers": [
+    {
+      "name": "base",
+      "color": "#e0f5ea"
+    },
+    {
+      "name": "fx",
+      "color": "#e0e8f8"
+    },
+    {
+      "name": "layer 2",
+      "color": "#e0e8f8"
+    }
+  ],
+  "sequences": [],
+  "keymap": [
+    {
+      "6,0": {
+        "type": "midi_cc",
+        "action": "",
+        "label": "",
+        "note": ""
+      },
+      "7,5": {
+        "type": "layer_mo",
+        "action": "1",
+        "label": "fx",
+        "note": "",
+        "touchedAt": 1774899442929
+      },
+      "7,4": {
+        "type": "layer_mo",
+        "action": "2",
+        "label": "",
+        "note": "",
+        "touchedAt": 1774899442029
+      }
+    },
+    {
+      "7,3": {
+        "type": "basic",
+        "action": "KC_SPACE",
+        "label": "",
+        "note": "",
+        "touchedAt": 1774899287765
+      }
+    }
+  ],
+  "activeLayer": 1,
+  "presetRules": [],
+  "deviceNotes": [],
+  "features": {
+    "midi": true,
+    "rgb": true
+  },
+  "savedAt": "2026-03-30T19:40:43.049Z"
+}

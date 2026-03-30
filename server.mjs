@@ -403,6 +403,17 @@ const server = createServer(async (req, res) => {
         data.savedAt = new Date().toISOString()
         if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
         writeFileSync(file, JSON.stringify(data, null, 2))
+        // rename file if name field changed
+        const safeName = (data.name || '').replace(/[^a-zA-Z0-9_-]/g, '-').toLowerCase()
+        if (safeName && safeName !== presetName) {
+          const newFile = join(dir, `${safeName}.json`)
+          if (!existsSync(newFile)) {
+            const { renameSync } = await import('fs')
+            renameSync(file, newFile)
+            console.log(`renamed: ${presetName} → ${safeName}`)
+            return json(res, { ok: true, renamed: safeName })
+          }
+        }
         return json(res, { ok: true })
       } catch (e) { return json(res, { error: e.message }, 400) }
     }
