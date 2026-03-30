@@ -5,15 +5,15 @@
   "layers": [
     {
       "name": "base",
-      "color": "#e0f5ea"
+      "color": "#ffffff"
     },
     {
       "name": "fx",
-      "color": "#e0e8f8"
+      "color": "#ff0000"
     },
     {
       "name": "layer 2",
-      "color": "#e0e8f8"
+      "color": "#00fffb"
     }
   ],
   "sequences": [],
@@ -23,21 +23,29 @@
         "type": "midi_cc",
         "action": "",
         "label": "",
-        "note": ""
+        "note": "",
+        "touchedAt": 1774900403341
       },
       "7,5": {
         "type": "layer_mo",
         "action": "1",
         "label": "fx",
         "note": "",
-        "touchedAt": 1774899442929
+        "touchedAt": 1774907621060
       },
       "7,4": {
         "type": "layer_mo",
         "action": "2",
-        "label": "",
+        "label": "tape",
         "note": "",
-        "touchedAt": 1774899442029
+        "touchedAt": 1774907663471
+      },
+      "7,3": {
+        "type": "midi_cc",
+        "action": "",
+        "label": "",
+        "note": "ch 10, cc 1, momentary",
+        "touchedAt": 1774900587552
       }
     },
     {
@@ -50,12 +58,13 @@
       }
     }
   ],
-  "activeLayer": 1,
+  "activeLayer": 2,
   "presetRules": [],
   "deviceNotes": [],
   "features": {
     "midi": true,
-    "rgb": true
+    "rgb": true,
+    "rawhid": true
   },
-  "savedAt": "2026-03-30T19:40:43.049Z"
+  "savedAt": "2026-03-30T21:54:23.980Z"
 }
