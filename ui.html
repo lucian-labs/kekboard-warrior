@@ -1214,6 +1214,8 @@ function onGamepadKeyForMapping(btn) {
   actionEl.value = a ? a.action : ''
   document.getElementById('keyMapNote').value = a ? (a.note || '') : ''
   updateKeycodeHints(typeEl, actionEl)
+  actionEl.focus()
+  actionEl.select()
 
   // bump touchedAt so it sorts to top
   if (a) { a.touchedAt = Date.now(); saveProfile() }

@@ -49,19 +49,19 @@
         "type": "key",
         "action": "down",
         "note": "",
-        "touchedAt": 1774884696623
+        "touchedAt": 1774885495058
       },
       "6,1": {
         "type": "key",
         "action": "left",
         "note": "",
-        "touchedAt": 1774884696474
+        "touchedAt": 1774885494159
       },
       "4,1": {
         "type": "key",
         "action": "right",
         "note": "",
-        "touchedAt": 1774884696156
+        "touchedAt": 1774885493824
       },
       "4,0": {
         "type": "key",
@@ -73,7 +73,7 @@
         "type": "basic",
         "action": "esc",
         "note": "",
-        "touchedAt": 1774885288868
+        "touchedAt": 1774885494560
       },
       "4,6": {
         "type": "key",
@@ -133,7 +133,7 @@
         "type": "layer_mo",
         "action": "1",
         "note": "layer 1 while held - leds red",
-        "touchedAt": 1774885313896
+        "touchedAt": 1774885498409
       },
       "7,4": {
         "type": "layer_mo",
@@ -183,7 +183,37 @@
         "type": "basic",
         "action": "f5",
         "note": "",
-        "touchedAt": 1774885290436
+        "touchedAt": 1774885497262
+      },
+      "5,0": {
+        "type": "basic",
+        "action": "f6",
+        "note": "",
+        "touchedAt": 1774885401872
+      },
+      "4,0": {
+        "type": "basic",
+        "action": "f7",
+        "note": "",
+        "touchedAt": 1774885402156
+      },
+      "6,1": {
+        "type": "",
+        "action": "f9",
+        "note": "",
+        "touchedAt": 1774885498674
+      },
+      "5,1": {
+        "type": "",
+        "action": "f10",
+        "note": "",
+        "touchedAt": 1774885497057
+      },
+      "4,1": {
+        "type": "",
+        "action": "f11",
+        "note": "",
+        "touchedAt": 1774885496774
       }
     },
     {},
@@ -198,8 +228,8 @@
       }
     }
   ],
-  "activeLayer": 0,
+  "activeLayer": 1,
   "presetRules": [],
   "deviceNotes": [],
-  "savedAt": "2026-03-30T15:41:54.398Z"
+  "savedAt": "2026-03-30T15:44:59.183Z"
 }
