@@ -535,45 +535,26 @@
   </div>
 </div>
 
-<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
   <span style="color:#888;font-size:12px;">Layer:</span>
   <select id="keyMapLayerSelect" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;" onchange="setActiveLayer(this.value)">
     <option value="0">Layer 0 (base)</option>
   </select>
-  <button class="chord-record-btn" onclick="addLayer()" style="padding:3px 8px;font-size:11px;">+ Layer</button>
-  <span style="margin-left:auto;font-size:11px;color:#6a3aaa;cursor:pointer;text-decoration:underline dotted;" onclick="toggleFirmwarePanel()">firmware: joystick — 23 buttons</span>
+  <input id="layerNameInput" type="text" placeholder="layer name" oninput="renameLayer(this.value)" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;width:100px;color:#333;" />
+  <input id="layerColorInput" type="color" value="#e0f5ea" oninput="recolorLayer(this.value)" style="width:28px;height:24px;border:1px solid #ccc;border-radius:3px;cursor:pointer;padding:0;" />
+  <button class="chord-record-btn" onclick="addLayer()" style="padding:3px 8px;font-size:11px;">+</button>
+  <button class="chord-record-btn danger" onclick="removeLayer()" style="padding:3px 8px;font-size:11px;">−</button>
+  <div style="margin-left:auto;display:flex;gap:6px;">
+    <button class="chord-record-btn" onclick="flashConfigure()" style="padding:4px 10px;font-size:11px;background:#fff0e0;border-color:#e8a020;color:#a06800;">Configure</button>
+    <button class="chord-record-btn" onclick="deploy()" style="padding:4px 10px;font-size:11px;background:#8b0000;border-color:#6a0000;color:#fff;font-weight:bold;">Deploy</button>
+  </div>
 </div>
 
-<div id="firmwarePanel" style="display:none;background:#fff;border:1px solid #ddd;border-radius:6px;padding:16px;margin-bottom:16px;">
-  <h2 style="font-size:14px;color:#333;margin-bottom:12px;">Firmware Settings</h2>
-  <div style="display:flex;gap:16px;flex-wrap:wrap;">
-    <div style="flex:1;min-width:200px;">
-      <div style="font-size:11px;color:#888;margin-bottom:4px;">Keyboard</div>
-      <div style="font-size:12px;color:#333;">crkbd/rev4_0/standard</div>
-    </div>
-    <div style="flex:1;min-width:200px;">
-      <div style="font-size:11px;color:#888;margin-bottom:4px;">Layout</div>
-      <div style="font-size:12px;color:#333;">LAYOUT_split_3x6_3_ex2</div>
-    </div>
-    <div style="flex:1;min-width:200px;">
-      <div style="font-size:11px;color:#888;margin-bottom:4px;">Mode</div>
-      <div style="font-size:12px;color:#333;">Joystick — 23 buttons per half</div>
-    </div>
-    <div style="flex:1;min-width:200px;">
-      <div style="font-size:11px;color:#888;margin-bottom:4px;">Boot combo</div>
-      <div style="font-size:12px;color:#333;">7,5 + 7,4 + 4,6 + 5,6</div>
-      <div style="font-size:10px;color:#888;">(both thumbs + both extra keys)</div>
-    </div>
+<div id="firmwareStatus" style="display:none;background:#f8f8fa;border:1px solid #ddd;border-radius:6px;padding:10px 16px;margin-bottom:12px;font-size:11px;color:#888;">
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span id="firmwareStatusText"></span>
   </div>
-  <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
-    <button class="chord-record-btn" onclick="deploy()" style="padding:6px 16px;font-size:12px;background:#8b0000;border-color:#6a0000;color:#fff;font-weight:bold;">Deploy</button>
-    <button class="chord-record-btn" onclick="enterBootMode()" style="padding:5px 12px;font-size:11px;background:#fff0e0;border-color:#e8a020;color:#a06800;">Enter Boot Mode</button>
-    <button class="chord-record-btn" onclick="generateKeymap()" style="padding:5px 12px;font-size:11px;">Generate</button>
-    <button class="chord-record-btn" onclick="compileFlash('compile')" style="padding:5px 12px;font-size:11px;">Compile</button>
-    <button class="chord-record-btn" onclick="compileFlash('flash')" style="padding:5px 12px;font-size:11px;">Flash</button>
-    <span id="firmwareStatus" style="font-size:11px;color:#888;margin-left:8px;align-self:center;"></span>
-  </div>
-  <pre id="firmwareOutput" style="display:none;margin-top:10px;background:#f8f8fa;border:1px solid #ddd;border-radius:4px;padding:10px;font-size:10px;max-height:200px;overflow-y:auto;white-space:pre-wrap;"></pre>
+  <pre id="firmwareOutput" style="display:none;margin-top:8px;background:#fff;border:1px solid #ddd;border-radius:4px;padding:8px;font-size:10px;max-height:150px;overflow-y:auto;white-space:pre-wrap;"></pre>
 </div>
 
 <div class="keyboard-container">
@@ -798,7 +779,7 @@
     </div>
     <div id="keyMapEditor" style="display:none;padding:10px;background:#f8f8fa;border-radius:4px;margin-top:8px;">
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <span id="keyMapLabel" style="font-weight:bold;color:#8b0000;min-width:40px;"></span>
+        <span id="keyMapEditorLabel" style="font-weight:bold;color:#8b0000;min-width:40px;"></span>
         <select id="keyMapType" onchange="autoSaveKeyMap();updateKeycodeHints(this,document.getElementById('keyMapAction'))" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;">
           <option value="basic">Basic Key</option>
           <option value="mod">Modifier + Key</option>
@@ -817,9 +798,10 @@
           <option value="none">No Action</option>
           <option value="bootloader">Bootloader</option>
         </select>
-        <input id="keyMapAction" type="text" placeholder="e.g. A, Enter, F5, Ctrl+R" oninput="autoSaveKeyMap()" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;width:180px;" />
+        <input id="keyMapAction" type="text" placeholder="e.g. A, Enter, F5, Ctrl+R" oninput="autoSaveKeyMap()" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;width:140px;" />
+        <input id="keyMapLabel" type="text" placeholder="label (overrides display)" oninput="autoSaveKeyMap()" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;width:130px;color:#6a3aaa;" />
       </div>
-      <input id="keyMapNote" type="text" placeholder="label / note" oninput="autoSaveKeyMap()" style="background:#fff;border:1px solid #ddd;padding:4px 8px;font-family:inherit;font-size:11px;border-radius:3px;width:100%;margin-top:6px;color:#666;" />
+      <input id="keyMapNote" type="text" placeholder="note" oninput="autoSaveKeyMap()" style="background:#fff;border:1px solid #ddd;padding:4px 8px;font-family:inherit;font-size:11px;border-radius:3px;width:100%;margin-top:6px;color:#888;" />
     </div>
     <div id="keyMapList" style="margin-top:10px;max-height:126px;overflow-y:auto;"></div>
   </div>
@@ -1144,6 +1126,7 @@ function loadPreset(name) {
       if (profile.deviceNotes) { deviceNotes = profile.deviceNotes; renderDeviceNotes() }
       activeLayer = profile.activeLayer || 0
       updateLayerDropdowns()
+      syncLayerInputs()
 
       // rebuild sequences
       clearSequences()
@@ -1299,10 +1282,11 @@ function onGamepadKeyForMapping(btn) {
   const actionEl = document.getElementById('keyMapAction')
   typeEl.value = a ? a.type : lastKeyMapType
   actionEl.value = a ? a.action : ''
+  document.getElementById('keyMapLabel').value = a ? (a.label || '') : ''
   document.getElementById('keyMapNote').value = a ? (a.note || '') : ''
-  // show friendly name in label
-  const friendly = a ? friendlyAction(a.type, a.action) : ''
-  document.getElementById('keyMapLabel').textContent = friendly ? `${currentLabel} → ${friendly}` : currentLabel
+  // show friendly name in editor header
+  const friendly = a ? (a.label || friendlyAction(a.type, a.action)) : ''
+  document.getElementById('keyMapEditorLabel').textContent = friendly ? `${currentLabel} → ${friendly}` : currentLabel
   updateKeycodeHints(typeEl, actionEl)
   actionEl.focus()
   actionEl.select()
@@ -1321,6 +1305,7 @@ function autoSaveKeyMap() {
   setKey(lastPressedLayer, matrix, {
     type: lastKeyMapType,
     action: document.getElementById('keyMapAction').value,
+    label: document.getElementById('keyMapLabel').value,
     note: document.getElementById('keyMapNote').value,
   })
   saveProfile()
@@ -1344,12 +1329,12 @@ function updateKeyMapList() {
       div.style.opacity = isActive ? '1' : '0.5'
       div.style.cursor = 'pointer'
       const fType = friendlyType(v.type)
-      const fAction = friendlyAction(v.type, v.action)
+      const fAction = v.label || friendlyAction(v.type, v.action)
       div.innerHTML = `
         <span style="font-size:10px;color:#6a3aaa;min-width:50px;font-weight:bold;">${layerName}</span>
         <div class="chord-combo"><span class="btn-pill">${matrix}</span></div>
         <span class="chord-arrow">\u2192</span>
-        <div style="flex:1;font-size:12px;"><span style="color:#888;">${fType}:</span> ${fAction}${v.note ? `<span style="color:#aaa;margin-left:8px;font-size:10px;">${v.note}</span>` : ''}</div>
+        <div style="flex:1;font-size:12px;">${v.label ? `<b style="color:#6a3aaa;">${v.label}</b> <span style="color:#aaa;font-size:10px;">(${fType}: ${friendlyAction(v.type, v.action)})</span>` : `<span style="color:#888;">${fType}:</span> ${fAction}`}${v.note ? `<span style="color:#aaa;margin-left:8px;font-size:10px;">${v.note}</span>` : ''}</div>
         <button class="chord-delete" onclick="event.stopPropagation();deleteKeyMap(${layer},'${matrix}', this)">\u00d7</button>
       `
       div.addEventListener('click', () => selectKeyMapEntry(layer, matrix))
@@ -1368,14 +1353,17 @@ function selectKeyMapEntry(layer, matrix) {
   lastPressedBtn = parseInt(btn[0])
   lastPressedLayer = layer
   const layerName = (layers[layer] && layers[layer].name) || `layer ${layer}`
-  document.getElementById('lastPressed').textContent = `${layerName} — ${matrix}`
-  document.getElementById('keyMapLabel').textContent = `${layerName} — ${matrix}`
-  document.getElementById('keyMapEditor').style.display = ''
   const a = getKey(layer, matrix)
+  const friendly = a ? (a.label || friendlyAction(a.type, a.action)) : ''
+  const currentLabel = `${layerName} — ${matrix}`
+  document.getElementById('lastPressed').textContent = currentLabel
+  document.getElementById('keyMapEditorLabel').textContent = friendly ? `${currentLabel} → ${friendly}` : currentLabel
+  document.getElementById('keyMapEditor').style.display = ''
   const typeEl = document.getElementById('keyMapType')
   const actionEl = document.getElementById('keyMapAction')
   typeEl.value = a ? a.type : lastKeyMapType
   actionEl.value = a ? a.action : ''
+  document.getElementById('keyMapLabel').value = a ? (a.label || '') : ''
   document.getElementById('keyMapNote').value = a ? (a.note || '') : ''
   updateKeycodeHints(typeEl, actionEl)
 }
@@ -1464,18 +1452,56 @@ document.querySelectorAll('#layout-corne-r .key').forEach(el => {
 
 // ── Layers ──
 function addLayer() {
-  const name = prompt('Layer name:')
-  if (!name) return
-  layers.push({ name, color: '#e0e8f8' })
+  const n = layers.length
+  layers.push({ name: `layer ${n}`, color: '#e0e8f8' })
+  activeLayer = n
+  _baseLayer = n
   updateLayerDropdowns()
+  syncLayerInputs()
+  saveProfile()
+  scheduleUIUpdate()
+}
+
+function removeLayer() {
+  if (layers.length <= 1) return
+  if (activeLayer === 0) return // don't remove base
+  layers.splice(activeLayer, 1)
+  keymap.splice(activeLayer, 1)
+  activeLayer = Math.min(activeLayer, layers.length - 1)
+  _baseLayer = activeLayer
+  updateLayerDropdowns()
+  syncLayerInputs()
+  saveProfile()
+  scheduleUIUpdate()
+}
+
+function renameLayer(name) {
+  if (!layers[activeLayer]) return
+  layers[activeLayer].name = name
+  updateLayerDropdowns()
+  saveProfile()
+  scheduleUIUpdate()
+}
+
+function recolorLayer(color) {
+  if (!layers[activeLayer]) return
+  layers[activeLayer].color = color
   saveProfile()
 }
 
 function setActiveLayer(idx) {
   activeLayer = parseInt(idx)
   _baseLayer = activeLayer
+  syncLayerInputs()
   addLogEntry(`Layer -> ${layers[activeLayer].name}`, 'down')
   scheduleUIUpdate()
+}
+
+function syncLayerInputs() {
+  const nameInput = document.getElementById('layerNameInput')
+  const colorInput = document.getElementById('layerColorInput')
+  if (nameInput) nameInput.value = layers[activeLayer] ? layers[activeLayer].name : ''
+  if (colorInput) colorInput.value = layers[activeLayer] ? (layers[activeLayer].color || '#e0e8f8') : '#e0e8f8'
 }
 
 function updateLayerDropdowns() {
@@ -1492,8 +1518,8 @@ function updateKeyLabels() {
   document.querySelectorAll('#layout-corne-r .key[data-btn]').forEach(el => {
     const matrix = el.dataset.matrix
     const a = getKey(activeLayer, matrix)
-    if (a && a.action) {
-      const label = friendlyAction(a.type, a.action)
+    if (a && (a.action || a.label)) {
+      const label = a.label || friendlyAction(a.type, a.action)
       el.innerHTML = `${label}<span style="position:absolute;top:1px;left:2px;font-size:7px;color:#aaa;">${matrix}</span>`
     } else {
       el.innerHTML = matrix
@@ -2015,6 +2041,7 @@ function newPreset() {
 }
 
 loadProfile()
+syncLayerInputs()
 
 // restore UI state
 function updateURLParams() {
@@ -2068,12 +2095,18 @@ function updateURLParams() {
 
 const BOOT_COMBO_BTNS = [22, 21, 0, 1] // btn indices for boot combo
 
-function enterBootMode() {
-  const status = document.getElementById('firmwareStatus')
-  status.textContent = 'Press all 4 highlighted keys simultaneously...'
-  status.style.color = '#a06800'
+function showFirmwareStatus(msg, color) {
+  const panel = document.getElementById('firmwareStatus')
+  const text = document.getElementById('firmwareStatusText')
+  panel.style.display = ''
+  text.textContent = msg
+  text.style.color = color || '#888'
+}
 
-  // highlight boot combo keys on the layout
+function enterBootMode() {
+  showFirmwareStatus('Press all 4 highlighted keys simultaneously...', '#a06800')
+
+  // highlight boot combo keys
   document.querySelectorAll('#layout-corne-r .key[data-btn]').forEach(el => {
     el.classList.remove('boot-highlight')
     el.style.removeProperty('outline')
@@ -2087,12 +2120,9 @@ function enterBootMode() {
     }
   }
 
-  // watch for gamepad disconnect = bootloader entered
   const checkDisconnect = () => {
     if (!gamepad) {
-      status.textContent = 'Bootloader mode! Waiting for RPI-RP2 drive...'
-      status.style.color = '#1a6a3a'
-      // clear highlights
+      showFirmwareStatus('Bootloader mode — waiting for RPI-RP2 drive...', '#1a6a3a')
       document.querySelectorAll('.boot-highlight').forEach(el => {
         el.style.removeProperty('outline')
         el.style.removeProperty('outline-offset')
@@ -2105,132 +2135,95 @@ function enterBootMode() {
   checkDisconnect()
 }
 
-function toggleFirmwarePanel() {
-  const panel = document.getElementById('firmwarePanel')
-  panel.style.display = panel.style.display === 'none' ? '' : 'none'
-}
-
-function generateKeymap() {
-  const status = document.getElementById('firmwareStatus')
+function flashConfigure() {
+  showFirmwareStatus('Configure: compiling joystick firmware...', '#a06800')
   const output = document.getElementById('firmwareOutput')
-  status.textContent = 'generating...'
-  status.style.color = '#888'
+  output.style.display = ''
+  output.textContent = ''
 
-  const preset = document.getElementById('presetSelect').value
-  fetch(`/api/generate-keymap`, {
+  // compile joystick keymap, then prompt boot + flash
+  fetch('/api/compile-joystick', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ device: activeDevice, preset }),
-  })
-    .then(r => r.json())
-    .then(data => {
-      if (data.error) {
-        status.textContent = 'error: ' + data.error
-        status.style.color = '#c44'
-      } else {
-        status.textContent = 'keymap.c generated'
-        status.style.color = '#1a6a3a'
-        output.style.display = ''
-        output.textContent = data.keymap || data.log || ''
-      }
-    })
-    .catch(e => { status.textContent = 'failed'; status.style.color = '#c44' })
+    body: JSON.stringify({ device: activeDevice }),
+  }).then(r => r.json()).then(data => {
+    if (data.error) {
+      showFirmwareStatus('compile failed: ' + data.error, '#c44')
+      if (data.log) output.textContent = data.log
+      return
+    }
+    output.textContent = 'joystick firmware compiled\n'
+    showFirmwareStatus('Enter boot mode to flash joystick firmware...', '#a06800')
+    enterBootMode()
+
+    const pollFlash = () => {
+      fetch('/api/flash', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
+        .then(r => r.json()).then(res => {
+          if (res.ok) {
+            showFirmwareStatus('Joystick mode flashed — Corne is now a gamepad for mapping', '#1a6a3a')
+            output.textContent += 'flashed to ' + (res.target || 'RPI-RP2') + '\n'
+            document.querySelectorAll('.boot-highlight').forEach(el => {
+              el.style.removeProperty('outline'); el.style.removeProperty('outline-offset'); el.classList.remove('boot-highlight')
+            })
+          } else { setTimeout(pollFlash, 1000) }
+        }).catch(() => setTimeout(pollFlash, 1000))
+    }
+    pollFlash()
+  }).catch(e => showFirmwareStatus('failed: ' + e.message, '#c44'))
 }
 
 async function deploy() {
-  const status = document.getElementById('firmwareStatus')
   const output = document.getElementById('firmwareOutput')
   const preset = document.getElementById('presetSelect').value
-  if (!preset) { status.textContent = 'select a preset first'; status.style.color = '#c44'; return }
+  if (!preset) { showFirmwareStatus('select a preset first', '#c44'); return }
 
-  // Step 1: Generate
-  status.textContent = '1/3 generating keymap.c...'
-  status.style.color = '#888'
   output.style.display = ''
   output.textContent = ''
+
+  showFirmwareStatus('1/3 generating keymap...', '#888')
   try {
     const genRes = await fetch('/api/generate-keymap', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ device: activeDevice, preset }),
     }).then(r => r.json())
-    if (genRes.error) { status.textContent = 'generate failed: ' + genRes.error; status.style.color = '#c44'; return }
+    if (genRes.error) { showFirmwareStatus('generate failed: ' + genRes.error, '#c44'); return }
     output.textContent = 'keymap.c generated\n'
 
-    // Step 2: Compile
-    status.textContent = '2/3 compiling firmware...'
+    showFirmwareStatus('2/3 compiling...', '#888')
     const compRes = await fetch('/api/compile', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ device: activeDevice }),
     }).then(r => r.json())
     if (compRes.error) {
-      status.textContent = 'compile failed'
-      status.style.color = '#c44'
+      showFirmwareStatus('compile failed', '#c44')
       output.textContent += (compRes.log || compRes.error)
       return
     }
     output.textContent += 'compiled OK\n'
 
-    // Step 3: Enter boot mode + flash
-    status.textContent = '3/3 enter boot mode — press combo or plug in holding BOOT'
-    status.style.color = '#a06800'
+    showFirmwareStatus('3/3 enter boot mode to flash...', '#a06800')
     enterBootMode()
 
-    // poll server for flash
     const pollFlash = async () => {
       const flashRes = await fetch('/api/flash', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ device: activeDevice }),
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}',
       }).then(r => r.json())
       if (flashRes.ok) {
-        status.textContent = 'deployed!'
-        status.style.color = '#1a6a3a'
+        showFirmwareStatus('Deployed! Corne rebooting with ' + preset, '#1a6a3a')
         output.textContent += 'flashed to ' + (flashRes.target || 'RPI-RP2') + '\n'
-        // clear boot highlights
         document.querySelectorAll('.boot-highlight').forEach(el => {
-          el.style.removeProperty('outline')
-          el.style.removeProperty('outline-offset')
-          el.classList.remove('boot-highlight')
+          el.style.removeProperty('outline'); el.style.removeProperty('outline-offset'); el.classList.remove('boot-highlight')
         })
         return
       }
-      // keep polling
       setTimeout(pollFlash, 1000)
     }
     pollFlash()
   } catch (e) {
-    status.textContent = 'deploy failed'
-    status.style.color = '#c44'
-    output.textContent += e.message + '\n'
+    showFirmwareStatus('deploy failed: ' + e.message, '#c44')
   }
-}
-
-function compileFlash(action) {
-  const status = document.getElementById('firmwareStatus')
-  const output = document.getElementById('firmwareOutput')
-  status.textContent = action === 'compile' ? 'compiling...' : 'flashing...'
-  status.style.color = '#888'
-
-  fetch(`/api/${action}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ device: activeDevice }),
-  })
-    .then(r => r.json())
-    .then(data => {
-      if (data.error) {
-        status.textContent = 'error: ' + data.error
-        status.style.color = '#c44'
-        if (data.log) { output.style.display = ''; output.textContent = data.log }
-      } else {
-        status.textContent = data.ok ? (action === 'compile' ? 'compiled' : 'flashed') : 'done'
-        status.style.color = '#1a6a3a'
-        if (data.log) { output.style.display = ''; output.textContent = data.log }
-      }
-    })
-    .catch(e => { status.textContent = 'failed'; status.style.color = '#c44' })
 }
 
 function switchDevice(device) {

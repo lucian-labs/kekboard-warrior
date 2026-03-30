@@ -459,6 +459,28 @@ const server = createServer(async (req, res) => {
     }
   }
 
+  // ── API: compile joystick (configure mode) ──
+  if (path === '/api/compile-joystick' && req.method === 'POST') {
+    const body = JSON.parse(await readBody(req))
+    const deviceId = body.device || 'corne-r'
+    const deviceFile = join(CONFIG_DIR, deviceId, 'device.json')
+    if (!existsSync(deviceFile)) return json(res, { error: 'device not found' }, 404)
+    const device = JSON.parse(readFileSync(deviceFile, 'utf8'))
+
+    try {
+      const joystickSrc = join(QMK_DIR, 'joystick')
+      const keymapDst = join(QMK_FIRMWARE, 'keyboards/crkbd/keymaps/kekboard-warrior')
+      execSync(`cp -r ${joystickSrc}/* ${keymapDst}/`)
+      const result = execSync(
+        `cd ${QMK_FIRMWARE} && qmk compile -kb ${device.qmk.keyboard} -km kekboard-warrior 2>&1`,
+        { timeout: 300000, encoding: 'utf8' }
+      )
+      return json(res, { ok: true, log: result.slice(-500) })
+    } catch (e) {
+      return json(res, { error: 'compile failed', log: e.stdout?.slice(-500) || e.message }, 500)
+    }
+  }
+
   // ── API: compile firmware ──
   if (path === '/api/compile' && req.method === 'POST') {
     const body = JSON.parse(await readBody(req))
