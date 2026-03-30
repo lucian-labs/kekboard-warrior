@@ -43,37 +43,37 @@
         "type": "key",
         "action": "up",
         "note": "",
-        "touchedAt": 1774885288983
+        "touchedAt": 1774885770257
       },
       "5,1": {
         "type": "key",
         "action": "down",
         "note": "",
-        "touchedAt": 1774885495058
+        "touchedAt": 1774885769890
       },
       "6,1": {
         "type": "key",
         "action": "left",
         "note": "",
-        "touchedAt": 1774885494159
+        "touchedAt": 1774885770090
       },
       "4,1": {
         "type": "key",
         "action": "right",
         "note": "",
-        "touchedAt": 1774885493824
+        "touchedAt": 1774885769207
       },
       "4,0": {
         "type": "key",
         "action": "enter",
         "note": "",
-        "touchedAt": 1774885289082
+        "touchedAt": 1774885765106
       },
       "6,0": {
         "type": "basic",
         "action": "esc",
         "note": "",
-        "touchedAt": 1774885494560
+        "touchedAt": 1774885764575
       },
       "4,6": {
         "type": "key",
@@ -91,91 +91,91 @@
         "type": "key",
         "action": "space",
         "note": "",
-        "touchedAt": 1774884698190
+        "touchedAt": 1774885780956
       },
       "6,4": {
-        "type": "key",
-        "action": "f5",
+        "type": "",
+        "action": "",
         "note": "",
-        "touchedAt": 1774884781296
+        "touchedAt": 1774885829283
       },
       "5,4": {
-        "type": "key",
-        "action": "f6",
+        "type": "",
+        "action": "",
         "note": "",
-        "touchedAt": 1774884690074
+        "touchedAt": 1774885760358
       },
       "4,4": {
-        "type": "key",
-        "action": "f7",
+        "type": "",
+        "action": "",
         "note": "",
-        "touchedAt": 1774884690174
+        "touchedAt": 1774885760457
       },
       "6,5": {
-        "type": "key",
-        "action": "f9",
+        "type": "",
+        "action": "",
         "note": "",
-        "touchedAt": 1774884697706
+        "touchedAt": 1774885759574
       },
       "5,5": {
-        "type": "key",
-        "action": "f10",
+        "type": "",
+        "action": "",
         "note": "",
-        "touchedAt": 1774884690557
+        "touchedAt": 1774885759724
       },
       "4,5": {
-        "type": "key",
-        "action": "f11",
+        "type": "",
+        "action": "",
         "note": "",
-        "touchedAt": 1774884690591
+        "touchedAt": 1774885759825
       },
       "7,5": {
         "type": "layer_mo",
         "action": "1",
         "note": "layer 1 while held - leds red",
-        "touchedAt": 1774885498409
+        "touchedAt": 1774885782606
       },
       "7,4": {
         "type": "layer_mo",
         "action": "2",
         "note": "layer 2 while held - leds gold",
-        "touchedAt": 1774884540995
+        "touchedAt": 1774885806736
       },
       "6,2": {
         "type": "key",
         "action": "1",
         "note": "",
-        "touchedAt": 1774884689257
+        "touchedAt": 1774885761458
       },
       "5,2": {
         "type": "key",
         "action": "2",
         "note": "",
-        "touchedAt": 1774884689307
+        "touchedAt": 1774885761641
       },
       "4,2": {
         "type": "key",
         "action": "3",
         "note": "",
-        "touchedAt": 1774884689391
+        "touchedAt": 1774885761774
       },
       "6,3": {
         "type": "key",
         "action": "4",
         "note": "",
-        "touchedAt": 1774884689657
+        "touchedAt": 1774885760591
       },
       "5,3": {
         "type": "key",
         "action": "5",
         "note": "",
-        "touchedAt": 1774884689725
+        "touchedAt": 1774885761040
       },
       "4,3": {
         "type": "key",
         "action": "6",
         "note": "",
-        "touchedAt": 1774884689791
+        "touchedAt": 1774885761241
       }
     },
     {
@@ -183,40 +183,67 @@
         "type": "basic",
         "action": "f5",
         "note": "",
-        "touchedAt": 1774885497262
+        "touchedAt": 1774885729764
       },
       "5,0": {
         "type": "basic",
         "action": "f6",
         "note": "",
-        "touchedAt": 1774885401872
+        "touchedAt": 1774885729845
       },
       "4,0": {
         "type": "basic",
         "action": "f7",
         "note": "",
-        "touchedAt": 1774885402156
+        "touchedAt": 1774885773258
       },
       "6,1": {
         "type": "",
         "action": "f9",
         "note": "",
-        "touchedAt": 1774885498674
+        "touchedAt": 1774885730162
       },
       "5,1": {
         "type": "",
         "action": "f10",
         "note": "",
-        "touchedAt": 1774885497057
+        "touchedAt": 1774885730228
       },
       "4,1": {
         "type": "",
         "action": "f11",
         "note": "",
-        "touchedAt": 1774885496774
+        "touchedAt": 1774885730294
+      },
+      "5,6": {
+        "type": "",
+        "action": "f8",
+        "note": ""
+      },
+      "4,6": {
+        "type": "",
+        "action": "f12",
+        "note": "",
+        "touchedAt": 1774885782756
       }
     },
-    {},
+    {
+      "6,0": {
+        "type": "",
+        "action": "",
+        "note": ""
+      },
+      "5,0": {
+        "type": "",
+        "action": "",
+        "note": ""
+      },
+      "4,0": {
+        "type": "",
+        "action": "",
+        "note": ""
+      }
+    },
     {},
     {},
     {
@@ -228,8 +255,8 @@
       }
     }
   ],
-  "activeLayer": 1,
+  "activeLayer": 0,
   "presetRules": [],
   "deviceNotes": [],
-  "savedAt": "2026-03-30T15:44:59.183Z"
+  "savedAt": "2026-03-30T15:50:29.791Z"
 }
