@@ -1155,6 +1155,7 @@ function setMode(mode) {
     updateLayerDropdowns()
   }
   localStorage.setItem('kekboard-mode', mode)
+  updateURLParams()
 }
 
 // ── Presets ──
@@ -1308,6 +1309,10 @@ function onGamepadKeyForMapping(btn) {
   document.getElementById('keyMapType').value = a ? a.type : lastKeyMapType
   document.getElementById('keyMapAction').value = a ? a.action : ''
   document.getElementById('keyMapNote').value = a ? (a.note || '') : ''
+
+  // bump touchedAt so it sorts to top
+  if (a) { a.touchedAt = Date.now(); saveProfile() }
+  updateKeyMapList()
 }
 
 function saveKeyMap() { autoSaveKeyMap() }
@@ -1321,6 +1326,7 @@ function autoSaveKeyMap() {
     type: lastKeyMapType,
     action: document.getElementById('keyMapAction').value,
     note: document.getElementById('keyMapNote').value,
+    touchedAt: Date.now(),
   }
   saveProfile()
   updateKeyLabels()
@@ -1331,7 +1337,9 @@ function updateKeyMapList() {
   const list = document.getElementById('keyMapList')
   list.innerHTML = ''
   const prefix = `${activeLayer}_`
-  const entries = Object.entries(keyAssignments).filter(([k]) => k.startsWith(prefix))
+  const entries = Object.entries(keyAssignments)
+    .filter(([k]) => k.startsWith(prefix))
+    .sort((a, b) => (b[1].touchedAt || 0) - (a[1].touchedAt || 0))
   if (entries.length === 0) {
     list.innerHTML = '<div style="color:#aaa;font-size:11px;padding:8px;">no keys mapped on this layer yet</div>'
     return
@@ -1612,21 +1620,35 @@ function showLastSeq(seq) {
   const seqKey = seqToKey(seq)
   const existing = sequences.find(s => seqToKey(s.seq) === seqKey)
   if (existing) {
+    existing.touchedAt = Date.now()
     document.getElementById('seqType').value = existing.type
     document.getElementById('seqAction').value = existing.action || ''
     document.getElementById('seqNote').value = existing.note || ''
+    saveProfile()
+    reorderSeqList()
   } else {
-    document.getElementById('seqType').value = 'key'
+    document.getElementById('seqType').value = 'basic'
     document.getElementById('seqAction').value = ''
     document.getElementById('seqNote').value = ''
   }
+}
+
+function reorderSeqList() {
+  const list = document.getElementById('chordMapList')
+  const entries = [...list.querySelectorAll('.chord-entry')]
+  entries.sort((a, b) => {
+    const seqA = sequences.find(s => seqToKey(s.seq) === a.dataset.combo)
+    const seqB = sequences.find(s => seqToKey(s.seq) === b.dataset.combo)
+    return ((seqB && seqB.touchedAt) || 0) - ((seqA && seqA.touchedAt) || 0)
+  })
+  entries.forEach(el => list.appendChild(el))
 }
 
 function saveLastSeq() { autoSaveLastSeq() }
 
 function autoSaveLastSeq() {
   if (!lastCompletedSeq) return
-  const seqKey = lastCompletedSeq.join('\u2192')
+  const seqKey = seqToKey(lastCompletedSeq)
   const type = document.getElementById('seqType').value
   const action = document.getElementById('seqAction').value
   const note = document.getElementById('seqNote').value
@@ -1816,15 +1838,24 @@ function importProfile() {
 loadProfile()
 
 // restore UI state
+function updateURLParams() {
+  const params = new URLSearchParams()
+  if (activeDevice) params.set('device', activeDevice)
+  if (currentMode) params.set('mode', currentMode)
+  const qs = params.toString()
+  history.replaceState(null, '', qs ? '?' + qs : location.pathname)
+}
+
 ;(function restoreUIState() {
-  const savedDevice = localStorage.getItem('kekboard-device')
-  if (savedDevice) {
-    activeDevice = savedDevice
-    document.getElementById('deviceSelect').value = savedDevice
-    switchDevice(savedDevice)
+  const params = new URLSearchParams(location.search)
+  const device = params.get('device') || localStorage.getItem('kekboard-device')
+  const mode = params.get('mode') || localStorage.getItem('kekboard-mode')
+  if (device) {
+    activeDevice = device
+    document.getElementById('deviceSelect').value = device
+    switchDevice(device)
   }
-  const savedMode = localStorage.getItem('kekboard-mode')
-  if (savedMode) setMode(savedMode)
+  if (mode) setMode(mode)
 })()
 
 // ── Corne right half layer definitions ──
@@ -1879,6 +1910,7 @@ let activeDevice = 'corne-r'
 function switchDevice(device) {
   activeDevice = device
   localStorage.setItem('kekboard-device', device)
+  updateURLParams()
   document.querySelectorAll('.device-layout').forEach(el => {
     el.classList.remove('active')
     el.style.display = 'none'
