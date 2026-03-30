@@ -277,9 +277,40 @@ function generateKeymapC(device, preset) {
 ${layerColors}
 
 #include QMK_KEYBOARD_H
+${presetFeatures.rawhid ? `
+#include "raw_hid.h"
 
+// ── Raw HID: receive LED commands from host ──
+// Protocol (32-byte packets):
+//   0x01 led_index R G B      — set single LED
+//   0x02 R G B                — set all LEDs
+//   0x03 row col R G B        — set by matrix position
+//   0xFF                      — reset to default RGB
+void raw_hid_receive(uint8_t *data, uint8_t length) {
+    switch (data[0]) {
+        case 0x01: // single LED
+            rgb_matrix_set_color(data[1], data[2], data[3], data[4]);
+            break;
+        case 0x02: // all LEDs
+            rgb_matrix_set_color_all(data[1], data[2], data[3]);
+            break;
+        case 0x03: { // by matrix row,col
+            uint8_t led;
+            if (rgb_matrix_map_row_column_to_led(data[1], data[2], &led)) {
+                rgb_matrix_set_color(led, data[3], data[4], data[5]);
+            }
+            break;
+        }
+        case 0xFF: // reset
+            rgb_matrix_reload_from_eeprom();
+            break;
+    }
+    // echo back for confirmation
+    raw_hid_send(data, length);
+}
+` : `
 // Bootloader: hold MO(2) [7,4] + press 7,3
-
+`}
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 ${layerStrings.join(',\n\n')}
@@ -302,6 +333,7 @@ ${layerStrings.join(',\n\n')}
     autocorrect: 'AUTOCORRECT_ENABLE = yes',
     unicode: 'UNICODE_ENABLE = yes',
     wpm: 'WPM_ENABLE = yes',
+    rawhid: 'RAW_ENABLE = yes',
   }
   const presetFeatures = preset.features || {}
   const featureLines = Object.entries(featureMap)
