@@ -596,13 +596,19 @@
   </div>
 </div>
 
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+  <span style="color:#888;font-size:12px;">Layer:</span>
+  <select id="keyMapLayerSelect" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;" onchange="setActiveLayer(this.value)">
+    <option value="0">Layer 0 (base)</option>
+  </select>
+  <button class="chord-record-btn" onclick="addLayer()" style="padding:3px 8px;font-size:11px;">+ Layer</button>
+  <span id="layerPreviewIndicator" style="display:none;font-size:11px;color:#8b0000;font-weight:bold;"></span>
+  <span style="margin-left:auto;font-size:11px;color:#aaa;">firmware: joystick — 23 buttons</span>
+</div>
+
 <div class="keyboard-container">
   <!-- ── Corne Right Half ── -->
   <div class="device-layout corne-right active" id="layout-corne-r">
-    <div class="layer-tabs" id="corneLayers" style="display:flex;align-items:center;gap:8px;">
-      <div class="layer-tab active" data-layer="0">JOYSTICK — 23 buttons</div>
-      <span id="layerPreviewIndicator" style="display:none;font-size:11px;color:#8b0000;font-weight:bold;"></span>
-    </div>
     <div class="corne-inner">
       <div class="corne-body">
         <div class="extra-col">
@@ -878,13 +884,6 @@
       <div>
         <span style="color:#888;">Last pressed:</span>
         <span id="lastPressed" style="font-weight:bold;color:#1a6a3a;">—</span>
-      </div>
-      <div>
-        <span style="color:#888;">Layer:</span>
-        <select id="keyMapLayerSelect" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;" onchange="setActiveLayer(this.value)">
-          <option value="0">Layer 0 (base)</option>
-        </select>
-        <button class="chord-record-btn" onclick="addLayer()" style="padding:3px 8px;font-size:11px;">+ Layer</button>
       </div>
     </div>
     <div id="keyMapEditor" style="display:none;padding:10px;background:#f8f8fa;border-radius:4px;margin-top:8px;">
@@ -1506,6 +1505,8 @@ function setActiveLayer(idx) {
   activeLayer = parseInt(idx)
   addLogEntry(`Layer -> ${layers[activeLayer].name}`, 'down')
   updateKeyLabels()
+  updateKeyMapList()
+  updateSeqListLayers()
 }
 
 function updateLayerDropdowns() {
@@ -1841,7 +1842,10 @@ function addSequenceEntry(seq) {
 
   const pills = seqToHTML(seq)
 
+  const layerName = (layers[entry.layer] && layers[entry.layer].name) || `layer ${entry.layer}`
+  div.style.opacity = entry.layer === activeLayer ? '1' : '0.5'
   div.innerHTML = `
+    <span style="font-size:9px;color:#888;min-width:36px;">${layerName}</span>
     <div class="chord-combo">${pills}</div>
     <span class="chord-arrow">\u2192</span>
     <div class="chord-action">
@@ -1892,6 +1896,16 @@ function removeSeq(seqKey, btn) {
   saveProfile()
 }
 
+function updateSeqListLayers() {
+  document.querySelectorAll('#chordMapList .chord-entry').forEach(el => {
+    const seqKey = el.dataset.combo
+    const entry = sequences.find(s => seqToKey(s.seq) === seqKey)
+    if (entry) {
+      el.style.opacity = entry.layer === activeLayer ? '1' : '0.5'
+    }
+  })
+}
+
 function clearSequences() {
   sequences = []
   document.getElementById('chordMapList').querySelectorAll('.chord-entry').forEach(e => e.remove())
@@ -1916,6 +1930,7 @@ function matchSequence(seq) {
       if (layerSel) layerSel.value = idx
       updateKeyLabels()
       updateKeyMapList()
+      updateSeqListLayers()
       addLogEntry(`SEQ  ${seqKey}  \u2192 LAYER ${layers[idx].name}`, 'down')
     }
     return
