@@ -578,9 +578,6 @@
   <label style="margin-left:8px;">preset:</label>
   <select id="presetSelect" onchange="loadPreset(this.value)" style="background:#fff;color:#333;border:1px solid #ccc;padding:5px 10px;font-family:inherit;font-size:12px;border-radius:4px;">
     <option value="">— none —</option>
-    <option value="waveloop-2">waveloop-2</option>
-    <option value="waveloop-v0.1">WaveLoop v0.1</option>
-    <option value="kekboard">Kekboard Default</option>
   </select>
   <button class="chord-record-btn" onclick="savePreset()" style="padding:5px 10px;font-size:11px;">Save Preset</button>
   <div style="margin-left:auto;display:flex;gap:4px;">
@@ -1212,94 +1209,43 @@ function loadPreset(name) {
   if (!name) return
   updateURLParams()
 
-  // try loading from presets/ folder
-  if (name !== 'kekboard') {
-    fetch(`/api/config/${activeDevice}/presets/${name}`)
-      .then(r => r.ok ? r : fetch(`presets/${name}.json`))
-      .then(r => r.ok ? r.json() : null)
-      .then(profile => {
-        if (!profile) return
-        activeDevice = 'corne-r'
-        document.getElementById('deviceSelect').value = 'corne-r'
-        switchDevice('corne-r')
-        setMode('mapping')
+  fetch(`/api/config/${activeDevice}/presets/${name}`)
+    .then(r => r.ok ? r.json() : null)
+    .then(profile => {
+      if (!profile) return
+      setMode('mapping')
 
-        if (profile.layers) layers = profile.layers
-        if (profile.keyAssignments) keyAssignments = profile.keyAssignments
-        if (profile.presetRules) { presetRules = profile.presetRules; renderRules() }
-        activeLayer = 0
-        updateLayerDropdowns()
+      if (profile.layers) layers = profile.layers
+      if (profile.keyAssignments) keyAssignments = profile.keyAssignments
+      if (profile.presetRules) { presetRules = profile.presetRules; renderRules() }
+      if (profile.deviceNotes) { deviceNotes = profile.deviceNotes; renderDeviceNotes() }
+      activeLayer = profile.activeLayer || 0
+      updateLayerDropdowns()
 
-        // rebuild sequences
-        clearChords()
-        if (profile.sequences) {
-          for (const entry of profile.sequences) {
-            addSequenceEntry(entry.seq)
-            const seqKey = seqToKey(entry.seq)
-            const el = document.querySelector(`.chord-entry[data-combo="${seqKey}"]`)
-            if (el) {
-              el.querySelector('select').value = entry.type
-              el.querySelector('input').value = entry.action || ''
-              const noteInput = el.querySelector('.seq-note')
-              if (noteInput) noteInput.value = entry.note || ''
-            }
-            const m = sequences.find(s => seqToKey(s.seq) === seqKey)
-            if (m) { m.type = entry.type; m.action = entry.action; m.layer = entry.layer; m.note = entry.note }
+      // rebuild sequences
+      clearChords()
+      if (profile.sequences) {
+        for (const entry of profile.sequences) {
+          addSequenceEntry(entry.seq)
+          const seqKey = seqToKey(entry.seq)
+          const el = document.querySelector(`.chord-entry[data-combo="${seqKey}"]`)
+          if (el) {
+            el.querySelector('select').value = entry.type
+            el.querySelector('input').value = entry.action || ''
+            const noteInput = el.querySelector('.seq-note')
+            if (noteInput) noteInput.value = entry.note || ''
           }
+          const m = sequences.find(s => seqToKey(s.seq) === seqKey)
+          if (m) { m.type = entry.type; m.action = entry.action; m.layer = entry.layer; m.note = entry.note }
         }
-
-        saveProfile()
-        updateKeyMapList()
-        updateKeyLabels()
-      })
-      .catch(() => {})
-    return
-  }
-
-  if (name === 'kekboard') {
-    // select Corne right half
-    activeDevice = 'corne-r'
-    document.getElementById('deviceSelect').value = 'corne-r'
-    switchDevice('corne-r')
-
-    // switch to mapping mode
-    setMode('mapping')
-
-    // set up default layers
-    layers = [
-      { name: 'base', color: '#e0f5ea' },
-      { name: 'nav', color: '#e0e8f8' },
-      { name: 'media', color: '#f8e8e0' },
-    ]
-    activeLayer = 0
-    updateLayerDropdowns()
-
-    // set up default sequences for layer switching
-    // [[22],[21]] = JS22 → JS21 (sequential)
-    // [[22,21]] = JS22 +> JS21 (chord)
-    sequences = [
-      { seq: [[22],[21]], type: 'layer_tg', action: '1', layer: 0 },
-      { seq: [[21],[22]], type: 'layer_tg', action: '2', layer: 0 },
-      { seq: [[20],[21]], type: 'layer_tg', action: '0', layer: 1 },
-      { seq: [[20],[21]], type: 'layer_tg', action: '0', layer: 2 },
-    ]
-
-    // rebuild sequence UI
-    document.getElementById('chordMapList').querySelectorAll('.chord-entry').forEach(e => e.remove())
-    document.getElementById('emptyChords').style.display = 'none'
-    for (const entry of sequences) {
-      addSequenceEntry(entry.seq)
-      const seqKey = seqToKey(entry.seq)
-      const el = document.querySelector(`.chord-entry[data-combo="${seqKey}"]`)
-      if (el) {
-        el.querySelector('select').value = entry.type
-        el.querySelector('input').value = entry.action || ''
       }
-    }
 
-    saveProfile()
-    updateKeyMapList()
-  }
+      // save to localStorage as cache
+      localStorage.setItem('kekboard-profile', JSON.stringify(profile))
+      updateKeyMapList()
+      updateKeyLabels()
+    })
+    .catch(() => {})
 }
 
 // ── Preset Rules ──
@@ -2026,17 +1972,18 @@ function updateURLParams() {
   }
   if (mode) setMode(mode)
 
-  // populate presets from server
-  if (location.protocol !== 'file:' && device) {
+  // populate presets from server (source of truth)
+  const dev = device || activeDevice
+  if (location.protocol !== 'file:' && dev) {
     try {
-      const presets = await fetch(`/api/config/${device}/presets`).then(r => r.json())
+      const presets = await fetch(`/api/config/${dev}/presets`).then(r => r.json())
       const sel = document.getElementById('presetSelect')
+      // clear all except the "none" option
+      while (sel.options.length > 1) sel.remove(1)
       for (const p of presets) {
-        if (![...sel.options].some(o => o.value === p)) {
-          const opt = document.createElement('option')
-          opt.value = p; opt.textContent = p
-          sel.appendChild(opt)
-        }
+        const opt = document.createElement('option')
+        opt.value = p; opt.textContent = p
+        sel.appendChild(opt)
       }
     } catch {}
   }
@@ -2106,6 +2053,18 @@ function switchDevice(device) {
   if (target) {
     target.classList.add('active')
     target.style.display = ''
+  }
+  // refresh presets from server for this device
+  if (location.protocol !== 'file:') {
+    fetch(`/api/config/${device}/presets`).then(r => r.json()).then(presets => {
+      const sel = document.getElementById('presetSelect')
+      while (sel.options.length > 1) sel.remove(1)
+      for (const p of presets) {
+        const opt = document.createElement('option')
+        opt.value = p; opt.textContent = p
+        sel.appendChild(opt)
+      }
+    }).catch(() => {})
   }
 }
 
