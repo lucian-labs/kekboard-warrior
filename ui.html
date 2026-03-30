@@ -2425,6 +2425,81 @@ document.querySelectorAll('.device-layout .key[data-key]').forEach(el => {
   keyElements[el.dataset.key] = el
 })
 
+// ── Universal key detection (works in any firmware mode) ──
+
+function flashMatrix(matrix, isDown) {
+  const el = document.querySelector(`#layout-corne-r .key[data-matrix="${matrix}"]`)
+  if (!el) return
+  if (isDown) { el.classList.add('active', 'discovered') }
+  else { el.classList.remove('active') }
+}
+
+// Keyboard mode: map key names back to matrix positions
+const kcToMatrix = {}
+function rebuildKcToMatrix() {
+  for (const k in kcToMatrix) delete kcToMatrix[k]
+  for (let li = 0; li < keymap.length; li++) {
+    for (const [matrix, entry] of Object.entries(keymap[li] || {})) {
+      if (!entry || !entry.action || entry.type === 'midi_cc' || entry.type === 'midi_note') continue
+      const friendly = QMK_FRIENDLY[entry.action]
+      if (friendly) kcToMatrix[friendly.toLowerCase()] = kcToMatrix[friendly.toLowerCase()] || matrix
+      kcToMatrix[entry.action.toLowerCase()] = kcToMatrix[entry.action.toLowerCase()] || matrix
+    }
+  }
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return
+  const matrix = kcToMatrix[e.key.toLowerCase()]
+  if (matrix) flashMatrix(matrix, true)
+})
+document.addEventListener('keyup', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return
+  const matrix = kcToMatrix[e.key.toLowerCase()]
+  if (matrix) flashMatrix(matrix, false)
+})
+
+// MIDI mode: map CC numbers back to matrix positions
+const ccToMatrix = {}
+function rebuildCcToMatrix() {
+  for (const k in ccToMatrix) delete ccToMatrix[k]
+  for (let li = 0; li < keymap.length; li++) {
+    for (const [matrix, entry] of Object.entries(keymap[li] || {})) {
+      if (!entry || entry.type !== 'midi_cc' || !entry.action) continue
+      const m = {}
+      entry.action.split(',').forEach(p => { const [k,v] = p.split(':'); if (k && v) m[k.trim()] = v.trim() })
+      if (m.cc) ccToMatrix[`${li}_cc${m.cc}_ch${m.ch || '1'}`] = matrix
+    }
+  }
+}
+
+if (navigator.requestMIDIAccess) {
+  navigator.requestMIDIAccess().then(midi => {
+    function listenToInputs() {
+      for (const input of midi.inputs.values()) {
+        input.onmidimessage = (e) => {
+          const [status, cc, val] = e.data
+          const ch = (status & 0x0F) + 1
+          if ((status & 0xF0) === 0xB0) {
+            for (let li = 0; li < keymap.length; li++) {
+              const matrix = ccToMatrix[`${li}_cc${cc}_ch${ch}`]
+              if (matrix) { flashMatrix(matrix, val > 0); break }
+            }
+          }
+        }
+      }
+    }
+    listenToInputs()
+    midi.onstatechange = listenToInputs
+  }).catch(() => {})
+}
+
+// rebuild reverse maps when preset changes
+const _origSchedule = scheduleUIUpdate
+scheduleUIUpdate = function() { _origSchedule(); rebuildKcToMatrix(); rebuildCcToMatrix() }
+rebuildKcToMatrix()
+rebuildCcToMatrix()
+
 connect()
 </script>
 </body>

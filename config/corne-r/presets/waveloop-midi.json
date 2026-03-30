@@ -3,68 +3,90 @@
   "device": "corne-r",
   "buttons": 23,
   "layers": [
-    {
-      "name": "base",
-      "color": "#ffffff"
-    },
-    {
-      "name": "fx",
-      "color": "#ff0000"
-    },
-    {
-      "name": "layer 2",
-      "color": "#00fffb"
-    }
+    { "name": "base", "color": "#ffffff" },
+    { "name": "fx", "color": "#ff0000" },
+    { "name": "tape", "color": "#00fffb" }
   ],
   "sequences": [],
   "keymap": [
     {
-      "6,0": {
-        "type": "midi_cc",
-        "action": "",
-        "label": "",
-        "note": "",
-        "touchedAt": 1774900403341
-      },
-      "7,5": {
-        "type": "layer_mo",
-        "action": "1",
-        "label": "fx",
-        "note": "",
-        "touchedAt": 1774907621060
-      },
-      "7,4": {
-        "type": "layer_mo",
-        "action": "2",
-        "label": "tape",
-        "note": "",
-        "touchedAt": 1774907663471
-      },
-      "7,3": {
-        "type": "midi_cc",
-        "action": "",
-        "label": "",
-        "note": "ch 10, cc 1, momentary",
-        "touchedAt": 1774900587552
-      }
+      "7,5": { "type": "layer_mo", "action": "1", "label": "fx" },
+      "7,4": { "type": "layer_mo", "action": "2", "label": "tape" },
+      "7,3": { "type": "midi_cc", "action": "cc:1,ch:1,val:127,mode:momentary", "label": "CC1" },
+      "4,6": { "type": "midi_cc", "action": "cc:2,ch:1,val:127,mode:momentary", "label": "CC2" },
+      "5,6": { "type": "midi_cc", "action": "cc:3,ch:1,val:127,mode:momentary", "label": "CC3" },
+      "4,0": { "type": "midi_cc", "action": "cc:4,ch:1,val:127,mode:momentary", "label": "CC4" },
+      "4,1": { "type": "midi_cc", "action": "cc:5,ch:1,val:127,mode:momentary", "label": "CC5" },
+      "4,2": { "type": "midi_cc", "action": "cc:6,ch:1,val:127,mode:momentary", "label": "CC6" },
+      "4,3": { "type": "midi_cc", "action": "cc:7,ch:1,val:127,mode:momentary", "label": "CC7" },
+      "4,4": { "type": "midi_cc", "action": "cc:8,ch:1,val:127,mode:momentary", "label": "CC8" },
+      "4,5": { "type": "midi_cc", "action": "cc:9,ch:1,val:127,mode:momentary", "label": "CC9" },
+      "5,0": { "type": "midi_cc", "action": "cc:10,ch:1,val:127,mode:momentary", "label": "CC10" },
+      "5,1": { "type": "midi_cc", "action": "cc:11,ch:1,val:127,mode:momentary", "label": "CC11" },
+      "5,2": { "type": "midi_cc", "action": "cc:12,ch:1,val:127,mode:momentary", "label": "CC12" },
+      "5,3": { "type": "midi_cc", "action": "cc:13,ch:1,val:127,mode:momentary", "label": "CC13" },
+      "5,4": { "type": "midi_cc", "action": "cc:14,ch:1,val:127,mode:momentary", "label": "CC14" },
+      "5,5": { "type": "midi_cc", "action": "cc:15,ch:1,val:127,mode:momentary", "label": "CC15" },
+      "6,0": { "type": "midi_cc", "action": "cc:16,ch:1,val:127,mode:momentary", "label": "CC16" },
+      "6,1": { "type": "midi_cc", "action": "cc:17,ch:1,val:127,mode:momentary", "label": "CC17" },
+      "6,2": { "type": "midi_cc", "action": "cc:18,ch:1,val:127,mode:momentary", "label": "CC18" },
+      "6,3": { "type": "midi_cc", "action": "cc:19,ch:1,val:127,mode:momentary", "label": "CC19" },
+      "6,4": { "type": "midi_cc", "action": "cc:20,ch:1,val:127,mode:momentary", "label": "CC20" },
+      "6,5": { "type": "midi_cc", "action": "cc:21,ch:1,val:127,mode:momentary", "label": "CC21" }
     },
     {
-      "7,3": {
-        "type": "basic",
-        "action": "KC_SPACE",
-        "label": "",
-        "note": "",
-        "touchedAt": 1774899287765
-      }
+      "7,3": { "type": "midi_cc", "action": "cc:22,ch:1,val:127,mode:momentary", "label": "CC22" },
+      "4,6": { "type": "midi_cc", "action": "cc:23,ch:1,val:127,mode:momentary", "label": "CC23" },
+      "5,6": { "type": "midi_cc", "action": "cc:24,ch:1,val:127,mode:momentary", "label": "CC24" },
+      "4,0": { "type": "midi_cc", "action": "cc:25,ch:1,val:127,mode:momentary", "label": "CC25" },
+      "4,1": { "type": "midi_cc", "action": "cc:26,ch:1,val:127,mode:momentary", "label": "CC26" },
+      "4,2": { "type": "midi_cc", "action": "cc:27,ch:1,val:127,mode:momentary", "label": "CC27" },
+      "4,3": { "type": "midi_cc", "action": "cc:28,ch:1,val:127,mode:momentary", "label": "CC28" },
+      "4,4": { "type": "midi_cc", "action": "cc:29,ch:1,val:127,mode:momentary", "label": "CC29" },
+      "4,5": { "type": "midi_cc", "action": "cc:30,ch:1,val:127,mode:momentary", "label": "CC30" },
+      "5,0": { "type": "midi_cc", "action": "cc:31,ch:1,val:127,mode:momentary", "label": "CC31" },
+      "5,1": { "type": "midi_cc", "action": "cc:32,ch:1,val:127,mode:momentary", "label": "CC32" },
+      "5,2": { "type": "midi_cc", "action": "cc:33,ch:1,val:127,mode:momentary", "label": "CC33" },
+      "5,3": { "type": "midi_cc", "action": "cc:34,ch:1,val:127,mode:momentary", "label": "CC34" },
+      "5,4": { "type": "midi_cc", "action": "cc:35,ch:1,val:127,mode:momentary", "label": "CC35" },
+      "5,5": { "type": "midi_cc", "action": "cc:36,ch:1,val:127,mode:momentary", "label": "CC36" },
+      "6,0": { "type": "midi_cc", "action": "cc:37,ch:1,val:127,mode:momentary", "label": "CC37" },
+      "6,1": { "type": "midi_cc", "action": "cc:38,ch:1,val:127,mode:momentary", "label": "CC38" },
+      "6,2": { "type": "midi_cc", "action": "cc:39,ch:1,val:127,mode:momentary", "label": "CC39" },
+      "6,3": { "type": "midi_cc", "action": "cc:40,ch:1,val:127,mode:momentary", "label": "CC40" },
+      "6,4": { "type": "midi_cc", "action": "cc:41,ch:1,val:127,mode:momentary", "label": "CC41" },
+      "6,5": { "type": "midi_cc", "action": "cc:42,ch:1,val:127,mode:momentary", "label": "CC42" }
+    },
+    {
+      "7,3": { "type": "midi_cc", "action": "cc:43,ch:1,val:127,mode:momentary", "label": "CC43" },
+      "4,6": { "type": "midi_cc", "action": "cc:44,ch:1,val:127,mode:momentary", "label": "CC44" },
+      "5,6": { "type": "midi_cc", "action": "cc:45,ch:1,val:127,mode:momentary", "label": "CC45" },
+      "4,0": { "type": "midi_cc", "action": "cc:46,ch:1,val:127,mode:momentary", "label": "CC46" },
+      "4,1": { "type": "midi_cc", "action": "cc:47,ch:1,val:127,mode:momentary", "label": "CC47" },
+      "4,2": { "type": "midi_cc", "action": "cc:48,ch:1,val:127,mode:momentary", "label": "CC48" },
+      "4,3": { "type": "midi_cc", "action": "cc:49,ch:1,val:127,mode:momentary", "label": "CC49" },
+      "4,4": { "type": "midi_cc", "action": "cc:50,ch:1,val:127,mode:momentary", "label": "CC50" },
+      "4,5": { "type": "midi_cc", "action": "cc:51,ch:1,val:127,mode:momentary", "label": "CC51" },
+      "5,0": { "type": "midi_cc", "action": "cc:52,ch:1,val:127,mode:momentary", "label": "CC52" },
+      "5,1": { "type": "midi_cc", "action": "cc:53,ch:1,val:127,mode:momentary", "label": "CC53" },
+      "5,2": { "type": "midi_cc", "action": "cc:54,ch:1,val:127,mode:momentary", "label": "CC54" },
+      "5,3": { "type": "midi_cc", "action": "cc:55,ch:1,val:127,mode:momentary", "label": "CC55" },
+      "5,4": { "type": "midi_cc", "action": "cc:56,ch:1,val:127,mode:momentary", "label": "CC56" },
+      "5,5": { "type": "midi_cc", "action": "cc:57,ch:1,val:127,mode:momentary", "label": "CC57" },
+      "6,0": { "type": "midi_cc", "action": "cc:58,ch:1,val:127,mode:momentary", "label": "CC58" },
+      "6,1": { "type": "midi_cc", "action": "cc:59,ch:1,val:127,mode:momentary", "label": "CC59" },
+      "6,2": { "type": "midi_cc", "action": "cc:60,ch:1,val:127,mode:momentary", "label": "CC60" },
+      "6,3": { "type": "midi_cc", "action": "cc:61,ch:1,val:127,mode:momentary", "label": "CC61" },
+      "6,4": { "type": "midi_cc", "action": "cc:62,ch:1,val:127,mode:momentary", "label": "CC62" },
+      "6,5": { "type": "midi_cc", "action": "cc:63,ch:1,val:127,mode:momentary", "label": "CC63" }
     }
   ],
-  "activeLayer": 2,
+  "activeLayer": 0,
   "presetRules": [],
   "deviceNotes": [],
   "features": {
     "midi": true,
-    "rgb": true,
-    "rawhid": true
+    "rgb": true
   },
-  "savedAt": "2026-03-30T21:54:23.980Z"
+  "savedAt": "2026-03-30T22:00:00.000Z"
 }

@@ -229,10 +229,10 @@ function generateKeymapC(device, preset) {
 
     // Build right half keycodes
     const rightCodes = rightSlots.map(matrix => {
+      // force QK_BOOT on layer 2 at 7,3 (hold MO(2) + press 7,3 = bootloader)
+      if (li === 2 && matrix === '7,3') return 'QK_BOOT'
       const entry = layerKeys[matrix]
       if (entry) return actionToQMK(entry.type, entry.action)
-      // inject QK_BOOT on layer 2 at 7,3 (hold MO(2) [7,4] + press 7,3 = bootloader)
-      if (li === 2 && matrix === '7,3') return 'QK_BOOT'
       return 'KC_NO'
     })
 
@@ -280,6 +280,8 @@ function generateKeymapC(device, preset) {
         const m = {}
         entry.action.split(',').forEach(p => { const [k,v] = p.split(':'); if (k && v) m[k.trim()] = v.trim() })
         if (m.cc) {
+          // skip boot key position — QK_BOOT takes priority
+          if (li === 2 && matrix === '7,3') continue
           const [row, col] = matrix.split(',').map(Number)
           midiCcEntries.push({ layer: li, row, col, cc: parseInt(m.cc), ch: parseInt(m.ch || '1') - 1, val: parseInt(m.val || '127'), mode: m.mode || 'momentary' })
         }
@@ -323,11 +325,19 @@ ${ccCases}
       const [r,g,b] = hexToRGB(l.color || '#000000')
       return `        case ${i}: rgb_matrix_set_color_all(${r}, ${g}, ${b}); break; // ${l.name}`
     }).join('\n')
+    const rgbCases = layers.map((l, i) => {
+      const [r,g,b] = hexToRGB(l.color || '#000000')
+      return `        case ${i}: r=${r}; g=${g}; b=${b}; break; // ${l.name}`
+    }).join('\n')
     customCode += `
 // ── Per-layer RGB colors ──
-bool rgb_matrix_indicators_user(void) {
+bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+    uint8_t r = 0, g = 0, b = 0;
     switch (get_highest_layer(layer_state)) {
-${cases}
+${rgbCases}
+    }
+    for (uint8_t i = led_min; i < led_max; i++) {
+        rgb_matrix_set_color(i, r, g, b);
     }
     return false;
 }
