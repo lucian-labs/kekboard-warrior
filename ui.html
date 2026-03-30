@@ -955,7 +955,7 @@
     <div style="margin-top:12px;display:flex;gap:8px;">
       <button class="chord-record-btn" onclick="exportProfile()">Export Profile</button>
       <button class="chord-record-btn" onclick="importProfile()">Import Profile</button>
-      <button class="chord-record-btn" onclick="clearChords()" style="margin-left:auto;">Clear All</button>
+      <button class="chord-record-btn" onclick="clearAll()" style="margin-left:auto;">Clear All</button>
     </div>
   </div>
 
@@ -1223,7 +1223,7 @@ function loadPreset(name) {
       updateLayerDropdowns()
 
       // rebuild sequences
-      clearChords()
+      clearSequences()
       if (profile.sequences) {
         for (const entry of profile.sequences) {
           addSequenceEntry(entry.seq)
@@ -1872,11 +1872,15 @@ function removeSeq(seqKey, btn) {
   saveProfile()
 }
 
-function clearChords() {
+function clearSequences() {
   sequences = []
-  keyAssignments = {}
   document.getElementById('chordMapList').querySelectorAll('.chord-entry').forEach(e => e.remove())
   document.getElementById('emptyChords').style.display = ''
+}
+
+function clearAll() {
+  clearSequences()
+  keyAssignments = {}
   document.getElementById('keyMapEditor').style.display = 'none'
   updateKeyLabels()
   updateKeyMapList()
@@ -1970,7 +1974,7 @@ function importProfile() {
     try {
       const p = JSON.parse(await file.text())
       if (p.layers) layers = p.layers
-      if (p.sequences) { clearChords(); for (const s of p.sequences) addSequenceEntry(s.seq) }
+      if (p.sequences) { clearSequences(); for (const s of p.sequences) addSequenceEntry(s.seq) }
       if (p.keyAssignments) keyAssignments = p.keyAssignments
       updateLayerDropdowns(); updateKeyLabels(); saveProfile()
     } catch (err) { alert('Invalid profile file') }
