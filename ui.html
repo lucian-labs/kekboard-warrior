@@ -602,7 +602,6 @@
     <option value="0">Layer 0 (base)</option>
   </select>
   <button class="chord-record-btn" onclick="addLayer()" style="padding:3px 8px;font-size:11px;">+ Layer</button>
-  <span id="layerPreviewIndicator" style="display:none;font-size:11px;color:#8b0000;font-weight:bold;"></span>
   <span style="margin-left:auto;font-size:11px;color:#aaa;">firmware: joystick — 23 buttons</span>
 </div>
 
@@ -1465,6 +1464,7 @@ const SEQ_TIMEOUT = 500    // ms after last release to finalize sequence
 // layers
 let layers = [{ name: 'base', color: '#e0f5ea' }]
 let activeLayer = 0
+let _baseLayer = 0 // the "home" layer — layer_mo returns here on release
 // sequences: [{seq: [22,21], type: 'layer_tg', action: '1', layer: 0}]
 let sequences = []
 // key assignments: {'0_JS2': {type:'key', action:'r'}}
@@ -1503,6 +1503,7 @@ function addLayer() {
 
 function setActiveLayer(idx) {
   activeLayer = parseInt(idx)
+  _baseLayer = activeLayer
   addLogEntry(`Layer -> ${layers[activeLayer].name}`, 'down')
   updateKeyLabels()
   updateKeyMapList()
@@ -1599,63 +1600,34 @@ function pollGamepad() {
     if (nowHeld.has(btnIdx)) el.classList.add('discovered')
   })
 
-  // ── Live layer preview ──
-  // check if any held key is a layer switch
-  let previewLayer = null
+  // ── Live layer switching ──
+  // layer_mo: held = switch to layer, released = back to base
+  let heldLayer = null
   for (const btn of nowHeld) {
     const matrix = btnToMatrix[btn]
     if (!matrix) continue
-    const a = getKey(activeLayer, matrix)
+    // check against the base layer (0) for layer_mo keys, not activeLayer
+    // so layer_mo always works regardless of current layer
+    const a = getKey(_baseLayer, matrix)
     if (a && (a.type === 'layer_mo' || a.type === 'layer_tap') && a.action) {
       const layerIdx = parseInt(a.action)
       if (!isNaN(layerIdx) && layerIdx >= 0) {
-        // auto-create layers if referenced but not defined
-        while (layers.length <= layerIdx) {
-          layers.push({ name: `layer ${layers.length}`, color: '#e0e8f8' })
-        }
-        previewLayer = layerIdx
+        while (layers.length <= layerIdx) layers.push({ name: `layer ${layers.length}`, color: '#e0e8f8' })
+        heldLayer = layerIdx
         break
       }
     }
   }
 
-  // check for toggle layers that were activated by sequences
-  // (activeLayer already reflects those)
-
-  const displayLayer = previewLayer != null ? previewLayer : activeLayer
-
-  // always update key labels to reflect current display layer
-  document.querySelectorAll('#layout-corne-r .key[data-btn]').forEach(el => {
-    const matrix = el.dataset.matrix
-    const a = getKey(displayLayer, matrix)
-    let label
-    if (a && a.action) {
-      const actionLabel = a.action.length > 5 ? a.action.slice(0, 5) : a.action
-      label = `${actionLabel}<span style="position:absolute;top:1px;left:2px;font-size:7px;color:#aaa;">${matrix}</span>`
-    } else if (displayLayer !== activeLayer) {
-      const baseA = getKey(activeLayer, matrix)
-      if (baseA && baseA.action) {
-        const bl = baseA.action.length > 5 ? baseA.action.slice(0, 5) : baseA.action
-        label = `<span style="opacity:0.4">${bl}</span><span style="position:absolute;top:1px;left:2px;font-size:7px;color:#aaa;">${matrix}</span>`
-      } else {
-        label = matrix
-      }
-    } else {
-      label = matrix
-    }
-    if (el.innerHTML !== label) el.innerHTML = label
-  })
-
-  // show which layer is being previewed
-  const indicator = document.getElementById('layerPreviewIndicator')
-  if (indicator) {
-    if (previewLayer != null) {
-      const layerName = layers[displayLayer] ? layers[displayLayer].name : displayLayer
-      indicator.textContent = `previewing: ${layerName}`
-      indicator.style.display = ''
-    } else {
-      indicator.style.display = 'none'
-    }
+  // set active layer based on held state
+  const targetLayer = heldLayer != null ? heldLayer : _baseLayer
+  if (targetLayer !== activeLayer) {
+    activeLayer = targetLayer
+    const sel = document.getElementById('keyMapLayerSelect')
+    if (sel) sel.value = activeLayer
+    updateKeyLabels()
+    updateKeyMapList()
+    updateSeqListLayers()
   }
 
   requestAnimationFrame(pollGamepad)
@@ -1925,6 +1897,7 @@ function matchSequence(seq) {
       // auto-create layers if needed
       while (layers.length <= idx) layers.push({ name: `layer ${layers.length}`, color: '#e0e8f8' })
       activeLayer = idx
+      if (entry.type === 'layer_tg') _baseLayer = idx
       updateLayerDropdowns()
       const layerSel = document.getElementById('keyMapLayerSelect')
       if (layerSel) layerSel.value = idx

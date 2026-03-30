@@ -30,8 +30,7 @@
       ],
       "type": "layer_tg",
       "action": "3",
-      "layer": 0,
-      "touchedAt": 1774883194168
+      "layer": 0
     },
     {
       "seq": [
@@ -148,12 +147,14 @@
       "5,1": {
         "type": "key",
         "action": "down",
-        "note": ""
+        "note": "",
+        "touchedAt": 1774883410795
       },
       "6,1": {
         "type": "key",
         "action": "left",
-        "note": ""
+        "note": "",
+        "touchedAt": 1774883410088
       },
       "4,1": {
         "type": "key",
@@ -186,7 +187,8 @@
       "7,3": {
         "type": "key",
         "action": "space",
-        "note": ""
+        "note": "",
+        "touchedAt": 1774883482787
       },
       "6,4": {
         "type": "key",
@@ -222,13 +224,13 @@
         "type": "layer_mo",
         "action": "1",
         "note": "layer 1 while held - leds red",
-        "touchedAt": 1774883304524
+        "touchedAt": 1774883469239
       },
       "7,4": {
         "type": "layer_mo",
         "action": "2",
         "note": "layer 2 while held - leds gold",
-        "touchedAt": 1774883193454
+        "touchedAt": 1774883453859
       },
       "6,2": {
         "type": "key",
@@ -265,5 +267,5 @@
   "activeLayer": 0,
   "presetRules": [],
   "deviceNotes": [],
-  "savedAt": "2026-03-30T15:08:25.028Z"
+  "savedAt": "2026-03-30T15:11:23.289Z"
 }
