@@ -63,24 +63,6 @@
     margin-bottom: 30px;
   }
 
-  .keyboard {
-    display: flex;
-    gap: 3px;
-  }
-
-  .g-column {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    padding-top: 30px; /* offset for M-row */
-  }
-
-  .main-area {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
-
   .row {
     display: flex;
     gap: 3px;
@@ -103,34 +85,6 @@
     box-shadow: 0 1px 2px rgba(0,0,0,0.06);
   }
 
-  .key.wide-1_25 { width: 56px; }
-  .key.wide-1_5 { width: 68px; }
-  .key.wide-1_75 { width: 80px; }
-  .key.wide-2 { width: 92px; }
-  .key.wide-2_25 { width: 100px; }
-  .key.wide-2_75 { width: 124px; }
-  .key.space { width: 170px; }
-
-  .key.g-key {
-    width: 38px;
-    height: 38px;
-    background: #f3eef8;
-    border-color: #c4b0d8;
-  }
-
-  .key.m-key {
-    width: 34px;
-    height: 26px;
-    background: #f5f5f5;
-    border-color: #ccc;
-    font-size: 9px;
-  }
-
-  .m-row {
-    display: flex;
-    gap: 3px;
-    margin-bottom: 4px;
-  }
 
   /* ── device selector ── */
   .device-selector {
@@ -434,19 +388,6 @@
     transform: scale(0.95);
   }
 
-  .key.g-key.discovered {
-    background: #ece0f8;
-    border-color: #8a4aea;
-    color: #6a3aaa;
-    box-shadow: 0 1px 4px rgba(138, 74, 234, 0.15);
-  }
-
-  .key.g-key.active {
-    background: #8a4aea;
-    border-color: #6a3aaa;
-    color: #fff;
-    box-shadow: 0 1px 8px rgba(192, 154, 248, 0.4);
-  }
 
   .key.selected {
     border-color: #8b0000;
@@ -573,7 +514,6 @@
     <option value="corne-both">Corne Choc — Both Halves</option>
     <option value="corne-r">Corne Choc — Right Half</option>
     <option value="corne-l">Corne Choc — Left Half</option>
-    <option value="k585">K585 DITI</option>
   </select>
   <label style="margin-left:8px;">preset:</label>
   <select id="presetSelect" onchange="loadPreset(this.value)" style="background:#fff;color:#333;border:1px solid #ccc;padding:5px 10px;font-family:inherit;font-size:12px;border-radius:4px;">
@@ -588,7 +528,6 @@
 </div>
 
 <div class="toolbar" id="discoveryToolbar">
-  <button onclick="saveMap()">Save Map</button>
   <div class="stats">
     discovered: <span id="knownCount">0</span> |
     unknown: <span id="unknownCount" style="color:#eaaa4a">0</span> |
@@ -602,7 +541,36 @@
     <option value="0">Layer 0 (base)</option>
   </select>
   <button class="chord-record-btn" onclick="addLayer()" style="padding:3px 8px;font-size:11px;">+ Layer</button>
-  <span style="margin-left:auto;font-size:11px;color:#aaa;">firmware: joystick — 23 buttons</span>
+  <span style="margin-left:auto;font-size:11px;color:#6a3aaa;cursor:pointer;text-decoration:underline dotted;" onclick="toggleFirmwarePanel()">firmware: joystick — 23 buttons</span>
+</div>
+
+<div id="firmwarePanel" style="display:none;background:#fff;border:1px solid #ddd;border-radius:6px;padding:16px;margin-bottom:16px;">
+  <h2 style="font-size:14px;color:#333;margin-bottom:12px;">Firmware Settings</h2>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;">
+    <div style="flex:1;min-width:200px;">
+      <div style="font-size:11px;color:#888;margin-bottom:4px;">Keyboard</div>
+      <div style="font-size:12px;color:#333;">crkbd/rev4_0/standard</div>
+    </div>
+    <div style="flex:1;min-width:200px;">
+      <div style="font-size:11px;color:#888;margin-bottom:4px;">Layout</div>
+      <div style="font-size:12px;color:#333;">LAYOUT_split_3x6_3_ex2</div>
+    </div>
+    <div style="flex:1;min-width:200px;">
+      <div style="font-size:11px;color:#888;margin-bottom:4px;">Mode</div>
+      <div style="font-size:12px;color:#333;">Joystick — 23 buttons per half</div>
+    </div>
+    <div style="flex:1;min-width:200px;">
+      <div style="font-size:11px;color:#888;margin-bottom:4px;">Boot combo</div>
+      <div style="font-size:12px;color:#333;">JS22 + JS21 + JS0 + JS1</div>
+    </div>
+  </div>
+  <div style="margin-top:12px;display:flex;gap:8px;">
+    <button class="chord-record-btn" onclick="generateKeymap()" style="padding:5px 12px;font-size:11px;background:#e0f5ea;border-color:#4aea8a;color:#1a6a3a;">Generate keymap.c</button>
+    <button class="chord-record-btn" onclick="compileFlash('compile')" style="padding:5px 12px;font-size:11px;">Compile</button>
+    <button class="chord-record-btn" onclick="compileFlash('flash')" style="padding:5px 12px;font-size:11px;">Flash</button>
+    <span id="firmwareStatus" style="font-size:11px;color:#888;margin-left:8px;align-self:center;"></span>
+  </div>
+  <pre id="firmwareOutput" style="display:none;margin-top:10px;background:#f8f8fa;border:1px solid #ddd;border-radius:4px;padding:10px;font-size:10px;max-height:200px;overflow-y:auto;white-space:pre-wrap;"></pre>
 </div>
 
 <div class="keyboard-container">
@@ -786,74 +754,6 @@
     </div>
   </div>
 
-  <!-- ── K585 DITI ── -->
-  <div class="device-layout" id="layout-k585">
-  <div class="keyboard">
-    <div class="g-column" id="gColumn">
-      <div class="key g-key" data-key="G1">G1</div>
-      <div class="key g-key" data-key="G2">G2</div>
-      <div class="key g-key" data-key="G3">G3</div>
-      <div class="key g-key" data-key="G4">G4</div>
-      <div class="key g-key" data-key="G5">G5</div>
-    </div>
-
-    <div class="main-area">
-      <div class="m-row">
-        <div class="key m-key" data-key="M1">M1</div>
-        <div class="key m-key" data-key="M2">M2</div>
-        <div class="key m-key" data-key="M3">M3</div>
-        <div class="key m-key" data-key="M4">M4</div>
-        <div class="key m-key" data-key="REC">REC</div>
-      </div>
-
-      <div class="row" id="row0">
-        <div class="key" data-key="KEY_ESC">Esc</div>
-        <div class="key" data-key="KEY_1">1</div>
-        <div class="key" data-key="KEY_2">2</div>
-        <div class="key" data-key="KEY_3">3</div>
-        <div class="key" data-key="KEY_4">4</div>
-        <div class="key" data-key="KEY_5">5</div>
-        <div class="key" data-key="KEY_6">6</div>
-        <div class="key" data-key="KEY_7">7</div>
-      </div>
-
-      <div class="row" id="row1">
-        <div class="key wide-1_25" data-key="KEY_TAB">Tab</div>
-        <div class="key" data-key="KEY_Q">Q</div>
-        <div class="key" data-key="KEY_W">W</div>
-        <div class="key" data-key="KEY_E">E</div>
-        <div class="key" data-key="KEY_R">R</div>
-        <div class="key" data-key="KEY_T">T</div>
-        <div class="key" data-key="KEY_Y">Y</div>
-        <div class="key" data-key="KEY_U">U</div>
-      </div>
-
-      <div class="row" id="row2">
-        <div class="key wide-1_5" data-key="KEY_CAPSLOCK">Caps</div>
-        <div class="key" data-key="KEY_A">A</div>
-        <div class="key" data-key="KEY_S">S</div>
-        <div class="key" data-key="KEY_D">D</div>
-        <div class="key" data-key="KEY_F">F</div>
-        <div class="key" data-key="KEY_G">G</div>
-      </div>
-
-      <div class="row" id="row3">
-        <div class="key wide-1_75" data-key="KEY_LEFTSHIFT">Shift</div>
-        <div class="key" data-key="KEY_Z">Z</div>
-        <div class="key" data-key="KEY_X">X</div>
-        <div class="key" data-key="KEY_C">C</div>
-        <div class="key" data-key="KEY_V">V</div>
-        <div class="key" data-key="KEY_B">B</div>
-      </div>
-
-      <div class="row" id="row4">
-        <div class="key wide-1_25" data-key="KEY_LEFTCTRL">Ctrl</div>
-        <div class="key" data-key="KEY_LEFTALT">Alt</div>
-        <div class="key space" data-key="KEY_SPACE">Space</div>
-      </div>
-    </div>
-  </div>
-  </div><!-- /layout-k585 -->
 </div>
 
 <!-- ══ DISCOVERY MODE ══ -->
@@ -997,12 +897,6 @@ document.querySelectorAll('.key[data-key]').forEach(el => {
   keyElements[el.dataset.key] = el
 })
 
-// G-key code mapping — we don't know these yet, so we'll match dynamically
-// any key that comes in and doesn't match a layout key might be a G-key
-const gKeySlots = ['G1', 'G2', 'G3', 'G4', 'G5']
-const gKeyMap = {} // evdev name -> G slot
-let nextGSlot = 0
-
 function updateStats() {
   document.getElementById('knownCount').textContent = knownCount
   document.getElementById('unknownCount').textContent = Object.keys(unknownKeys).length
@@ -1073,75 +967,10 @@ function flashKey(keyName, isDown) {
   return true
 }
 
-// SSE connection — only when served via HTTP (not file://)
+// connection status — Gamepad API handles input, no SSE needed
 function connect() {
-  if (location.protocol === 'file:') {
-    const status = document.getElementById('connStatus')
-    status.innerHTML = '<span class="dot green"></span><span>standalone mode</span>'
-    return
-  }
   const status = document.getElementById('connStatus')
-  const evtSource = new EventSource('/events')
-
-  evtSource.onopen = () => {
-    status.innerHTML = '<span class="dot green pulse"></span><span>listening</span>'
-  }
-
-  evtSource.onerror = () => {
-    status.innerHTML = '<span class="dot red"></span><span>disconnected</span>'
-    setTimeout(connect, 2000)
-  }
-
-  evtSource.onmessage = (e) => {
-    const evt = JSON.parse(e.data)
-    totalEvents++
-
-    if (evt.type === 'key') {
-      const isDown = evt.value === 1
-      const matched = flashKey(evt.name, isDown)
-
-      if (!matched && isDown) {
-        // didn't match layout — unknown key
-        addUnknownKey(evt.name, evt.code, evt.device, evt.ts)
-      }
-
-      const cls = !matched ? 'unknown' : (isDown ? 'down' : 'up')
-      addLogEntry(`${evt.ts}  ${evt.state}  ${evt.name}  code=${evt.code}  ${evt.device.split('/').pop()}`, cls)
-    } else if (evt.type === 'rel') {
-      addUnknownKey(evt.name, evt.code, evt.device, evt.ts)
-      addLogEntry(`${evt.ts}  REL   ${evt.name}  value=${evt.value}  ${evt.device.split('/').pop()}`, 'unknown')
-    } else {
-      addUnknownKey(evt.name, '?', evt.device, evt.ts)
-      addLogEntry(`${evt.ts}  ???   ${evt.name}  value=${evt.value}  ${evt.device.split('/').pop()}`, 'unknown')
-    }
-
-    updateStats()
-  }
-}
-
-async function clearAll() {
-  await fetch('/clear')
-  // reset UI
-  document.querySelectorAll('.key').forEach(el => {
-    el.classList.remove('discovered', 'active')
-    delete el.dataset.discovered
-    delete el.dataset.count
-    const c = el.querySelector('.count')
-    if (c) c.remove()
-  })
-  document.getElementById('unknownList').innerHTML = ''
-  document.getElementById('emptyUnknown').style.display = 'block'
-  document.getElementById('eventLog').innerHTML = ''
-  Object.keys(unknownKeys).forEach(k => delete unknownKeys[k])
-  totalEvents = 0
-  knownCount = 0
-  updateStats()
-}
-
-async function saveMap() {
-  const res = await fetch('/save')
-  const data = await res.json()
-  addLogEntry(`Saved to ${data.path}`, 'down')
+  status.innerHTML = '<span class="dot green"></span><span>gamepad mode</span>'
 }
 
 // keyboard capture removed — using Gamepad API for input
@@ -1233,7 +1062,7 @@ function loadPreset(name) {
       clearSequences()
       if (profile.sequences) {
         for (const entry of profile.sequences) {
-          addSequenceEntry(entry.seq)
+          addSequenceEntry(entry.seq, entry.seqLayers || null)
           const seqKey = seqToKey(entry.seq)
           const el = document.querySelector(`.chord-entry[data-combo="${seqKey}"]`)
           if (el) {
@@ -1243,7 +1072,7 @@ function loadPreset(name) {
             if (noteInput) noteInput.value = entry.note || ''
           }
           const m = sequences.find(s => seqToKey(s.seq) === seqKey)
-          if (m) { m.type = entry.type; m.action = entry.action; m.layer = entry.layer; m.note = entry.note }
+          if (m) { m.type = entry.type; m.action = entry.action; m.layer = entry.layer; m.note = entry.note; m.seqLayers = entry.seqLayers || null }
         }
       }
 
@@ -1329,6 +1158,7 @@ renderDeviceNotes()
 
 // ── Key Mapping (single key → action) ──
 let lastPressedBtn = null
+let lastPressedLayer = 0 // layer at the time of press — survives layer_mo release
 let lastKeyMapType = 'key' // persists between unmapped keys
 
 // button index → matrix position lookup
@@ -1369,13 +1199,15 @@ if (location.protocol !== 'file:') {
 
 function onGamepadKeyForMapping(btn) {
   lastPressedBtn = btn
+  lastPressedLayer = activeLayer
   const matrix = btnToMatrix[btn] || btn
-  document.getElementById('lastPressed').textContent = matrix
-  document.getElementById('keyMapLabel').textContent = matrix
+  const layerName = (layers[activeLayer] && layers[activeLayer].name) || `layer ${activeLayer}`
+  document.getElementById('lastPressed').textContent = `${layerName} — ${matrix}`
+  document.getElementById('keyMapLabel').textContent = `${layerName} — ${matrix}`
   document.getElementById('keyMapEditor').style.display = ''
 
-  // load existing assignment, or use last type for unmapped keys
-  const a = getKey(activeLayer, matrix)
+  // load existing assignment from the captured layer
+  const a = getKey(lastPressedLayer, matrix)
   const typeEl = document.getElementById('keyMapType')
   const actionEl = document.getElementById('keyMapAction')
   typeEl.value = a ? a.type : lastKeyMapType
@@ -1385,7 +1217,7 @@ function onGamepadKeyForMapping(btn) {
 
   // bump touchedAt so it sorts to top
   if (a) { a.touchedAt = Date.now(); saveProfile() }
-  updateKeyMapList()
+  scheduleUIUpdate()
 }
 
 function saveKeyMap() { autoSaveKeyMap() }
@@ -1394,14 +1226,13 @@ function autoSaveKeyMap() {
   if (lastPressedBtn === null) return
   const matrix = btnToMatrix[lastPressedBtn] || lastPressedBtn
   lastKeyMapType = document.getElementById('keyMapType').value
-  setKey(activeLayer, matrix, {
+  setKey(lastPressedLayer, matrix, {
     type: lastKeyMapType,
     action: document.getElementById('keyMapAction').value,
     note: document.getElementById('keyMapNote').value,
   })
   saveProfile()
-  updateKeyLabels()
-  updateKeyMapList()
+  scheduleUIUpdate()
 }
 
 function updateKeyMapList() {
@@ -1419,19 +1250,40 @@ function updateKeyMapList() {
       const div = document.createElement('div')
       div.className = 'chord-entry'
       div.style.opacity = isActive ? '1' : '0.5'
+      div.style.cursor = 'pointer'
       div.innerHTML = `
-        <span style="font-size:9px;color:#888;min-width:36px;">${layerName}</span>
+        <span style="font-size:10px;color:#6a3aaa;min-width:50px;font-weight:bold;">${layerName}</span>
         <div class="chord-combo"><span class="btn-pill">${matrix}</span></div>
         <span class="chord-arrow">\u2192</span>
         <div style="flex:1;font-size:12px;"><span style="color:#888;">[${v.type}]</span> ${v.action}${v.note ? `<span style="color:#aaa;margin-left:8px;font-size:10px;">${v.note}</span>` : ''}</div>
-        <button class="chord-delete" onclick="deleteKeyMap(${layer},'${matrix}', this)">\u00d7</button>
+        <button class="chord-delete" onclick="event.stopPropagation();deleteKeyMap(${layer},'${matrix}', this)">\u00d7</button>
       `
+      div.addEventListener('click', () => selectKeyMapEntry(layer, matrix))
       list.appendChild(div)
     }
   }
   if (!hasAny) {
     list.innerHTML = '<div style="color:#aaa;font-size:11px;padding:8px;">no keys mapped yet</div>'
   }
+}
+
+function selectKeyMapEntry(layer, matrix) {
+  // find the btn index for this matrix position
+  const btn = Object.entries(btnToMatrix).find(([b, m]) => m === matrix)
+  if (!btn) return
+  lastPressedBtn = parseInt(btn[0])
+  lastPressedLayer = layer
+  const layerName = (layers[layer] && layers[layer].name) || `layer ${layer}`
+  document.getElementById('lastPressed').textContent = `${layerName} — ${matrix}`
+  document.getElementById('keyMapLabel').textContent = `${layerName} — ${matrix}`
+  document.getElementById('keyMapEditor').style.display = ''
+  const a = getKey(layer, matrix)
+  const typeEl = document.getElementById('keyMapType')
+  const actionEl = document.getElementById('keyMapAction')
+  typeEl.value = a ? a.type : lastKeyMapType
+  actionEl.value = a ? a.action : ''
+  document.getElementById('keyMapNote').value = a ? (a.note || '') : ''
+  updateKeycodeHints(typeEl, actionEl)
 }
 
 function deleteKeyMap(layer, matrix, btn) {
@@ -1455,8 +1307,10 @@ let heldButtons = new Set()
 let recording = false
 // Sequence = array of steps. Each step = array of buttons held together.
 // [[22,21], [5]] = JS22+>JS21 → JS5
-let recordedSteps = []     // array of steps being built
+let recordedSteps = []     // array of steps being built (each step = [btn, btn, ...])
+let recordedStepLayers = [] // parallel: layer for each button in each step
 let currentChord = []      // buttons in the current chord group
+let currentChordLayers = [] // parallel: layer at time of each button press
 let sequenceTimeout = null
 let allReleased = true     // track if all buttons were released between presses
 const SEQ_TIMEOUT = 500    // ms after last release to finalize sequence
@@ -1470,6 +1324,15 @@ let sequences = []
 // key assignments: {'0_JS2': {type:'key', action:'r'}}
 let keymap = [{}] // array of layers, each layer is { "matrix": { type, action, note } }
 
+// parse layer number from "0", "TG(0)", "MO(1)", etc.
+function parseLayerNum(action) {
+  if (!action) return NaN
+  const s = String(action).trim()
+  const wrap = s.match(/^(?:TG|MO|OSL|LT)\((\d+)/)
+  if (wrap) return parseInt(wrap[1])
+  return parseInt(s)
+}
+
 // helpers to access keymap layers
 function getKey(layer, matrix) { return (keymap[layer] || {})[matrix] }
 function setKey(layer, matrix, val) {
@@ -1478,6 +1341,19 @@ function setKey(layer, matrix, val) {
 }
 function deleteKey(layer, matrix) { if (keymap[layer]) delete keymap[layer][matrix] }
 function getLayerKeys(layer) { return keymap[layer] || {} }
+
+// ── Batched UI updates — coalesce multiple calls into one paint ──
+let _uiDirty = false
+function scheduleUIUpdate() {
+  if (_uiDirty) return
+  _uiDirty = true
+  requestAnimationFrame(() => {
+    _uiDirty = false
+    updateKeyLabels()
+    updateKeyMapList()
+    updateSeqListLayers()
+  })
+}
 
 // make corne keys clickable — opens key map editor in mapping mode
 document.querySelectorAll('#layout-corne-r .key').forEach(el => {
@@ -1505,9 +1381,7 @@ function setActiveLayer(idx) {
   activeLayer = parseInt(idx)
   _baseLayer = activeLayer
   addLogEntry(`Layer -> ${layers[activeLayer].name}`, 'down')
-  updateKeyLabels()
-  updateKeyMapList()
-  updateSeqListLayers()
+  scheduleUIUpdate()
 }
 
 function updateLayerDropdowns() {
@@ -1587,7 +1461,7 @@ function pollGamepad() {
   const heldEl = document.getElementById('heldButtons')
   if (nowHeld.size > 0) {
     heldEl.innerHTML = [...nowHeld].sort((a,b) => a-b)
-      .map(b => `<span class="btn-pill${recording ? ' recording' : ''}">${btnLabel(b)}</span>`)
+      .map(b => `<span class="btn-pill${recording ? ' recording' : ''}">${btnLabelWithLayer(b, activeLayer)}</span>`)
       .join('')
   } else {
     heldEl.innerHTML = ''
@@ -1610,7 +1484,7 @@ function pollGamepad() {
     // so layer_mo always works regardless of current layer
     const a = getKey(_baseLayer, matrix)
     if (a && (a.type === 'layer_mo' || a.type === 'layer_tap') && a.action) {
-      const layerIdx = parseInt(a.action)
+      const layerIdx = parseLayerNum(a.action)
       if (!isNaN(layerIdx) && layerIdx >= 0) {
         while (layers.length <= layerIdx) layers.push({ name: `layer ${layers.length}`, color: '#e0e8f8' })
         heldLayer = layerIdx
@@ -1625,17 +1499,35 @@ function pollGamepad() {
     activeLayer = targetLayer
     const sel = document.getElementById('keyMapLayerSelect')
     if (sel) sel.value = activeLayer
-    updateKeyLabels()
-    updateKeyMapList()
-    updateSeqListLayers()
+    scheduleUIUpdate()
   }
 
   requestAnimationFrame(pollGamepad)
 }
 
 let lastCompletedSeq = null // the latest completed sequence (array of steps)
+let lastCompletedSeqLayers = null // parallel: layer for each button
 
 function onButtonDown(btn) {
+  // ── layer_tg: toggle on press (checks current layer, not just base) ──
+  const matrix = btnToMatrix[btn]
+  if (matrix) {
+    const a = getKey(activeLayer, matrix) || getKey(_baseLayer, matrix)
+    if (a && a.type === 'layer_tg' && a.action) {
+      const layerIdx = parseLayerNum(a.action)
+      if (!isNaN(layerIdx) && layerIdx >= 0) {
+        while (layers.length <= layerIdx) layers.push({ name: `layer ${layers.length}`, color: '#e0e8f8' })
+        _baseLayer = layerIdx
+        activeLayer = layerIdx
+        const sel = document.getElementById('keyMapLayerSelect')
+        if (sel) sel.value = activeLayer
+        updateLayerDropdowns()
+        scheduleUIUpdate()
+        addLogEntry(`TG → ${layers[layerIdx].name}`, 'down')
+      }
+    }
+  }
+
   if (currentMode === 'mapping') {
     onGamepadKeyForMapping(btn)
   }
@@ -1646,12 +1538,15 @@ function onButtonDown(btn) {
   if (allReleased && currentChord.length > 0) {
     // all buttons were released before this press → new step
     recordedSteps.push([...currentChord])
+    recordedStepLayers.push([...currentChordLayers])
     currentChord = []
+    currentChordLayers = []
   }
 
-  // add to current chord group
+  // add to current chord group with layer context
   if (!currentChord.includes(btn)) {
     currentChord.push(btn)
+    currentChordLayers.push(activeLayer)
   }
   allReleased = false
   updateRecordingDisplay()
@@ -1672,7 +1567,9 @@ function onAllReleased() {
     // finalize: push last chord group and complete
     if (currentChord.length > 0) {
       recordedSteps.push([...currentChord])
+      recordedStepLayers.push([...currentChordLayers])
       currentChord = []
+      currentChordLayers = []
     }
     onSequenceComplete()
     sequenceTimeout = null
@@ -1682,11 +1579,13 @@ function onAllReleased() {
 function updateRecordingDisplay() {
   const el = document.getElementById('recordingSeq')
   const parts = []
-  for (const step of recordedSteps) {
-    parts.push(step.map(b => `<span class="btn-pill recording">${btnLabel(b)}</span>`).join('<span style="color:#a080d0;margin:0 1px;">+&gt;</span>'))
+  for (let si = 0; si < recordedSteps.length; si++) {
+    const step = recordedSteps[si]
+    const stepLayers = recordedStepLayers[si] || []
+    parts.push(step.map((b, bi) => `<span class="btn-pill recording">${btnLabelWithLayer(b, stepLayers[bi])}</span>`).join('<span style="color:#a080d0;margin:0 1px;">+&gt;</span>'))
   }
   if (currentChord.length > 0) {
-    parts.push(currentChord.map(b => `<span class="btn-pill recording">${btnLabel(b)}</span>`).join('<span style="color:#a080d0;margin:0 1px;">+&gt;</span>'))
+    parts.push(currentChord.map((b, bi) => `<span class="btn-pill recording">${btnLabelWithLayer(b, currentChordLayers[bi])}</span>`).join('<span style="color:#a080d0;margin:0 1px;">+&gt;</span>'))
   }
   el.innerHTML = parts.join('<span style="color:#ccc;margin:0 3px;">\u2192</span>')
 }
@@ -1694,8 +1593,11 @@ function updateRecordingDisplay() {
 function onSequenceComplete() {
   if (recordedSteps.length === 0) return
   const seq = recordedSteps.map(s => [...s])
+  const seqLayers = recordedStepLayers.map(s => [...s])
   recordedSteps = []
+  recordedStepLayers = []
   currentChord = []
+  currentChordLayers = []
   document.getElementById('recordingSeq').innerHTML = ''
 
   // try to match
@@ -1705,7 +1607,8 @@ function onSequenceComplete() {
   const totalButtons = seq.reduce((n, s) => n + s.length, 0)
   if (currentMode === 'mapping' && totalButtons >= 2) {
     lastCompletedSeq = seq
-    showLastSeq(seq)
+    lastCompletedSeqLayers = seqLayers
+    showLastSeq(seq, seqLayers)
   }
 }
 
@@ -1714,22 +1617,30 @@ function btnLabel(b) {
   return btnToMatrix[b] || b
 }
 
+function btnLabelWithLayer(b, layer) {
+  const matrix = btnToMatrix[b] || b
+  return layer != null ? `${layer}-${matrix}` : matrix
+}
+
 function seqToKey(seq) {
   return seq.map(step => step.map(btnLabel).join('+>')).join('\u2192')
 }
 
-// render a sequence as HTML pills
-function seqToHTML(seq, pillClass) {
+// render a sequence as HTML pills (with optional layer info)
+function seqToHTML(seq, pillClass, seqLayers) {
   const cls = pillClass || ''
-  return seq.map(step =>
-    step.map(b => `<span class="btn-pill ${cls}">${btnLabel(b)}</span>`)
-      .join('<span style="color:#a080d0;margin:0 1px;">+&gt;</span>')
+  return seq.map((step, si) =>
+    step.map((b, bi) => {
+      const layer = seqLayers && seqLayers[si] ? seqLayers[si][bi] : null
+      const label = btnLabelWithLayer(b, layer)
+      return `<span class="btn-pill ${cls}">${label}</span>`
+    }).join('<span style="color:#a080d0;margin:0 1px;">+&gt;</span>')
   ).join('<span style="color:#ccc;margin:0 3px;">\u2192</span>')
 }
 
-function showLastSeq(seq) {
+function showLastSeq(seq, seqLayers) {
   const display = document.getElementById('lastSeqDisplay')
-  display.innerHTML = seqToHTML(seq)
+  display.innerHTML = seqToHTML(seq, '', seqLayers)
 
   // show editor
   document.getElementById('lastSeqEditor').style.display = 'flex'
@@ -1776,52 +1687,52 @@ function autoSaveLastSeq() {
     existing.type = type
     existing.action = action
     existing.note = note
-    const el = document.querySelector(`.chord-entry[data-combo="${seqKey}"]`)
-    if (el) {
-      el.querySelector('select').value = type
-      el.querySelector('input').value = action
-    }
+    if (lastCompletedSeqLayers) existing.seqLayers = lastCompletedSeqLayers
   } else {
-    addSequenceEntry(lastCompletedSeq)
+    addSequenceEntry(lastCompletedSeq, lastCompletedSeqLayers)
     const m = sequences.find(s => seqToKey(s.seq) === seqKey)
     if (m) { m.type = type; m.action = action; m.note = note }
-    const el = document.querySelector(`.chord-entry[data-combo="${seqKey}"]`)
-    if (el) {
-      el.querySelector('select').value = type
-      el.querySelector('input').value = action
-    }
+  }
+  // sync inline list entry
+  const el = document.querySelector(`.chord-entry[data-combo="${seqKey}"]`)
+  if (el) {
+    el.querySelector('select').value = type
+    const inputs = el.querySelectorAll('input')
+    if (inputs[0]) inputs[0].value = action
+    if (inputs[1]) inputs[1].value = note
   }
 
   saveProfile()
 }
 
-function addSequenceEntry(seq) {
+function addSequenceEntry(seq, seqLayers) {
   const seqKey = seqToKey(seq)
   const existing = sequences.find(s => seqToKey(s.seq) === seqKey)
   if (existing) {
+    if (seqLayers) existing.seqLayers = seqLayers
     const el = document.querySelector(`.chord-entry[data-combo="${seqKey}"]`)
     if (el) { el.style.background = '#fff0e0'; setTimeout(() => el.style.background = '', 500) }
     return
   }
 
   document.getElementById('emptyChords').style.display = 'none'
-  const entry = { seq, type: 'key', action: '', layer: activeLayer }
+  const entry = { seq, type: 'key', action: '', layer: activeLayer, seqLayers: seqLayers || null }
   sequences.push(entry)
 
   const div = document.createElement('div')
   div.className = 'chord-entry'
   div.dataset.combo = seqKey
 
-  const pills = seqToHTML(seq)
+  const pills = seqToHTML(seq, '', entry.seqLayers)
 
   const layerName = (layers[entry.layer] && layers[entry.layer].name) || `layer ${entry.layer}`
   div.style.opacity = entry.layer === activeLayer ? '1' : '0.5'
   div.innerHTML = `
     <span style="font-size:9px;color:#888;min-width:36px;">${layerName}</span>
-    <div class="chord-combo">${pills}</div>
+    <div class="chord-combo" style="cursor:pointer;" onclick="selectSeqEntry('${seqKey}')">${pills}</div>
     <span class="chord-arrow">\u2192</span>
     <div class="chord-action">
-      <select onchange="updateSeqType(this, '${seqKey}')">
+      <select onchange="updateSeqType(this, '${seqKey}')" oninput="updateSeqType(this, '${seqKey}')">
         <option value="layer_mo">Layer (hold)</option>
         <option value="layer_tg">Layer (toggle)</option>
         <option value="basic">Basic Key</option>
@@ -1832,13 +1743,36 @@ function addSequenceEntry(seq) {
         <option value="midi_cc">MIDI CC</option>
         <option value="bootloader">Bootloader</option>
       </select>
-      <input type="text" placeholder="e.g. Ctrl+R" onchange="updateSeqAction(this, '${seqKey}')" />
-      <input type="text" placeholder="note" class="seq-note" onchange="updateSeqNote(this, '${seqKey}')" style="width:100px;color:#aaa;" />
+      <input type="text" placeholder="e.g. Ctrl+R" oninput="updateSeqAction(this, '${seqKey}')" />
+      <input type="text" placeholder="note" class="seq-note" oninput="updateSeqNote(this, '${seqKey}')" style="width:100px;color:#aaa;" />
     </div>
     <button class="chord-delete" onclick="removeSeq('${seqKey}', this)">\u00d7</button>
   `
   document.getElementById('chordMapList').appendChild(div)
   saveProfile()
+}
+
+function selectSeqEntry(seqKey) {
+  const entry = sequences.find(s => seqToKey(s.seq) === seqKey)
+  if (!entry) return
+  lastCompletedSeq = entry.seq
+  lastCompletedSeqLayers = entry.seqLayers || null
+  showLastSeq(entry.seq, entry.seqLayers)
+  // highlight selected entry
+  document.querySelectorAll('#chordMapList .chord-entry').forEach(el => el.style.borderLeftColor = '')
+  const el = document.querySelector(`.chord-entry[data-combo="${seqKey}"]`)
+  if (el) el.style.borderLeftColor = '#8b0000'
+}
+
+function syncLastSeqPanel(seqKey) {
+  if (lastCompletedSeq && seqToKey(lastCompletedSeq) === seqKey) {
+    const entry = sequences.find(s => seqToKey(s.seq) === seqKey)
+    if (entry) {
+      document.getElementById('seqType').value = entry.type
+      document.getElementById('seqAction').value = entry.action || ''
+      document.getElementById('seqNote').value = entry.note || ''
+    }
+  }
 }
 
 function updateSeqType(select, seqKey) {
@@ -1848,17 +1782,18 @@ function updateSeqType(select, seqKey) {
   const input = select.parentElement.querySelector('input')
   const ph = { key:'e.g. Ctrl+R', layer:'e.g. 1', midi_note:'e.g. C4', midi_cc:'e.g. CC1=127', osc:'e.g. /track/1/mute', command:'e.g. play' }
   input.placeholder = ph[entry.type] || ''
+  syncLastSeqPanel(seqKey)
   saveProfile()
 }
 
 function updateSeqAction(input, seqKey) {
   const entry = sequences.find(s => seqToKey(s.seq) === seqKey)
-  if (entry) { entry.action = input.value; saveProfile() }
+  if (entry) { entry.action = input.value; syncLastSeqPanel(seqKey); saveProfile() }
 }
 
 function updateSeqNote(input, seqKey) {
   const entry = sequences.find(s => seqToKey(s.seq) === seqKey)
-  if (entry) { entry.note = input.value; saveProfile() }
+  if (entry) { entry.note = input.value; syncLastSeqPanel(seqKey); saveProfile() }
 }
 
 function removeSeq(seqKey, btn) {
@@ -1892,8 +1827,8 @@ function matchSequence(seq) {
   if (!entry || !entry.action) return
 
   if (entry.type === 'layer_mo' || entry.type === 'layer_tg') {
-    const idx = parseInt(entry.action)
-    if (idx >= 0) {
+    const idx = parseLayerNum(entry.action)
+    if (!isNaN(idx) && idx >= 0) {
       // auto-create layers if needed
       while (layers.length <= idx) layers.push({ name: `layer ${layers.length}`, color: '#e0e8f8' })
       activeLayer = idx
@@ -1901,9 +1836,7 @@ function matchSequence(seq) {
       updateLayerDropdowns()
       const layerSel = document.getElementById('keyMapLayerSelect')
       if (layerSel) layerSel.value = idx
-      updateKeyLabels()
-      updateKeyMapList()
-      updateSeqListLayers()
+      scheduleUIUpdate()
       addLogEntry(`SEQ  ${seqKey}  \u2192 LAYER ${layers[idx].name}`, 'down')
     }
     return
@@ -1950,7 +1883,7 @@ function loadProfile() {
     if (saved.deviceNotes) { deviceNotes = saved.deviceNotes; renderDeviceNotes() }
     if (saved.sequences) {
       for (const entry of saved.sequences) {
-        addSequenceEntry(entry.seq)
+        addSequenceEntry(entry.seq, entry.seqLayers || null)
         const seqKey = seqToKey(entry.seq)
         const el = document.querySelector(`.chord-entry[data-combo="${seqKey}"]`)
         if (el) {
@@ -1960,7 +1893,7 @@ function loadProfile() {
           if (noteInput) noteInput.value = entry.note || ''
         }
         const m = sequences.find(s => seqToKey(s.seq) === seqKey)
-        if (m) { m.type = entry.type; m.action = entry.action; m.layer = entry.layer; m.note = entry.note }
+        if (m) { m.type = entry.type; m.action = entry.action; m.layer = entry.layer; m.note = entry.note; m.seqLayers = entry.seqLayers || null }
       }
     }
     _serverSaveEnabled = true
@@ -2039,51 +1972,62 @@ function updateURLParams() {
   }
 })()
 
-// ── Corne right half layer definitions ──
-const corneLayers = {
-  0: { // JOYSTICK — all keys are joystick buttons
-    name: 'JOYSTICK', type: 'joystick',
-    keys: {
-      'CR_EX0': 'JS0',  'CR_EX1': 'JS1',
-      'CR_R0C0': 'JS2',  'CR_R0C1': 'JS3',  'CR_R0C2': 'JS4',  'CR_R0C3': 'JS5',  'CR_R0C4': 'JS6',  'CR_R0C5': 'JS7',
-      'CR_R1C0': 'JS8',  'CR_R1C1': 'JS9',  'CR_R1C2': 'JS10', 'CR_R1C3': 'JS11', 'CR_R1C4': 'JS12', 'CR_R1C5': 'JS13',
-      'CR_R2C0': 'JS14', 'CR_R2C1': 'JS15', 'CR_R2C2': 'JS16', 'CR_R2C3': 'JS17', 'CR_R2C4': 'JS18', 'CR_R2C5': 'JS19',
-      'CR_T0': 'JS20',   'CR_T1': 'JS21',   'CR_T2': 'JS22',
-    }
-  },
+function toggleFirmwarePanel() {
+  const panel = document.getElementById('firmwarePanel')
+  panel.style.display = panel.style.display === 'none' ? '' : 'none'
 }
 
-let activeCorneLayer = 0
+function generateKeymap() {
+  const status = document.getElementById('firmwareStatus')
+  const output = document.getElementById('firmwareOutput')
+  status.textContent = 'generating...'
+  status.style.color = '#888'
 
-function switchCorneLayer(layerIdx) {
-  activeCorneLayer = layerIdx
-  const layer = corneLayers[layerIdx]
-  const isMidi = layer.type === 'midi'
-
-  // update tabs
-  document.querySelectorAll('.layer-tab').forEach(tab => {
-    tab.classList.toggle('active', parseInt(tab.dataset.layer) === layerIdx)
+  const preset = document.getElementById('presetSelect').value
+  fetch(`/api/generate-keymap`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ device: activeDevice, preset }),
   })
-
-  // update key labels
-  for (const [key, label] of Object.entries(layer.keys)) {
-    const el = document.querySelector(`[data-key="${key}"]`)
-    if (el) {
-      el.textContent = label
-      // style midi keys differently
-      if (isMidi && label !== '___') {
-        el.style.borderColor = '#3a2a4a'
-        if (!el.classList.contains('discovered')) {
-          el.style.color = '#8a6ab8'
-        }
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) {
+        status.textContent = 'error: ' + data.error
+        status.style.color = '#c44'
       } else {
-        el.style.borderColor = ''
-        if (!el.classList.contains('discovered')) {
-          el.style.color = ''
-        }
+        status.textContent = 'keymap.c generated'
+        status.style.color = '#1a6a3a'
+        output.style.display = ''
+        output.textContent = data.keymap || data.log || ''
       }
-    }
-  }
+    })
+    .catch(e => { status.textContent = 'failed'; status.style.color = '#c44' })
+}
+
+function compileFlash(action) {
+  const status = document.getElementById('firmwareStatus')
+  const output = document.getElementById('firmwareOutput')
+  status.textContent = action === 'compile' ? 'compiling...' : 'flashing...'
+  status.style.color = '#888'
+
+  fetch(`/api/${action}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ device: activeDevice }),
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) {
+        status.textContent = 'error: ' + data.error
+        status.style.color = '#c44'
+        if (data.log) { output.style.display = ''; output.textContent = data.log }
+      } else {
+        status.textContent = data.ok ? (action === 'compile' ? 'compiled' : 'flashed') : 'done'
+        status.style.color = '#1a6a3a'
+        if (data.log) { output.style.display = ''; output.textContent = data.log }
+      }
+    })
+    .catch(e => { status.textContent = 'failed'; status.style.color = '#c44' })
 }
 
 function switchDevice(device) {
