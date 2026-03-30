@@ -1233,7 +1233,7 @@ function updateKeyMapList() {
     div.innerHTML = `
       <div class="chord-combo"><span class="btn-pill">${jsLabel}</span></div>
       <span class="chord-arrow">\u2192</span>
-      <div style="flex:1;font-size:12px;"><span style="color:#888;">[${v.type}]</span> ${v.action}</div>
+      <div style="flex:1;font-size:12px;"><span style="color:#888;">[${v.type}]</span> ${v.action}${v.note ? `<span style="color:#aaa;margin-left:8px;font-size:10px;">${v.note}</span>` : ''}</div>
       <button class="chord-delete" onclick="deleteKeyMap('${k}', this)">\u00d7</button>
     `
     list.appendChild(div)
