@@ -6,6 +6,14 @@
     {
       "name": "base",
       "color": "#e0f5ea"
+    },
+    {
+      "name": "layer 1",
+      "color": "#e0e8f8"
+    },
+    {
+      "name": "layer 2",
+      "color": "#e0e8f8"
     }
   ],
   "sequences": [
@@ -18,7 +26,8 @@
       ],
       "type": "layer_tg",
       "action": "3",
-      "layer": 0
+      "layer": 0,
+      "touchedAt": 1774882927286
     },
     {
       "seq": [
@@ -40,7 +49,8 @@
       ],
       "type": "layer_tg",
       "action": "5",
-      "layer": 0
+      "layer": 0,
+      "touchedAt": 1774882943934
     },
     {
       "seq": [
@@ -124,8 +134,6 @@
       "layer": 0
     }
   ],
-  "presetRules": [],
-  "exported": "2026-03-30T14:13:15.969Z",
   "keymap": [
     {
       "5,0": {
@@ -161,7 +169,8 @@
       "4,6": {
         "type": "key",
         "action": "r",
-        "note": ""
+        "note": "",
+        "touchedAt": 1774882943116
       },
       "5,6": {
         "type": "key",
@@ -206,12 +215,14 @@
       "7,5": {
         "type": "layer_mo",
         "action": "1",
-        "note": "layer 1 while held - leds red"
+        "note": "layer 1 while held - leds red",
+        "touchedAt": 1774882942401
       },
       "7,4": {
         "type": "layer_mo",
         "action": "2",
-        "note": "layer 2 while held - leds gold"
+        "note": "layer 2 while held - leds gold",
+        "touchedAt": 1774882926369
       },
       "6,2": {
         "type": "key",
@@ -244,5 +255,9 @@
         "note": ""
       }
     }
-  ]
+  ],
+  "activeLayer": 0,
+  "presetRules": [],
+  "deviceNotes": [],
+  "savedAt": "2026-03-30T15:02:24.439Z"
 }
