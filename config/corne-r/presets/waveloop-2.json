@@ -129,23 +129,25 @@
       "type": "key",
       "action": "up",
       "note": "",
-      "touchedAt": 1774879456547
+      "touchedAt": 1774882355336
     },
     "0_5,1": {
       "type": "key",
       "action": "down",
-      "note": ""
+      "note": "",
+      "touchedAt": 1774882355686
     },
     "0_6,1": {
       "type": "key",
       "action": "left",
       "note": "",
-      "touchedAt": 1774879457130
+      "touchedAt": 1774882354605
     },
     "0_4,1": {
       "type": "key",
       "action": "right",
-      "note": ""
+      "note": "",
+      "touchedAt": 1774882354970
     },
     "0_4,0": {
       "type": "key",
@@ -209,7 +211,7 @@
       "type": "layer_mo",
       "action": "1",
       "note": "layer 1 while held - leds red",
-      "touchedAt": 1774879989987
+      "touchedAt": 1774882361868
     },
     "0_7,4": {
       "type": "layer_mo",
@@ -251,5 +253,5 @@
   "activeLayer": 0,
   "presetRules": [],
   "deviceNotes": [],
-  "savedAt": "2026-03-30T14:48:30.235Z"
+  "savedAt": "2026-03-30T14:52:42.371Z"
 }

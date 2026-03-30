@@ -77,6 +77,35 @@ const server = createServer(async (req, res) => {
     return json(res, presets)
   }
 
+  // ── API: create new preset ──
+  const newPresetMatch = path.match(/^\/api\/config\/([^/]+)\/presets$/)
+  if (newPresetMatch && req.method === 'POST') {
+    const deviceId = newPresetMatch[1]
+    const dir = join(CONFIG_DIR, deviceId, 'presets')
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
+
+    // find next available name
+    const existing = readdirSync(dir).filter(f => f.endsWith('.json')).map(f => f.replace('.json', ''))
+    let n = 1
+    let name = `${deviceId}-new-${n}`
+    while (existing.includes(name)) { n++; name = `${deviceId}-new-${n}` }
+
+    const skeleton = {
+      name,
+      device: deviceId,
+      buttons: 23,
+      layers: [{ name: 'base', color: '#e0f5ea' }],
+      sequences: [],
+      keyAssignments: {},
+      presetRules: [],
+      deviceNotes: [],
+      createdAt: new Date().toISOString(),
+    }
+    writeFileSync(join(dir, `${name}.json`), JSON.stringify(skeleton, null, 2))
+    console.log(`created: config/${deviceId}/presets/${name}.json`)
+    return json(res, { name, preset: skeleton })
+  }
+
   // ── API: get/put preset ──
   const presetMatch = path.match(/^\/api\/config\/([^/]+)\/presets\/(.+)$/)
   if (presetMatch) {

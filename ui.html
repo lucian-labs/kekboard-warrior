@@ -959,21 +959,25 @@
   <!-- Rules cards side by side -->
   <div style="display:flex;gap:16px;margin-top:16px;">
     <div class="chord-panel" style="flex:1;">
-      <h2>Preset Rules <span style="font-size:11px;color:#888;font-weight:normal;">— applied across all layers</span></h2>
-      <div id="rulesList" style="max-height:120px;overflow-y:auto;"></div>
-      <div style="display:flex;gap:6px;margin-top:8px;">
-        <input id="newRuleInput" type="text" placeholder="e.g. thumb keys are always modifiers" onkeydown="if(event.key==='Enter')addRule()" style="flex:1;background:#fff;border:1px solid #ccc;padding:4px 8px;font-family:inherit;font-size:11px;border-radius:3px;color:#333;" />
-        <button class="chord-record-btn" onclick="addRule()" style="padding:3px 10px;font-size:11px;">+ Add</button>
+      <h2>Preset Settings</h2>
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;">
+        <label style="font-size:11px;color:#888;">Name:</label>
+        <input id="presetNameInput" type="text" oninput="renamePreset(this.value)" style="flex:1;background:#fff;border:1px solid #ccc;padding:4px 8px;font-family:inherit;font-size:11px;border-radius:3px;color:#333;" />
+      </div>
+      <div id="rulesList" style="max-height:100px;overflow-y:auto;"></div>
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <input id="newRuleInput" type="text" placeholder="add a setting..." onkeydown="if(event.key==='Enter')addRule()" style="flex:1;background:#fff;border:1px solid #ccc;padding:4px 8px;font-family:inherit;font-size:11px;border-radius:3px;color:#333;" />
+        <button class="chord-record-btn" onclick="addRule()" style="padding:3px 10px;font-size:11px;">+</button>
       </div>
     </div>
     <div class="chord-panel" style="flex:1;">
-      <h2>Device Notes <span style="font-size:11px;color:#888;font-weight:normal;">— hardware info &amp; references</span></h2>
-      <div id="deviceNotesList" style="max-height:120px;overflow-y:auto;">
+      <h2>Device Notes</h2>
+      <div id="deviceNotesList" style="max-height:100px;overflow-y:auto;">
         <div style="color:#aaa;font-size:11px;padding:8px;">no device notes</div>
       </div>
-      <div style="display:flex;gap:6px;margin-top:8px;">
-        <input id="newDeviceNote" type="text" placeholder="e.g. boot combo: 7,5+>7,4+>4,6+>5,6" onkeydown="if(event.key==='Enter')addDeviceNote()" style="flex:1;background:#fff;border:1px solid #ccc;padding:4px 8px;font-family:inherit;font-size:11px;border-radius:3px;color:#333;" />
-        <button class="chord-record-btn" onclick="addDeviceNote()" style="padding:3px 10px;font-size:11px;">+ Add</button>
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <input id="newDeviceNote" type="text" placeholder="add a note..." onkeydown="if(event.key==='Enter')addDeviceNote()" style="flex:1;background:#fff;border:1px solid #ccc;padding:4px 8px;font-family:inherit;font-size:11px;border-radius:3px;color:#333;" />
+        <button class="chord-record-btn" onclick="addDeviceNote()" style="padding:3px 10px;font-size:11px;">+</button>
       </div>
     </div>
   </div>
@@ -1170,6 +1174,12 @@ function setMode(mode) {
 }
 
 // ── Presets ──
+function renamePreset(newName) {
+  // just update the in-memory name, save will persist it
+  // actual file rename would need a server endpoint — for now just updates the name field in the JSON
+  saveProfile()
+}
+
 function savePreset() {
   const currentPreset = document.getElementById('presetSelect').value
   let name = currentPreset || prompt('Preset name (e.g. waveloop-v0.2):')
@@ -1211,6 +1221,8 @@ function loadPreset(name) {
     .then(profile => {
       if (!profile) return
       setMode('mapping')
+      const nameInput = document.getElementById('presetNameInput')
+      if (nameInput) nameInput.value = profile.name || name
 
       if (profile.layers) layers = profile.layers
       if (profile.keyAssignments) keyAssignments = profile.keyAssignments
@@ -1905,7 +1917,8 @@ function matchSequence(seq) {
 let _saveTimeout = null
 let _serverSaveEnabled = false // only save to server after first successful load
 function saveProfile() {
-  const data = { layers, sequences, keyAssignments, activeLayer, presetRules, deviceNotes }
+  const presetName = document.getElementById('presetNameInput')?.value || ''
+  const data = { name: presetName, layers, sequences, keyAssignments, activeLayer, presetRules, deviceNotes }
   localStorage.setItem('kekboard-profile', JSON.stringify(data))
 
   // debounced server save — only if user has made changes after load
@@ -1951,27 +1964,22 @@ function loadProfile() {
 }
 
 function newPreset() {
-  const name = prompt('New preset name:')
-  if (!name) return
-  const skeleton = {
-    name, device: activeDevice, buttons: 23,
-    layers: [{ name: 'base', color: '#e0f5ea' }],
-    sequences: [], keyAssignments: {}, presetRules: [], deviceNotes: [],
-  }
-  // save to server
-  fetch(`/api/config/${activeDevice}/presets/${name}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(skeleton),
-  }).then(() => {
-    // add to dropdown and select it
-    const sel = document.getElementById('presetSelect')
-    const opt = document.createElement('option')
-    opt.value = name; opt.textContent = name
-    sel.appendChild(opt)
-    sel.value = name
-    loadPreset(name)
-    updateURLParams()
+  fetch(`/api/config/${activeDevice}/presets`, { method: 'POST' })
+    .then(r => r.json())
+    .then(({ name }) => {
+      // refresh presets from server, select the new one
+      return fetch(`/api/config/${activeDevice}/presets`).then(r => r.json()).then(presets => {
+        const sel = document.getElementById('presetSelect')
+        while (sel.options.length > 1) sel.remove(1)
+        for (const p of presets) {
+          const opt = document.createElement('option')
+          opt.value = p; opt.textContent = p
+          sel.appendChild(opt)
+        }
+        sel.value = name
+        loadPreset(name)
+        updateURLParams()
+      })
   }).catch(() => {})
 }
 
