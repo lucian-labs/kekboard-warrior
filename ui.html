@@ -775,7 +775,7 @@
     <div id="keyMapEditor" style="display:none;padding:10px;background:#f8f8fa;border-radius:4px;margin-top:8px;">
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
         <span id="keyMapEditorLabel" style="font-weight:bold;color:#8b0000;min-width:40px;"></span>
-        <select id="keyMapType" onchange="autoSaveKeyMap();updateKeycodeHints(this,document.getElementById('keyMapAction'))" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;">
+        <select id="keyMapType" onchange="showTypeParams(this.value);autoSaveKeyMap();updateKeycodeHints(this,document.getElementById('keyMapAction'))" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;">
           <option value="basic">Basic Key</option>
           <option value="mod">Modifier + Key</option>
           <option value="layer_mo">Layer (hold)</option>
@@ -794,7 +794,33 @@
           <option value="bootloader">Bootloader</option>
         </select>
         <input id="keyMapAction" type="text" placeholder="e.g. A, Enter, F5, Ctrl+R" oninput="autoSaveKeyMap()" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;width:140px;" />
-        <input id="keyMapLabel" type="text" placeholder="label (overrides display)" oninput="autoSaveKeyMap()" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;width:130px;color:#6a3aaa;" />
+        <input id="keyMapLabel" type="text" placeholder="label" oninput="autoSaveKeyMap()" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;width:100px;color:#6a3aaa;" />
+      </div>
+      <!-- type-specific params -->
+      <div id="midiCcParams" style="display:none;margin-top:6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+        <label style="font-size:11px;color:#888;">CC#</label>
+        <input id="midiCcNum" type="number" min="0" max="127" value="1" oninput="composeMidiAction()" style="width:50px;background:#fff;border:1px solid #ccc;padding:3px 6px;font-family:inherit;font-size:11px;border-radius:3px;" />
+        <label style="font-size:11px;color:#888;">Ch</label>
+        <input id="midiCcCh" type="number" min="1" max="16" value="1" oninput="composeMidiAction()" style="width:45px;background:#fff;border:1px solid #ccc;padding:3px 6px;font-family:inherit;font-size:11px;border-radius:3px;" />
+        <label style="font-size:11px;color:#888;">Val</label>
+        <input id="midiCcVal" type="number" min="0" max="127" value="127" oninput="composeMidiAction()" style="width:50px;background:#fff;border:1px solid #ccc;padding:3px 6px;font-family:inherit;font-size:11px;border-radius:3px;" />
+        <select id="midiCcMode" oninput="composeMidiAction()" style="background:#fff;border:1px solid #ccc;padding:3px 6px;font-family:inherit;font-size:11px;border-radius:3px;">
+          <option value="momentary">Momentary</option>
+          <option value="toggle">Toggle</option>
+          <option value="fixed">Fixed</option>
+        </select>
+      </div>
+      <div id="midiNoteParams" style="display:none;margin-top:6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+        <label style="font-size:11px;color:#888;">Note</label>
+        <select id="midiNoteName" oninput="composeMidiAction()" style="background:#fff;border:1px solid #ccc;padding:3px 6px;font-family:inherit;font-size:11px;border-radius:3px;">
+          <option>C</option><option>C#</option><option>D</option><option>D#</option><option>E</option><option>F</option><option>F#</option><option>G</option><option>G#</option><option>A</option><option>A#</option><option>B</option>
+        </select>
+        <label style="font-size:11px;color:#888;">Oct</label>
+        <input id="midiNoteOct" type="number" min="-2" max="8" value="3" oninput="composeMidiAction()" style="width:45px;background:#fff;border:1px solid #ccc;padding:3px 6px;font-family:inherit;font-size:11px;border-radius:3px;" />
+        <label style="font-size:11px;color:#888;">Ch</label>
+        <input id="midiNoteCh" type="number" min="1" max="16" value="1" oninput="composeMidiAction()" style="width:45px;background:#fff;border:1px solid #ccc;padding:3px 6px;font-family:inherit;font-size:11px;border-radius:3px;" />
+        <label style="font-size:11px;color:#888;">Vel</label>
+        <input id="midiNoteVel" type="number" min="0" max="127" value="127" oninput="composeMidiAction()" style="width:50px;background:#fff;border:1px solid #ccc;padding:3px 6px;font-family:inherit;font-size:11px;border-radius:3px;" />
       </div>
       <input id="keyMapNote" type="text" placeholder="note" oninput="autoSaveKeyMap()" style="background:#fff;border:1px solid #ddd;padding:4px 8px;font-family:inherit;font-size:11px;border-radius:3px;width:100%;margin-top:6px;color:#888;" />
     </div>
@@ -1013,6 +1039,18 @@ function friendlyAction(type, action) {
     const n = wrapMatch[2]
     const name = layers[parseInt(n)] ? layers[parseInt(n)].name : 'layer ' + n
     return name
+  }
+  // structured MIDI CC: cc:1,ch:10,val:127,mode:momentary
+  if (type === 'midi_cc' && action.startsWith('cc:')) {
+    const m = {}
+    action.split(',').forEach(p => { const [k,v] = p.split(':'); if (k && v) m[k.trim()] = v.trim() })
+    return `CC${m.cc || '?'} ch${m.ch || '1'} ${m.mode || ''}`
+  }
+  // structured MIDI note: note:C,oct:3,ch:1,vel:127
+  if (type === 'midi_note' && action.startsWith('note:')) {
+    const m = {}
+    action.split(',').forEach(p => { const [k,v] = p.split(':'); if (k && v) m[k.trim()] = v.trim() })
+    return `${m.note || '?'}${m.oct || '3'} ch${m.ch || '1'}`
   }
   return QMK_FRIENDLY[action] || action
 }
@@ -1289,6 +1327,52 @@ const typeToKeycodeCategory = {
   transparent: 'special', none: 'special', bootloader: 'special',
 }
 
+// ── Type-specific param panels ──
+function showTypeParams(type) {
+  document.getElementById('midiCcParams').style.display = type === 'midi_cc' ? 'flex' : 'none'
+  document.getElementById('midiNoteParams').style.display = type === 'midi_note' ? 'flex' : 'none'
+  // hide raw action input for types with structured params
+  document.getElementById('keyMapAction').style.display = (type === 'midi_cc' || type === 'midi_note') ? 'none' : ''
+}
+
+function composeMidiAction() {
+  const type = document.getElementById('keyMapType').value
+  const actionEl = document.getElementById('keyMapAction')
+  if (type === 'midi_cc') {
+    const cc = document.getElementById('midiCcNum').value
+    const ch = document.getElementById('midiCcCh').value
+    const val = document.getElementById('midiCcVal').value
+    const mode = document.getElementById('midiCcMode').value
+    actionEl.value = `cc:${cc},ch:${ch},val:${val},mode:${mode}`
+  } else if (type === 'midi_note') {
+    const note = document.getElementById('midiNoteName').value
+    const oct = document.getElementById('midiNoteOct').value
+    const ch = document.getElementById('midiNoteCh').value
+    const vel = document.getElementById('midiNoteVel').value
+    actionEl.value = `note:${note},oct:${oct},ch:${ch},vel:${vel}`
+  }
+  autoSaveKeyMap()
+}
+
+function loadMidiParams(type, action) {
+  if (!action) return
+  if (type === 'midi_cc') {
+    const m = {}
+    action.split(',').forEach(p => { const [k,v] = p.split(':'); if (k && v) m[k.trim()] = v.trim() })
+    if (m.cc) document.getElementById('midiCcNum').value = m.cc
+    if (m.ch) document.getElementById('midiCcCh').value = m.ch
+    if (m.val) document.getElementById('midiCcVal').value = m.val
+    if (m.mode) document.getElementById('midiCcMode').value = m.mode
+  } else if (type === 'midi_note') {
+    const m = {}
+    action.split(',').forEach(p => { const [k,v] = p.split(':'); if (k && v) m[k.trim()] = v.trim() })
+    if (m.note) document.getElementById('midiNoteName').value = m.note
+    if (m.oct) document.getElementById('midiNoteOct').value = m.oct
+    if (m.ch) document.getElementById('midiNoteCh').value = m.ch
+    if (m.vel) document.getElementById('midiNoteVel').value = m.vel
+  }
+}
+
 function updateKeycodeHints(selectEl, inputEl) {
   const type = selectEl.value
   const cat = typeToKeycodeCategory[type]
@@ -1330,8 +1414,13 @@ function onGamepadKeyForMapping(btn) {
   const friendly = a ? (a.label || friendlyAction(a.type, a.action)) : ''
   document.getElementById('keyMapEditorLabel').textContent = friendly ? `${currentLabel} → ${friendly}` : currentLabel
   updateKeycodeHints(typeEl, actionEl)
-  actionEl.focus()
-  actionEl.select()
+  const currentType = a ? a.type : lastKeyMapType
+  showTypeParams(currentType)
+  if (a) loadMidiParams(currentType, a.action)
+  if (currentType !== 'midi_cc' && currentType !== 'midi_note') {
+    actionEl.focus()
+    actionEl.select()
+  }
 
   // bump touchedAt so it sorts to top
   if (a) { a.touchedAt = Date.now(); saveProfile() }
@@ -1417,6 +1506,9 @@ function selectKeyMapEntry(layer, matrix) {
   actionEl.value = a ? a.action : ''
   document.getElementById('keyMapLabel').value = a ? (a.label || '') : ''
   document.getElementById('keyMapNote').value = a ? (a.note || '') : ''
+  const currentType = a ? a.type : lastKeyMapType
+  showTypeParams(currentType)
+  if (a) loadMidiParams(currentType, a.action)
   updateKeycodeHints(typeEl, actionEl)
 }
 
