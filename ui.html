@@ -2104,7 +2104,8 @@ function updateURLParams() {
   }
 })()
 
-const BOOT_COMBO_BTNS = [22, 21, 0, 1] // btn indices for boot combo
+// Boot: hold MO(2) thumb + press 4,6 extra key
+const BOOT_BTNS = [21, 0] // 7,4 (MO2 thumb) + 4,6 (extra key)
 
 function showFirmwareStatus(msg, color) {
   const panel = document.getElementById('firmwareStatus')
@@ -2115,14 +2116,14 @@ function showFirmwareStatus(msg, color) {
 }
 
 function enterBootMode() {
-  showFirmwareStatus('Press all 4 highlighted keys simultaneously...', '#a06800')
+  showFirmwareStatus('Hold 7,4 (layer 2 thumb) + press 4,6 (top extra key)', '#a06800')
 
-  // highlight boot combo keys
+  // highlight boot keys
   document.querySelectorAll('#layout-corne-r .key[data-btn]').forEach(el => {
     el.classList.remove('boot-highlight')
     el.style.removeProperty('outline')
   })
-  for (const btn of BOOT_COMBO_BTNS) {
+  for (const btn of BOOT_BTNS) {
     const el = document.querySelector(`#layout-corne-r .key[data-btn="${btn}"]`)
     if (el) {
       el.style.outline = '3px solid #e8a020'

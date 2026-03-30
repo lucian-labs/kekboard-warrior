@@ -1,17 +1,13 @@
-// Corne v4 — All Joystick Buttons (mapping mode)
+// Corne v4 — Joystick (mapping mode)
 // Firmware: crkbd/rev4_0/standard
 // Layout:  LAYOUT_split_3x6_3_ex2
 //
 // All keys send joystick buttons for Gamepad API mapping.
-// Boot combo: hold 7,5 + 7,4 + 4,6 + 5,6 (JS22+JS21+JS0+JS1) within 300ms
+// No combos — zero latency on all buttons.
+// Bootloader: physical BOOT button, or flash keyboard firmware
+// with QK_BOOT on a layer key.
 
 #include QMK_KEYBOARD_H
-
-// ── Combo: JS22+JS21+JS0+JS1 = bootloader ──
-const uint16_t PROGMEM boot_combo[] = {JS_22, JS_21, JS_0, JS_1, COMBO_END};
-combo_t key_combos[] = {
-    COMBO(boot_combo, QK_BOOT),
-};
 
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {

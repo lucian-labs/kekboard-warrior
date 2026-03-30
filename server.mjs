@@ -215,30 +215,6 @@ function generateKeymapC(device, preset) {
 
   // Find boot combo from sequences or device config
   const bootCombo = device.boot_combo || []
-  // Map btn indices to matrix positions for combo
-  const btnToMatrixMap = {}
-  for (const k of device.matrix.keys) { btnToMatrixMap[k.btn] = k.matrix }
-
-  // generate combo entries for sequences that map to layer_tg
-  const combos = []
-
-  // boot combo — resolve actual layer-0 keycodes for each button position
-  const layer0 = keymap[0] || {}
-  if (bootCombo.length > 0) {
-    const comboKeys = bootCombo.map(btn => {
-      const matrix = btnToMatrixMap[btn]
-      const entry = matrix && layer0[matrix]
-      if (entry) return actionToQMK(entry.type, entry.action)
-      return `JS_${btn}` // fallback for unmapped keys (left half stays joystick)
-    })
-    combos.push({
-      name: 'boot_combo',
-      keys: comboKeys,
-      action: 'QK_BOOT',
-      comment: `bootloader (${bootCombo.map(b => btnToMatrixMap[b] || b).join(' + ')})`,
-    })
-  }
-
   // Generate layers
   const numLayers = Math.max(keymap.length, layers.length)
   const layerStrings = []
@@ -251,7 +227,8 @@ function generateKeymapC(device, preset) {
     const rightCodes = rightSlots.map(matrix => {
       const entry = layerKeys[matrix]
       if (entry) return actionToQMK(entry.type, entry.action)
-      // unmapped = no action (KC_NO), not transparent
+      // inject QK_BOOT on layer 2 at 4,6 (hold MO(2) + press extra key = bootloader)
+      if (li === 2 && matrix === '4,6') return 'QK_BOOT'
       return 'KC_NO'
     })
 
@@ -285,18 +262,6 @@ function generateKeymapC(device, preset) {
     )
   }
 
-  // Build combo section
-  let comboSection = ''
-  if (combos.length > 0) {
-    const comboDecls = combos.map(c =>
-      `const uint16_t PROGMEM ${c.name}[] = {${c.keys.join(', ')}, COMBO_END};`
-    ).join('\n')
-    const comboArray = combos.map(c =>
-      `    COMBO(${c.name}, ${c.action}), // ${c.comment}`
-    ).join('\n')
-    comboSection = `${comboDecls}\ncombo_t key_combos[] = {\n${comboArray}\n};\n`
-  }
-
   // Build layer color section (for future RGB)
   const layerColors = layers.map((l, i) =>
     `//   layer ${i}: ${l.name} — ${l.color || '#ffffff'}`
@@ -313,8 +278,8 @@ ${layerColors}
 
 #include QMK_KEYBOARD_H
 
-// ── Combos ──
-${comboSection}
+// Bootloader: hold MO(2) + press 4,6 (top extra key)
+
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 ${layerStrings.join(',\n\n')}
@@ -323,8 +288,8 @@ ${layerStrings.join(',\n\n')}
 `
 
   // Also generate rules.mk and config.h for keyboard mode (no joystick)
-  const rulesContent = `COMBO_ENABLE = yes\n`
-  const configContent = `#pragma once\n\n// Boot combo: 300ms window for 4-key press\n#define COMBO_TERM 300\n`
+  const rulesContent = `# no combos — zero latency\n`
+  const configContent = `#pragma once\n`
 
   return { keymapC, rulesContent, configContent }
 }
