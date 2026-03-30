@@ -1189,7 +1189,7 @@ function savePreset() {
     name,
     device: activeDevice,
     buttons: 23,
-    layers, sequences, keyAssignments, presetRules,
+    layers, sequences, keymap, presetRules,
     exported: new Date().toISOString(),
   }
 
@@ -1225,7 +1225,7 @@ function loadPreset(name) {
       if (nameInput) nameInput.value = profile.name || name
 
       if (profile.layers) layers = profile.layers
-      if (profile.keyAssignments) keyAssignments = profile.keyAssignments
+      if (profile.keymap) keymap = profile.keymap
       if (profile.presetRules) { presetRules = profile.presetRules; renderRules() }
       if (profile.deviceNotes) { deviceNotes = profile.deviceNotes; renderDeviceNotes() }
       activeLayer = profile.activeLayer || 0
@@ -1377,8 +1377,7 @@ function onGamepadKeyForMapping(btn) {
   document.getElementById('keyMapEditor').style.display = ''
 
   // load existing assignment, or use last type for unmapped keys
-  const key = `${activeLayer}_${matrix}`
-  const a = keyAssignments[key]
+  const a = getKey(activeLayer, matrix)
   const typeEl = document.getElementById('keyMapType')
   const actionEl = document.getElementById('keyMapAction')
   typeEl.value = a ? a.type : lastKeyMapType
@@ -1396,14 +1395,12 @@ function saveKeyMap() { autoSaveKeyMap() }
 function autoSaveKeyMap() {
   if (lastPressedBtn === null) return
   const matrix = btnToMatrix[lastPressedBtn] || lastPressedBtn
-  const key = `${activeLayer}_${matrix}`
   lastKeyMapType = document.getElementById('keyMapType').value
-  keyAssignments[key] = {
+  setKey(activeLayer, matrix, {
     type: lastKeyMapType,
     action: document.getElementById('keyMapAction').value,
     note: document.getElementById('keyMapNote').value,
-    touchedAt: Date.now(),
-  }
+  })
   saveProfile()
   updateKeyLabels()
   updateKeyMapList()
@@ -1412,30 +1409,27 @@ function autoSaveKeyMap() {
 function updateKeyMapList() {
   const list = document.getElementById('keyMapList')
   list.innerHTML = ''
-  const prefix = `${activeLayer}_`
-  const entries = Object.entries(keyAssignments)
-    .filter(([k]) => k.startsWith(prefix))
-    .sort((a, b) => (b[1].touchedAt || 0) - (a[1].touchedAt || 0))
+  const layerKeys = getLayerKeys(activeLayer)
+  const entries = Object.entries(layerKeys)
   if (entries.length === 0) {
     list.innerHTML = '<div style="color:#aaa;font-size:11px;padding:8px;">no keys mapped on this layer yet</div>'
     return
   }
-  for (const [k, v] of entries) {
-    const jsLabel = k.replace(prefix, '')
+  for (const [matrix, v] of entries) {
     const div = document.createElement('div')
     div.className = 'chord-entry'
     div.innerHTML = `
-      <div class="chord-combo"><span class="btn-pill">${jsLabel}</span></div>
+      <div class="chord-combo"><span class="btn-pill">${matrix}</span></div>
       <span class="chord-arrow">\u2192</span>
       <div style="flex:1;font-size:12px;"><span style="color:#888;">[${v.type}]</span> ${v.action}${v.note ? `<span style="color:#aaa;margin-left:8px;font-size:10px;">${v.note}</span>` : ''}</div>
-      <button class="chord-delete" onclick="deleteKeyMap('${k}', this)">\u00d7</button>
+      <button class="chord-delete" onclick="deleteKeyMap(${activeLayer},'${matrix}', this)">\u00d7</button>
     `
     list.appendChild(div)
   }
 }
 
-function deleteKeyMap(key, btn) {
-  delete keyAssignments[key]
+function deleteKeyMap(layer, matrix, btn) {
+  deleteKey(layer, matrix)
   btn.closest('.chord-entry').remove()
   saveProfile()
   updateKeyLabels()
@@ -1467,7 +1461,16 @@ let activeLayer = 0
 // sequences: [{seq: [22,21], type: 'layer_tg', action: '1', layer: 0}]
 let sequences = []
 // key assignments: {'0_JS2': {type:'key', action:'r'}}
-let keyAssignments = {}
+let keymap = [{}] // array of layers, each layer is { "matrix": { type, action, note } }
+
+// helpers to access keymap layers
+function getKey(layer, matrix) { return (keymap[layer] || {})[matrix] }
+function setKey(layer, matrix, val) {
+  while (keymap.length <= layer) keymap.push({})
+  keymap[layer][matrix] = val
+}
+function deleteKey(layer, matrix) { if (keymap[layer]) delete keymap[layer][matrix] }
+function getLayerKeys(layer) { return keymap[layer] || {} }
 
 // make corne keys clickable — opens key map editor in mapping mode
 document.querySelectorAll('#layout-corne-r .key').forEach(el => {
@@ -1510,8 +1513,7 @@ function updateLayerDropdowns() {
 function updateKeyLabels() {
   document.querySelectorAll('#layout-corne-r .key[data-btn]').forEach(el => {
     const matrix = el.dataset.matrix
-    const key = `${activeLayer}_${matrix}`
-    const a = keyAssignments[key]
+    const a = getKey(activeLayer, matrix)
     if (a && a.action) {
       const actionLabel = a.action.length > 5 ? a.action.slice(0, 5) : a.action
       el.innerHTML = `${actionLabel}<span style="position:absolute;top:1px;left:2px;font-size:7px;color:#aaa;">${matrix}</span>`
@@ -1594,11 +1596,14 @@ function pollGamepad() {
   for (const btn of nowHeld) {
     const matrix = btnToMatrix[btn]
     if (!matrix) continue
-    const key = `${activeLayer}_${matrix}`
-    const a = keyAssignments[key]
+    const a = getKey(activeLayer, matrix)
     if (a && (a.type === 'layer_mo' || a.type === 'layer_tap') && a.action) {
       const layerIdx = parseInt(a.action)
-      if (!isNaN(layerIdx) && layerIdx >= 0 && layerIdx < layers.length) {
+      if (!isNaN(layerIdx) && layerIdx >= 0) {
+        // auto-create layers if referenced but not defined
+        while (layers.length <= layerIdx) {
+          layers.push({ name: `layer ${layers.length}`, color: '#e0e8f8' })
+        }
         previewLayer = layerIdx
         break
       }
@@ -1613,15 +1618,13 @@ function pollGamepad() {
   // always update key labels to reflect current display layer
   document.querySelectorAll('#layout-corne-r .key[data-btn]').forEach(el => {
     const matrix = el.dataset.matrix
-    const key = `${displayLayer}_${matrix}`
-    const a = keyAssignments[key]
+    const a = getKey(displayLayer, matrix)
     let label
     if (a && a.action) {
       const actionLabel = a.action.length > 5 ? a.action.slice(0, 5) : a.action
       label = `${actionLabel}<span style="position:absolute;top:1px;left:2px;font-size:7px;color:#aaa;">${matrix}</span>`
     } else if (displayLayer !== activeLayer) {
-      const baseKey = `${activeLayer}_${matrix}`
-      const baseA = keyAssignments[baseKey]
+      const baseA = getKey(activeLayer, matrix)
       if (baseA && baseA.action) {
         const bl = baseA.action.length > 5 ? baseA.action.slice(0, 5) : baseA.action
         label = `<span style="opacity:0.4">${bl}</span><span style="position:absolute;top:1px;left:2px;font-size:7px;color:#aaa;">${matrix}</span>`
@@ -1918,14 +1921,14 @@ let _saveTimeout = null
 let _serverSaveEnabled = false // only save to server after first successful load
 function saveProfile() {
   const presetName = document.getElementById('presetNameInput')?.value || ''
-  const data = { name: presetName, layers, sequences, keyAssignments, activeLayer, presetRules, deviceNotes }
+  const data = { name: presetName, layers, sequences, keymap, activeLayer, presetRules, deviceNotes }
   localStorage.setItem('kekboard-profile', JSON.stringify(data))
 
   // debounced server save — only if user has made changes after load
   clearTimeout(_saveTimeout)
   _saveTimeout = setTimeout(() => {
     const preset = document.getElementById('presetSelect').value
-    if (_serverSaveEnabled && preset && activeDevice && location.protocol !== 'file:' && Object.keys(keyAssignments).length > 0) {
+    if (_serverSaveEnabled && preset && activeDevice && location.protocol !== 'file:' && keymap.some(layer => Object.keys(layer).length > 0)) {
       fetch(`/api/config/${activeDevice}/presets/${preset}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -1941,7 +1944,7 @@ function loadProfile() {
     if (!saved) return
     if (saved.layers) { layers = saved.layers; updateLayerDropdowns() }
     if (saved.activeLayer != null) activeLayer = saved.activeLayer
-    if (saved.keyAssignments) { keyAssignments = saved.keyAssignments; updateKeyLabels() }
+    if (saved.keymap) { keymap = saved.keymap; updateKeyLabels() }
     if (saved.presetRules) { presetRules = saved.presetRules; renderRules() }
     if (saved.deviceNotes) { deviceNotes = saved.deviceNotes; renderDeviceNotes() }
     if (saved.sequences) {

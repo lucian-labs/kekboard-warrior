@@ -96,7 +96,7 @@ const server = createServer(async (req, res) => {
       buttons: 23,
       layers: [{ name: 'base', color: '#e0f5ea' }],
       sequences: [],
-      keyAssignments: {},
+      keymap: [{}],
       presetRules: [],
       deviceNotes: [],
       createdAt: new Date().toISOString(),
