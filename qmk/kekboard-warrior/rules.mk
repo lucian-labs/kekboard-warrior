@@ -1,2 +1,3 @@
 JOYSTICK_ENABLE = yes
 JOYSTICK_DRIVER = digital
+COMBO_ENABLE = yes

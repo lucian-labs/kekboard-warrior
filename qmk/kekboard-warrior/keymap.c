@@ -1,8 +1,16 @@
 // Corne v4 — All Joystick Buttons
 // Firmware: crkbd/rev4_0/standard
 // Layout:  LAYOUT_split_3x6_3_ex2
+//
+// BOOTLOADER: hold all 3 thumb keys (JS20+JS21+JS22) simultaneously
 
 #include QMK_KEYBOARD_H
+
+// ── Combo: 3 thumb keys = bootloader ──
+const uint16_t PROGMEM boot_combo[] = {JS_20, JS_21, JS_22, COMBO_END};
+combo_t key_combos[] = {
+    COMBO(boot_combo, QK_BOOT),
+};
 
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
