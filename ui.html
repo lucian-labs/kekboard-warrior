@@ -605,40 +605,40 @@
     <div class="corne-inner">
       <div class="corne-body">
         <div class="extra-col">
-          <div class="key thumb-key" data-key="CR_EX0" data-pos="e,0" style="width:44px;height:38px;">JS0</div>
-          <div class="key thumb-key" data-key="CR_EX1" data-pos="e,1" style="width:44px;height:38px;">JS1</div>
+          <div class="key thumb-key" data-key="CR_EX0" data-pos="e,0" data-js="JS0" style="width:44px;height:38px;">4,6</div>
+          <div class="key thumb-key" data-key="CR_EX1" data-pos="e,1" data-js="JS1" style="width:44px;height:38px;">5,6</div>
         </div>
         <div class="main-rows">
           <div class="row">
-            <div class="key" data-key="CR_R0C0" data-pos="0,0">JS2</div>
-            <div class="key" data-key="CR_R0C1" data-pos="0,1">JS3</div>
-            <div class="key" data-key="CR_R0C2" data-pos="0,2">JS4</div>
-            <div class="key" data-key="CR_R0C3" data-pos="0,3">JS5</div>
-            <div class="key" data-key="CR_R0C4" data-pos="0,4">JS6</div>
-            <div class="key" data-key="CR_R0C5" data-pos="0,5">JS7</div>
+            <div class="key" data-key="CR_R0C0" data-pos="0,0" data-js="JS2">4,0</div>
+            <div class="key" data-key="CR_R0C1" data-pos="0,1" data-js="JS3">4,1</div>
+            <div class="key" data-key="CR_R0C2" data-pos="0,2" data-js="JS4">4,2</div>
+            <div class="key" data-key="CR_R0C3" data-pos="0,3" data-js="JS5">4,3</div>
+            <div class="key" data-key="CR_R0C4" data-pos="0,4" data-js="JS6">4,4</div>
+            <div class="key" data-key="CR_R0C5" data-pos="0,5" data-js="JS7">4,5</div>
           </div>
           <div class="row">
-            <div class="key" data-key="CR_R1C0" data-pos="1,0">JS8</div>
-            <div class="key" data-key="CR_R1C1" data-pos="1,1">JS9</div>
-            <div class="key" data-key="CR_R1C2" data-pos="1,2">JS10</div>
-            <div class="key" data-key="CR_R1C3" data-pos="1,3">JS11</div>
-            <div class="key" data-key="CR_R1C4" data-pos="1,4">JS12</div>
-            <div class="key" data-key="CR_R1C5" data-pos="1,5">JS13</div>
+            <div class="key" data-key="CR_R1C0" data-pos="1,0" data-js="JS8">5,0</div>
+            <div class="key" data-key="CR_R1C1" data-pos="1,1" data-js="JS9">5,1</div>
+            <div class="key" data-key="CR_R1C2" data-pos="1,2" data-js="JS10">5,2</div>
+            <div class="key" data-key="CR_R1C3" data-pos="1,3" data-js="JS11">5,3</div>
+            <div class="key" data-key="CR_R1C4" data-pos="1,4" data-js="JS12">5,4</div>
+            <div class="key" data-key="CR_R1C5" data-pos="1,5" data-js="JS13">5,5</div>
           </div>
           <div class="row">
-            <div class="key" data-key="CR_R2C0" data-pos="2,0">JS14</div>
-            <div class="key" data-key="CR_R2C1" data-pos="2,1">JS15</div>
-            <div class="key" data-key="CR_R2C2" data-pos="2,2">JS16</div>
-            <div class="key" data-key="CR_R2C3" data-pos="2,3">JS17</div>
-            <div class="key" data-key="CR_R2C4" data-pos="2,4">JS18</div>
-            <div class="key" data-key="CR_R2C5" data-pos="2,5">JS19</div>
+            <div class="key" data-key="CR_R2C0" data-pos="2,0" data-js="JS14">6,0</div>
+            <div class="key" data-key="CR_R2C1" data-pos="2,1" data-js="JS15">6,1</div>
+            <div class="key" data-key="CR_R2C2" data-pos="2,2" data-js="JS16">6,2</div>
+            <div class="key" data-key="CR_R2C3" data-pos="2,3" data-js="JS17">6,3</div>
+            <div class="key" data-key="CR_R2C4" data-pos="2,4" data-js="JS18">6,4</div>
+            <div class="key" data-key="CR_R2C5" data-pos="2,5" data-js="JS19">6,5</div>
           </div>
         </div>
       </div>
       <div class="thumb-row">
-        <div class="key thumb-key" data-key="CR_T0" data-pos="3,0">JS20</div>
-        <div class="key thumb-key" data-key="CR_T1" data-pos="3,1">JS21</div>
-        <div class="key thumb-key" data-key="CR_T2" data-pos="3,2">JS22</div>
+        <div class="key thumb-key" data-key="CR_T0" data-pos="3,0" data-js="JS20">7,3</div>
+        <div class="key thumb-key" data-key="CR_T1" data-pos="3,1" data-js="JS21">7,4</div>
+        <div class="key thumb-key" data-key="CR_T2" data-pos="3,2" data-js="JS22">7,5</div>
       </div>
     </div>
   </div>
@@ -1324,8 +1324,8 @@ let keyAssignments = {}
 document.querySelectorAll('#layout-corne-r .key').forEach(el => {
   el.style.cursor = 'pointer'
   el.addEventListener('click', () => {
-    const jsLabel = el.dataset.assignedLabel || el.textContent
-    if (!jsLabel.startsWith('JS')) return
+    const jsLabel = el.dataset.js
+    if (!jsLabel) return
     if (currentMode !== 'mapping') setMode('mapping')
     const btn = parseInt(jsLabel.replace('JS', ''))
     if (!isNaN(btn)) onGamepadKeyForMapping(btn)
@@ -1361,15 +1361,15 @@ function updateLayerDropdowns() {
 
 function updateKeyLabels() {
   document.querySelectorAll('#layout-corne-r .key').forEach(el => {
-    const jsLabel = el.dataset.assignedLabel || el.textContent
-    if (!jsLabel.startsWith('JS')) return
+    const jsLabel = el.dataset.js
+    if (!jsLabel) return
     const key = `${activeLayer}_${jsLabel}`
     const a = keyAssignments[key]
     if (a && a.action) {
-      el.dataset.assignedLabel = jsLabel
       el.textContent = a.action.length > 5 ? a.action.slice(0, 5) : a.action
-    } else if (el.dataset.assignedLabel) {
-      el.textContent = el.dataset.assignedLabel
+    } else {
+      // show matrix position as default
+      el.textContent = el.dataset.matrix || el.dataset.js
     }
   })
 }
@@ -1435,12 +1435,10 @@ function pollGamepad() {
   }
 
   // highlight keys on the visual layout
-  document.querySelectorAll('#layout-corne-r .key').forEach(el => {
-    const jsNum = parseInt(el.textContent.replace('JS', ''))
-    if (!isNaN(jsNum)) {
-      el.classList.toggle('active', nowHeld.has(jsNum))
-      if (nowHeld.has(jsNum)) el.classList.add('discovered')
-    }
+  document.querySelectorAll('#layout-corne-r .key[data-js]').forEach(el => {
+    const jsNum = parseInt(el.dataset.js.replace('JS', ''))
+    el.classList.toggle('active', nowHeld.has(jsNum))
+    if (nowHeld.has(jsNum)) el.classList.add('discovered')
   })
 
   requestAnimationFrame(pollGamepad)

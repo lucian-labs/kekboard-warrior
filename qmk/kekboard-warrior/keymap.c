@@ -6,8 +6,8 @@
 
 #include QMK_KEYBOARD_H
 
-// ── Combo: 3 thumb keys = bootloader ──
-const uint16_t PROGMEM boot_combo[] = {JS_20, JS_21, JS_22, COMBO_END};
+// ── Combo: JS22+JS21+JS0+JS1 = bootloader ──
+const uint16_t PROGMEM boot_combo[] = {JS_22, JS_21, JS_0, JS_1, COMBO_END};
 combo_t key_combos[] = {
     COMBO(boot_combo, QK_BOOT),
 };
