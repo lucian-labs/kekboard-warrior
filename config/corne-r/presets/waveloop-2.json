@@ -40,94 +40,58 @@
   "keymap": [
     {
       "5,0": {
-        "type": "key",
-        "action": "up",
+        "type": "basic",
+        "action": "KC_UP",
         "note": "",
         "touchedAt": 1774887168157
       },
       "5,1": {
-        "type": "key",
-        "action": "down",
+        "type": "basic",
+        "action": "KC_DOWN",
         "note": "",
         "touchedAt": 1774887168490
       },
       "6,1": {
-        "type": "key",
-        "action": "left",
+        "type": "basic",
+        "action": "KC_LEFT",
         "note": "",
         "touchedAt": 1774887168407
       },
       "4,1": {
-        "type": "key",
-        "action": "right",
+        "type": "basic",
+        "action": "KC_RIGHT",
         "note": "",
         "touchedAt": 1774887168540
       },
       "4,0": {
-        "type": "key",
-        "action": "enter",
+        "type": "basic",
+        "action": "KC_ENTER",
         "note": "",
         "touchedAt": 1774887168223
       },
       "6,0": {
         "type": "basic",
-        "action": "esc",
+        "action": "KC_ESCAPE",
         "note": "",
         "touchedAt": 1774887168054
       },
       "4,6": {
-        "type": "key",
-        "action": "r",
+        "type": "basic",
+        "action": "KC_R",
         "note": "",
         "touchedAt": 1774885281916
       },
       "5,6": {
-        "type": "key",
-        "action": "w",
+        "type": "basic",
+        "action": "KC_W",
         "note": "",
         "touchedAt": 1774885282133
       },
       "7,3": {
-        "type": "key",
-        "action": "space",
+        "type": "basic",
+        "action": "KC_SPACE",
         "note": "",
         "touchedAt": 1774885780956
-      },
-      "6,4": {
-        "type": "",
-        "action": "",
-        "note": "",
-        "touchedAt": 1774885829283
-      },
-      "5,4": {
-        "type": "",
-        "action": "",
-        "note": "",
-        "touchedAt": 1774885760358
-      },
-      "4,4": {
-        "type": "",
-        "action": "",
-        "note": "",
-        "touchedAt": 1774885760457
-      },
-      "6,5": {
-        "type": "",
-        "action": "",
-        "note": "",
-        "touchedAt": 1774885759574
-      },
-      "5,5": {
-        "type": "",
-        "action": "",
-        "note": "",
-        "touchedAt": 1774885759724
-      },
-      "4,5": {
-        "type": "",
-        "action": "",
-        "note": "",
-        "touchedAt": 1774885759825
       },
       "7,5": {
         "type": "layer_mo",
@@ -142,38 +106,38 @@
         "touchedAt": 1774885806736
       },
       "6,2": {
-        "type": "key",
-        "action": "1",
+        "type": "basic",
+        "action": "KC_1",
         "note": "",
         "touchedAt": 1774885761458
       },
       "5,2": {
-        "type": "key",
-        "action": "2",
+        "type": "basic",
+        "action": "KC_2",
         "note": "",
         "touchedAt": 1774885761641
       },
       "4,2": {
-        "type": "key",
-        "action": "3",
+        "type": "basic",
+        "action": "KC_3",
         "note": "",
         "touchedAt": 1774885761774
       },
       "6,3": {
-        "type": "key",
-        "action": "4",
+        "type": "basic",
+        "action": "KC_4",
         "note": "",
         "touchedAt": 1774885760591
       },
       "5,3": {
-        "type": "key",
-        "action": "5",
+        "type": "basic",
+        "action": "KC_5",
         "note": "",
         "touchedAt": 1774885761040
       },
       "4,3": {
-        "type": "key",
-        "action": "6",
+        "type": "basic",
+        "action": "KC_6",
         "note": "",
         "touchedAt": 1774885761241
       }
@@ -181,69 +145,54 @@
     {
       "6,0": {
         "type": "basic",
-        "action": "f5",
+        "action": "KC_F5",
         "note": "",
         "touchedAt": 1774887470954
       },
       "5,0": {
         "type": "basic",
-        "action": "f6",
+        "action": "KC_F6",
         "note": "",
         "touchedAt": 1774886642248
       },
       "4,0": {
         "type": "basic",
-        "action": "f7",
+        "action": "KC_F7",
         "note": "",
         "touchedAt": 1774886640571
       },
       "6,1": {
-        "type": "",
-        "action": "f9",
+        "type": "basic",
+        "action": "KC_F9",
         "note": "",
         "touchedAt": 1774887472238
       },
       "5,1": {
-        "type": "",
-        "action": "f10",
+        "type": "basic",
+        "action": "KC_F10",
         "note": "",
         "touchedAt": 1774887469676
       },
       "4,1": {
-        "type": "",
-        "action": "f11",
+        "type": "basic",
+        "action": "KC_F11",
         "note": "",
         "touchedAt": 1774885730294
       },
       "5,6": {
-        "type": "",
-        "action": "f8",
-        "note": ""
+        "type": "basic",
+        "action": "KC_F8",
+        "note": "",
+        "touchedAt": 1774887891560
       },
       "4,6": {
-        "type": "",
-        "action": "f12",
+        "type": "basic",
+        "action": "KC_F12",
         "note": "",
         "touchedAt": 1774885782756
       }
     },
-    {
-      "6,0": {
-        "type": "",
-        "action": "",
-        "note": ""
-      },
-      "5,0": {
-        "type": "",
-        "action": "",
-        "note": ""
-      },
-      "4,0": {
-        "type": "",
-        "action": "",
-        "note": ""
-      }
-    },
+    {},
     {},
     {},
     {
@@ -260,5 +209,5 @@
     "set colors for the layers, solid, the colors should be tightly aligned with what layer is currently active. [blue,red,gold,green,magenta] - will add more layer"
   ],
   "deviceNotes": [],
-  "savedAt": "2026-03-30T16:21:24.410Z"
+  "savedAt": "2026-03-30T16:24:52.067Z"
 }

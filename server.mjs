@@ -251,15 +251,13 @@ function generateKeymapC(device, preset) {
     const rightCodes = rightSlots.map(matrix => {
       const entry = layerKeys[matrix]
       if (entry) return actionToQMK(entry.type, entry.action)
-      // unmapped key: transparent on non-base, joystick button on base
-      if (li > 0) return 'KC_TRNS'
-      const dk = device.matrix.keys.find(k => k.matrix === matrix)
-      return dk ? `JS_${dk.btn}` : 'KC_NO'
+      // unmapped = no action (KC_NO), not transparent
+      return 'KC_NO'
     })
 
     // Left half: keep as joystick buttons (no left-half preset yet)
     const leftBtnOrder = [7, 6, 5, 4, 3, 2, 0, 13, 12, 11, 10, 9, 8, 1, 19, 18, 17, 16, 15, 14, 22, 21, 20]
-    const leftCodes = leftBtnOrder.map(btn => li === 0 ? `JS_${btn}` : 'KC_TRNS')
+    const leftCodes = leftBtnOrder.map(() => 'KC_NO')
 
     // Format the layer
     const indent = '        '
@@ -324,7 +322,11 @@ ${layerStrings.join(',\n\n')}
 // clang-format on
 `
 
-  return keymapC
+  // Also generate rules.mk and config.h for keyboard mode (no joystick)
+  const rulesContent = `COMBO_ENABLE = yes\n`
+  const configContent = `#pragma once\n\n// Boot combo: 300ms window for 4-key press\n#define COMBO_TERM 300\n`
+
+  return { keymapC, rulesContent, configContent }
 }
 
 const server = createServer(async (req, res) => {
@@ -444,12 +446,14 @@ const server = createServer(async (req, res) => {
       writeFileSync(presetFile, JSON.stringify(preset, null, 2))
       console.log(`normalized: ${presetFile}`)
 
-      const keymap = generateKeymapC(device, preset)
-      // write to qmk dir
-      const keymapPath = join(QMK_DIR, 'kekboard-warrior', 'keymap.c')
-      writeFileSync(keymapPath, keymap)
-      console.log(`generated: ${keymapPath}`)
-      return json(res, { ok: true, keymap, path: keymapPath })
+      const { keymapC, rulesContent, configContent } = generateKeymapC(device, preset)
+      // write all firmware files to qmk dir
+      const keymapDir = join(QMK_DIR, 'kekboard-warrior')
+      writeFileSync(join(keymapDir, 'keymap.c'), keymapC)
+      writeFileSync(join(keymapDir, 'rules.mk'), rulesContent)
+      writeFileSync(join(keymapDir, 'config.h'), configContent)
+      console.log(`generated: ${keymapDir}/keymap.c, rules.mk, config.h`)
+      return json(res, { ok: true, keymap: keymapC, path: keymapDir })
     } catch (e) {
       return json(res, { error: e.message }, 500)
     }
