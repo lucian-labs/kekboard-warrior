@@ -809,7 +809,7 @@
           <option value="none">No Action</option>
           <option value="bootloader">Bootloader</option>
         </select>
-        <input id="keyMapAction" type="text" placeholder="e.g. KC_A, LCTL(KC_R)" oninput="autoSaveKeyMap()" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;width:180px;" />
+        <input id="keyMapAction" type="text" placeholder="e.g. A, Enter, F5, Ctrl+R" oninput="autoSaveKeyMap()" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;width:180px;" />
       </div>
       <input id="keyMapNote" type="text" placeholder="label / note" oninput="autoSaveKeyMap()" style="background:#fff;border:1px solid #ddd;padding:4px 8px;font-family:inherit;font-size:11px;border-radius:3px;width:100%;margin-top:6px;color:#666;" />
     </div>
@@ -968,6 +968,68 @@ function flashKey(keyName, isDown) {
     el.classList.remove('active')
   }
   return true
+}
+
+// ── Friendly display names for QMK keycodes ──
+const QMK_FRIENDLY = {
+  KC_A:'A', KC_B:'B', KC_C:'C', KC_D:'D', KC_E:'E', KC_F:'F', KC_G:'G', KC_H:'H',
+  KC_I:'I', KC_J:'J', KC_K:'K', KC_L:'L', KC_M:'M', KC_N:'N', KC_O:'O', KC_P:'P',
+  KC_Q:'Q', KC_R:'R', KC_S:'S', KC_T:'T', KC_U:'U', KC_V:'V', KC_W:'W', KC_X:'X',
+  KC_Y:'Y', KC_Z:'Z',
+  KC_1:'1', KC_2:'2', KC_3:'3', KC_4:'4', KC_5:'5', KC_6:'6', KC_7:'7', KC_8:'8', KC_9:'9', KC_0:'0',
+  KC_ENTER:'Enter', KC_ESCAPE:'Esc', KC_BACKSPACE:'Bksp', KC_TAB:'Tab', KC_SPACE:'Space',
+  KC_MINUS:'-', KC_EQUAL:'=', KC_LEFT_BRACKET:'[', KC_RIGHT_BRACKET:']', KC_BACKSLASH:'\\',
+  KC_SEMICOLON:';', KC_QUOTE:"'", KC_GRAVE:'`', KC_COMMA:',', KC_DOT:'.', KC_SLASH:'/',
+  KC_CAPS_LOCK:'Caps', KC_PRINT_SCREEN:'PrtSc', KC_SCROLL_LOCK:'ScrLk', KC_PAUSE:'Pause',
+  KC_INSERT:'Ins', KC_DELETE:'Del',
+  KC_UP:'Up', KC_DOWN:'Down', KC_LEFT:'Left', KC_RIGHT:'Right',
+  KC_HOME:'Home', KC_END:'End', KC_PAGE_UP:'PgUp', KC_PAGE_DOWN:'PgDn',
+  KC_F1:'F1', KC_F2:'F2', KC_F3:'F3', KC_F4:'F4', KC_F5:'F5', KC_F6:'F6',
+  KC_F7:'F7', KC_F8:'F8', KC_F9:'F9', KC_F10:'F10', KC_F11:'F11', KC_F12:'F12',
+  KC_F13:'F13', KC_F14:'F14', KC_F15:'F15', KC_F16:'F16', KC_F17:'F17', KC_F18:'F18',
+  KC_F19:'F19', KC_F20:'F20', KC_F21:'F21', KC_F22:'F22', KC_F23:'F23', KC_F24:'F24',
+  KC_LEFT_CTRL:'LCtrl', KC_LEFT_SHIFT:'LShift', KC_LEFT_ALT:'LAlt', KC_LEFT_GUI:'LGui',
+  KC_RIGHT_CTRL:'RCtrl', KC_RIGHT_SHIFT:'RShift', KC_RIGHT_ALT:'RAlt', KC_RIGHT_GUI:'RGui',
+  KC_MEDIA_PLAY_PAUSE:'Play', KC_MEDIA_STOP:'Stop', KC_MEDIA_NEXT_TRACK:'Next', KC_MEDIA_PREV_TRACK:'Prev',
+  KC_AUDIO_VOL_UP:'Vol+', KC_AUDIO_VOL_DOWN:'Vol-', KC_AUDIO_MUTE:'Mute',
+  KC_BRIGHTNESS_UP:'Bri+', KC_BRIGHTNESS_DOWN:'Bri-',
+  MS_BTN1:'Mouse1', MS_BTN2:'Mouse2', MS_BTN3:'Mouse3',
+  KC_NO:'—', KC_TRNS:'▽', QK_BOOT:'Boot',
+}
+
+const TYPE_FRIENDLY = {
+  basic:'key', mod:'mod+key', layer_mo:'layer (hold)', layer_tg:'layer (toggle)',
+  layer_tap:'layer tap', mod_tap:'mod tap', oneshot_mod:'one-shot mod', oneshot_layer:'one-shot layer',
+  media:'media', mouse:'mouse', midi_note:'MIDI note', midi_cc:'MIDI CC',
+  macro:'macro', transparent:'pass-thru', none:'none', bootloader:'boot',
+}
+
+function friendlyAction(type, action) {
+  if (!action) return '—'
+  // layer types
+  if (type === 'layer_mo' || type === 'layer_tg' || type === 'oneshot_layer') {
+    const n = action.match(/\d+/) ? action.match(/\d+/)[0] : action
+    const name = layers[parseInt(n)] ? layers[parseInt(n)].name : 'layer ' + n
+    return name
+  }
+  // mod combos: C(KC_R) → Ctrl+R
+  const modMatch = action.match(/^([CSAG])\((.+)\)$/)
+  if (modMatch) {
+    const modNames = {C:'Ctrl',S:'Shift',A:'Alt',G:'Gui'}
+    return (modNames[modMatch[1]] || modMatch[1]) + '+' + (QMK_FRIENDLY[modMatch[2]] || modMatch[2])
+  }
+  // MO/TG wrappers
+  const wrapMatch = action.match(/^(MO|TG|LT|OSL)\((\d+)/)
+  if (wrapMatch) {
+    const n = wrapMatch[2]
+    const name = layers[parseInt(n)] ? layers[parseInt(n)].name : 'layer ' + n
+    return name
+  }
+  return QMK_FRIENDLY[action] || action
+}
+
+function friendlyType(type) {
+  return TYPE_FRIENDLY[type] || type || 'key'
 }
 
 // connection status — Gamepad API handles input, no SSE needed
@@ -1205,8 +1267,8 @@ function onGamepadKeyForMapping(btn) {
   lastPressedLayer = activeLayer
   const matrix = btnToMatrix[btn] || btn
   const layerName = (layers[activeLayer] && layers[activeLayer].name) || `layer ${activeLayer}`
-  document.getElementById('lastPressed').textContent = `${layerName} — ${matrix}`
-  document.getElementById('keyMapLabel').textContent = `${layerName} — ${matrix}`
+  const currentLabel = `${layerName} — ${matrix}`
+  document.getElementById('lastPressed').textContent = currentLabel
   document.getElementById('keyMapEditor').style.display = ''
 
   // load existing assignment from the captured layer
@@ -1216,6 +1278,9 @@ function onGamepadKeyForMapping(btn) {
   typeEl.value = a ? a.type : lastKeyMapType
   actionEl.value = a ? a.action : ''
   document.getElementById('keyMapNote').value = a ? (a.note || '') : ''
+  // show friendly name in label
+  const friendly = a ? friendlyAction(a.type, a.action) : ''
+  document.getElementById('keyMapLabel').textContent = friendly ? `${currentLabel} → ${friendly}` : currentLabel
   updateKeycodeHints(typeEl, actionEl)
   actionEl.focus()
   actionEl.select()
@@ -1256,11 +1321,13 @@ function updateKeyMapList() {
       div.className = 'chord-entry'
       div.style.opacity = isActive ? '1' : '0.5'
       div.style.cursor = 'pointer'
+      const fType = friendlyType(v.type)
+      const fAction = friendlyAction(v.type, v.action)
       div.innerHTML = `
         <span style="font-size:10px;color:#6a3aaa;min-width:50px;font-weight:bold;">${layerName}</span>
         <div class="chord-combo"><span class="btn-pill">${matrix}</span></div>
         <span class="chord-arrow">\u2192</span>
-        <div style="flex:1;font-size:12px;"><span style="color:#888;">[${v.type}]</span> ${v.action}${v.note ? `<span style="color:#aaa;margin-left:8px;font-size:10px;">${v.note}</span>` : ''}</div>
+        <div style="flex:1;font-size:12px;"><span style="color:#888;">${fType}:</span> ${fAction}${v.note ? `<span style="color:#aaa;margin-left:8px;font-size:10px;">${v.note}</span>` : ''}</div>
         <button class="chord-delete" onclick="event.stopPropagation();deleteKeyMap(${layer},'${matrix}', this)">\u00d7</button>
       `
       div.addEventListener('click', () => selectKeyMapEntry(layer, matrix))
@@ -1404,8 +1471,8 @@ function updateKeyLabels() {
     const matrix = el.dataset.matrix
     const a = getKey(activeLayer, matrix)
     if (a && a.action) {
-      const actionLabel = a.action.length > 5 ? a.action.slice(0, 5) : a.action
-      el.innerHTML = `${actionLabel}<span style="position:absolute;top:1px;left:2px;font-size:7px;color:#aaa;">${matrix}</span>`
+      const label = friendlyAction(a.type, a.action)
+      el.innerHTML = `${label}<span style="position:absolute;top:1px;left:2px;font-size:7px;color:#aaa;">${matrix}</span>`
     } else {
       el.innerHTML = matrix
     }
