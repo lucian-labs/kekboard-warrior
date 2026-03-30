@@ -1107,54 +1107,7 @@ async function saveMap() {
   addLogEntry(`Saved to ${data.path}`, 'down')
 }
 
-// block F5, Ctrl+R, etc. — prevent accidental reload
-document.addEventListener('keydown', (e) => {
-  // block ALL browser defaults — this page is a key sink
-  e.preventDefault()
-  e.stopPropagation()
-
-  const mods = []
-  if (e.ctrlKey) mods.push('Ctrl')
-  if (e.shiftKey) mods.push('Shift')
-  if (e.altKey) mods.push('Alt')
-  if (e.metaKey) mods.push('Meta')
-  const combo = [...mods, e.code].join('+')
-
-  // mark as browser-detected in log
-  addLogEntry(`BROWSER  DOWN  ${combo}  key="${e.key}"  code=${e.code}`, 'down')
-
-  // try to match to layout via browser code -> evdev name mapping
-  const browserKey = browserToEvdev(e.code)
-  if (browserKey) flashKey(browserKey, true)
-})
-
-document.addEventListener('keyup', (e) => {
-  e.preventDefault()
-  const browserKey = browserToEvdev(e.code)
-  if (browserKey) flashKey(browserKey, false)
-})
-
-// map browser KeyboardEvent.code to evdev key names
-function browserToEvdev(code) {
-  const map = {
-    'Escape': 'KEY_ESC', 'Backquote': 'KEY_GRAVE', 'Backspace': 'KEY_BACKSPACE',
-    'Tab': 'KEY_TAB', 'Enter': 'KEY_ENTER', 'Space': 'KEY_SPACE',
-    'CapsLock': 'KEY_CAPSLOCK',
-    'ShiftLeft': 'KEY_LEFTSHIFT', 'ShiftRight': 'KEY_RIGHTSHIFT',
-    'ControlLeft': 'KEY_LEFTCTRL', 'ControlRight': 'KEY_RIGHTCTRL',
-    'AltLeft': 'KEY_LEFTALT', 'AltRight': 'KEY_RIGHTALT',
-    'ArrowUp': 'KEY_UP', 'ArrowDown': 'KEY_DOWN',
-    'ArrowLeft': 'KEY_LEFT', 'ArrowRight': 'KEY_RIGHT',
-    'Digit1': 'KEY_1', 'Digit2': 'KEY_2', 'Digit3': 'KEY_3', 'Digit4': 'KEY_4',
-    'Digit5': 'KEY_5', 'Digit6': 'KEY_6', 'Digit7': 'KEY_7',
-    'F1': 'KEY_F1', 'F2': 'KEY_F2', 'F3': 'KEY_F3', 'F4': 'KEY_F4',
-    'F5': 'KEY_F5', 'F6': 'KEY_F6', 'F7': 'KEY_F7', 'F8': 'KEY_F8',
-    'F9': 'KEY_F9', 'F10': 'KEY_F10', 'F11': 'KEY_F11', 'F12': 'KEY_F12',
-  }
-  // letter keys: KeyA -> KEY_A, etc.
-  if (code.startsWith('Key')) return 'KEY_' + code.slice(3)
-  return map[code] || null
-}
+// keyboard capture removed — using Gamepad API for input
 
 // ── Mode Toggle ──
 let currentMode = 'discovery'
