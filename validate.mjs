@@ -60,16 +60,16 @@ try {
     const fetch = () => Promise.resolve({ ok: false, json: () => ({}) })
     const prompt = () => null
     const alert = () => {}
-    const URL = { createObjectURL: () => '' }
     const Blob = function() {}
     const URLSearchParams = globalThis.URLSearchParams
+    const URL = globalThis.URL || { createObjectURL: () => '' }
 
     ${scriptText}
   `
   // Use Node's vm module for better error reporting
   const vm = await import('vm')
   const script = new vm.Script(testScript, { filename: 'ui.html' })
-  script.runInNewContext({}, { timeout: 5000 })
+  script.runInNewContext({ globalThis, console, URLSearchParams, Promise, parseInt, isNaN, JSON, Date, Array, Object, Set, Map, Number, String, RegExp, Error, TypeError, SyntaxError }, { timeout: 5000 })
 } catch (e) {
   if (e.message.includes('Cannot access') || e.message.includes('is not defined') || e.message.includes('Duplicate')) {
     errors.push(`Runtime error: ${e.message}`)

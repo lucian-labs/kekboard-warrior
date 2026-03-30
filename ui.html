@@ -873,15 +873,6 @@
 <!-- ══ MAPPING MODE ══ -->
 <div id="mappingSection" style="display:none;">
 
-  <!-- Preset Rules -->
-  <div class="chord-panel" style="margin-bottom:16px;">
-    <h2>Preset Rules <span style="font-size:11px;color:#888;font-weight:normal;">— global rules applied across all layers</span></h2>
-    <div id="rulesList"></div>
-    <div style="display:flex;gap:6px;margin-top:8px;">
-      <input id="newRuleInput" type="text" placeholder="e.g. thumb keys are always modifiers" oninput="" onkeydown="if(event.key==='Enter')addRule()" style="flex:1;background:#fff;border:1px solid #ccc;padding:4px 8px;font-family:inherit;font-size:11px;border-radius:3px;color:#333;" />
-      <button class="chord-record-btn" onclick="addRule()" style="padding:3px 10px;font-size:11px;">+ Add</button>
-    </div>
-  </div>
   <!-- Key Mapping -->
   <div class="chord-panel" style="margin-bottom:16px;">
     <h2>Key Mapping <span style="font-size:11px;color:#888;font-weight:normal;">— press a key or click one above</span></h2>
@@ -967,6 +958,28 @@
       <button class="chord-record-btn" onclick="exportProfile()">Export Profile</button>
       <button class="chord-record-btn" onclick="importProfile()">Import Profile</button>
       <button class="chord-record-btn" onclick="clearChords()" style="margin-left:auto;">Clear All</button>
+    </div>
+  </div>
+
+  <!-- Rules cards side by side -->
+  <div style="display:flex;gap:16px;margin-top:16px;">
+    <div class="chord-panel" style="flex:1;">
+      <h2>Preset Rules <span style="font-size:11px;color:#888;font-weight:normal;">— applied across all layers</span></h2>
+      <div id="rulesList" style="max-height:120px;overflow-y:auto;"></div>
+      <div style="display:flex;gap:6px;margin-top:8px;">
+        <input id="newRuleInput" type="text" placeholder="e.g. thumb keys are always modifiers" onkeydown="if(event.key==='Enter')addRule()" style="flex:1;background:#fff;border:1px solid #ccc;padding:4px 8px;font-family:inherit;font-size:11px;border-radius:3px;color:#333;" />
+        <button class="chord-record-btn" onclick="addRule()" style="padding:3px 10px;font-size:11px;">+ Add</button>
+      </div>
+    </div>
+    <div class="chord-panel" style="flex:1;">
+      <h2>Device Notes <span style="font-size:11px;color:#888;font-weight:normal;">— hardware info &amp; references</span></h2>
+      <div id="deviceNotesList" style="max-height:120px;overflow-y:auto;">
+        <div style="color:#aaa;font-size:11px;padding:8px;">no device notes</div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:8px;">
+        <input id="newDeviceNote" type="text" placeholder="e.g. boot combo: 7,5+>7,4+>4,6+>5,6" onkeydown="if(event.key==='Enter')addDeviceNote()" style="flex:1;background:#fff;border:1px solid #ccc;padding:4px 8px;font-family:inherit;font-size:11px;border-radius:3px;color:#333;" />
+        <button class="chord-record-btn" onclick="addDeviceNote()" style="padding:3px 10px;font-size:11px;">+ Add</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1200,7 +1213,8 @@ function loadPreset(name) {
 
   // try loading from presets/ folder
   if (name !== 'kekboard') {
-    fetch(`presets/${name}.json`)
+    fetch(`/api/config/${activeDevice}/presets/${name}`)
+      .then(r => r.ok ? r : fetch(`presets/${name}.json`))
       .then(r => r.ok ? r.json() : null)
       .then(profile => {
         if (!profile) return
@@ -1321,6 +1335,42 @@ function renderRules() {
 }
 
 renderRules()
+
+// ── Device Notes ──
+let deviceNotes = []
+
+function addDeviceNote() {
+  const input = document.getElementById('newDeviceNote')
+  const text = input.value.trim()
+  if (!text) return
+  deviceNotes.push(text)
+  input.value = ''
+  renderDeviceNotes()
+  saveProfile()
+}
+
+function removeDeviceNote(idx) {
+  deviceNotes.splice(idx, 1)
+  renderDeviceNotes()
+  saveProfile()
+}
+
+function renderDeviceNotes() {
+  const list = document.getElementById('deviceNotesList')
+  if (!list) return
+  if (deviceNotes.length === 0) {
+    list.innerHTML = '<div style="color:#aaa;font-size:11px;padding:8px;">no device notes</div>'
+    return
+  }
+  list.innerHTML = deviceNotes.map((n, i) => `
+    <div class="chord-entry" style="border-left-color:#4a6a8a;">
+      <div style="flex:1;font-size:12px;">${n}</div>
+      <button class="chord-delete" onclick="removeDeviceNote(${i})">\u00d7</button>
+    </div>
+  `).join('')
+}
+
+renderDeviceNotes()
 
 // ── Key Mapping (single key → action) ──
 let lastPressedBtn = null
@@ -1878,8 +1928,23 @@ function matchSequence(seq) {
 }
 
 // ── Persistence ──
+let _saveTimeout = null
 function saveProfile() {
-  localStorage.setItem('kekboard-profile', JSON.stringify({ layers, sequences, keyAssignments, activeLayer, presetRules }))
+  const data = { layers, sequences, keyAssignments, activeLayer, presetRules, deviceNotes }
+  localStorage.setItem('kekboard-profile', JSON.stringify(data))
+
+  // debounced server save
+  clearTimeout(_saveTimeout)
+  _saveTimeout = setTimeout(() => {
+    const preset = document.getElementById('presetSelect').value
+    if (preset && activeDevice && location.protocol !== 'file:') {
+      fetch(`/api/config/${activeDevice}/presets/${preset}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: preset, device: activeDevice, buttons: 23, ...data }),
+      }).catch(() => {})
+    }
+  }, 500)
 }
 
 function loadProfile() {
@@ -1890,6 +1955,7 @@ function loadProfile() {
     if (saved.activeLayer != null) activeLayer = saved.activeLayer
     if (saved.keyAssignments) { keyAssignments = saved.keyAssignments; updateKeyLabels() }
     if (saved.presetRules) { presetRules = saved.presetRules; renderRules() }
+    if (saved.deviceNotes) { deviceNotes = saved.deviceNotes; renderDeviceNotes() }
     if (saved.sequences) {
       for (const entry of saved.sequences) {
         addSequenceEntry(entry.seq)
@@ -1909,7 +1975,7 @@ function loadProfile() {
 }
 
 function exportProfile() {
-  const profile = { name:'kekboard-warrior', device:'Corne Choc v4', buttons:23, layers, sequences, keyAssignments, presetRules, exported:new Date().toISOString() }
+  const profile = { name:'kekboard-warrior', device:'Corne Choc v4', buttons:23, layers, sequences, keyAssignments, presetRules, deviceNotes, exported:new Date().toISOString() }
   const blob = new Blob([JSON.stringify(profile, null, 2)], { type: 'application/json' })
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'kekboard-profile.json'; a.click()
 }
@@ -1947,7 +2013,7 @@ function updateURLParams() {
   }
 }
 
-;(function restoreUIState() {
+;(async function restoreUIState() {
   const params = new URLSearchParams(location.search || location.hash.replace('#', '?'))
   const device = params.get('device') || localStorage.getItem('kekboard-device')
   const mode = params.get('mode') || localStorage.getItem('kekboard-mode')
@@ -1958,6 +2024,22 @@ function updateURLParams() {
     switchDevice(device)
   }
   if (mode) setMode(mode)
+
+  // populate presets from server
+  if (location.protocol !== 'file:' && device) {
+    try {
+      const presets = await fetch(`/api/config/${device}/presets`).then(r => r.json())
+      const sel = document.getElementById('presetSelect')
+      for (const p of presets) {
+        if (![...sel.options].some(o => o.value === p)) {
+          const opt = document.createElement('option')
+          opt.value = p; opt.textContent = p
+          sel.appendChild(opt)
+        }
+      }
+    } catch {}
+  }
+
   if (preset) {
     document.getElementById('presetSelect').value = preset
     loadPreset(preset)
