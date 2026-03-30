@@ -43,37 +43,37 @@
         "type": "key",
         "action": "up",
         "note": "",
-        "touchedAt": 1774885770257
+        "touchedAt": 1774887168157
       },
       "5,1": {
         "type": "key",
         "action": "down",
         "note": "",
-        "touchedAt": 1774885769890
+        "touchedAt": 1774887168490
       },
       "6,1": {
         "type": "key",
         "action": "left",
         "note": "",
-        "touchedAt": 1774885770090
+        "touchedAt": 1774887168407
       },
       "4,1": {
         "type": "key",
         "action": "right",
         "note": "",
-        "touchedAt": 1774885769207
+        "touchedAt": 1774887168540
       },
       "4,0": {
         "type": "key",
         "action": "enter",
         "note": "",
-        "touchedAt": 1774885765106
+        "touchedAt": 1774887168223
       },
       "6,0": {
         "type": "basic",
         "action": "esc",
         "note": "",
-        "touchedAt": 1774885764575
+        "touchedAt": 1774887168054
       },
       "4,6": {
         "type": "key",
@@ -133,7 +133,7 @@
         "type": "layer_mo",
         "action": "1",
         "note": "layer 1 while held - leds red",
-        "touchedAt": 1774885782606
+        "touchedAt": 1774886700382
       },
       "7,4": {
         "type": "layer_mo",
@@ -183,31 +183,31 @@
         "type": "basic",
         "action": "f5",
         "note": "",
-        "touchedAt": 1774885729764
+        "touchedAt": 1774887470954
       },
       "5,0": {
         "type": "basic",
         "action": "f6",
         "note": "",
-        "touchedAt": 1774885729845
+        "touchedAt": 1774886642248
       },
       "4,0": {
         "type": "basic",
         "action": "f7",
         "note": "",
-        "touchedAt": 1774885773258
+        "touchedAt": 1774886640571
       },
       "6,1": {
         "type": "",
         "action": "f9",
         "note": "",
-        "touchedAt": 1774885730162
+        "touchedAt": 1774887472238
       },
       "5,1": {
         "type": "",
         "action": "f10",
         "note": "",
-        "touchedAt": 1774885730228
+        "touchedAt": 1774887469676
       },
       "4,1": {
         "type": "",
@@ -255,8 +255,10 @@
       }
     }
   ],
-  "activeLayer": 0,
-  "presetRules": [],
+  "activeLayer": 1,
+  "presetRules": [
+    "set colors for the layers, solid, the colors should be tightly aligned with what layer is currently active. [blue,red,gold,green,magenta] - will add more layer"
+  ],
   "deviceNotes": [],
-  "savedAt": "2026-03-30T15:50:29.791Z"
+  "savedAt": "2026-03-30T16:21:24.410Z"
 }

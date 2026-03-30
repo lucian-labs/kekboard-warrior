@@ -561,10 +561,12 @@
     </div>
     <div style="flex:1;min-width:200px;">
       <div style="font-size:11px;color:#888;margin-bottom:4px;">Boot combo</div>
-      <div style="font-size:12px;color:#333;">JS22 + JS21 + JS0 + JS1</div>
+      <div style="font-size:12px;color:#333;">7,5 + 7,4 + 4,6 + 5,6</div>
+      <div style="font-size:10px;color:#888;">(both thumbs + both extra keys)</div>
     </div>
   </div>
-  <div style="margin-top:12px;display:flex;gap:8px;">
+  <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+    <button class="chord-record-btn" onclick="enterBootMode()" style="padding:5px 12px;font-size:11px;background:#fff0e0;border-color:#e8a020;color:#a06800;">Enter Boot Mode</button>
     <button class="chord-record-btn" onclick="generateKeymap()" style="padding:5px 12px;font-size:11px;background:#e0f5ea;border-color:#4aea8a;color:#1a6a3a;">Generate keymap.c</button>
     <button class="chord-record-btn" onclick="compileFlash('compile')" style="padding:5px 12px;font-size:11px;">Compile</button>
     <button class="chord-record-btn" onclick="compileFlash('flash')" style="padding:5px 12px;font-size:11px;">Flash</button>
@@ -1973,6 +1975,45 @@ function updateURLParams() {
     loadPreset(preset)
   }
 })()
+
+const BOOT_COMBO_BTNS = [22, 21, 0, 1] // btn indices for boot combo
+
+function enterBootMode() {
+  const status = document.getElementById('firmwareStatus')
+  status.textContent = 'Press all 4 highlighted keys simultaneously...'
+  status.style.color = '#a06800'
+
+  // highlight boot combo keys on the layout
+  document.querySelectorAll('#layout-corne-r .key[data-btn]').forEach(el => {
+    el.classList.remove('boot-highlight')
+    el.style.removeProperty('outline')
+  })
+  for (const btn of BOOT_COMBO_BTNS) {
+    const el = document.querySelector(`#layout-corne-r .key[data-btn="${btn}"]`)
+    if (el) {
+      el.style.outline = '3px solid #e8a020'
+      el.style.outlineOffset = '2px'
+      el.classList.add('boot-highlight')
+    }
+  }
+
+  // watch for gamepad disconnect = bootloader entered
+  const checkDisconnect = () => {
+    if (!gamepad) {
+      status.textContent = 'Bootloader mode! Waiting for RPI-RP2 drive...'
+      status.style.color = '#1a6a3a'
+      // clear highlights
+      document.querySelectorAll('.boot-highlight').forEach(el => {
+        el.style.removeProperty('outline')
+        el.style.removeProperty('outline-offset')
+        el.classList.remove('boot-highlight')
+      })
+      return
+    }
+    setTimeout(checkDisconnect, 200)
+  }
+  checkDisconnect()
+}
 
 function toggleFirmwarePanel() {
   const panel = document.getElementById('firmwarePanel')

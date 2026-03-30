@@ -85,9 +85,11 @@ const ACTION_TO_QMK = {
 }
 
 function actionToQMK(type, action) {
-  if (!type || type === 'none') return 'KC_NO'
+  if (type === 'none') return 'KC_NO'
   if (type === 'transparent') return 'KC_TRNS'
   if (type === 'bootloader') return 'QK_BOOT'
+  // empty/missing type with an action = basic keystroke
+  if (!type || type === 'key') type = 'basic'
 
   const act = (action || '').trim()
 
@@ -159,6 +161,31 @@ function resolveModCombo(s) {
   return result
 }
 
+function normalizePreset(preset) {
+  const km = preset.keymap || []
+  for (let li = 0; li < km.length; li++) {
+    const layer = km[li]
+    for (const [matrix, entry] of Object.entries(layer)) {
+      if (!entry) { delete layer[matrix]; continue }
+      // strip entries with no action (empty placeholders from touching keys)
+      if (!entry.action && !['layer_mo', 'layer_tg', 'layer_tap', 'mod_tap', 'transparent', 'bootloader'].includes(entry.type)) {
+        delete layer[matrix]; continue
+      }
+      // normalize type: 'key', '', undefined → 'basic'
+      if (!entry.type || entry.type === 'key') entry.type = 'basic'
+      // normalize action to QMK keycode
+      const qmk = actionToQMK(entry.type, entry.action)
+      // for layer types, keep just the number
+      if (['layer_mo', 'layer_tg', 'oneshot_layer'].includes(entry.type)) {
+        const m = qmk.match(/\((\d+)\)/)
+        if (m) entry.action = m[1]
+      } else {
+        entry.action = qmk
+      }
+    }
+  }
+}
+
 function generateKeymapC(device, preset) {
   const layout = device.qmk.layout
   const keymap = preset.keymap || [{}]
@@ -195,13 +222,20 @@ function generateKeymapC(device, preset) {
   // generate combo entries for sequences that map to layer_tg
   const combos = []
 
-  // boot combo
+  // boot combo — resolve actual layer-0 keycodes for each button position
+  const layer0 = keymap[0] || {}
   if (bootCombo.length > 0) {
+    const comboKeys = bootCombo.map(btn => {
+      const matrix = btnToMatrixMap[btn]
+      const entry = matrix && layer0[matrix]
+      if (entry) return actionToQMK(entry.type, entry.action)
+      return `JS_${btn}` // fallback for unmapped keys (left half stays joystick)
+    })
     combos.push({
       name: 'boot_combo',
-      keys: bootCombo.map(btn => `JS_${btn}`),
+      keys: comboKeys,
       action: 'QK_BOOT',
-      comment: 'bootloader',
+      comment: `bootloader (${bootCombo.map(b => btnToMatrixMap[b] || b).join(' + ')})`,
     })
   }
 
@@ -405,6 +439,11 @@ const server = createServer(async (req, res) => {
     const preset = JSON.parse(readFileSync(presetFile, 'utf8'))
 
     try {
+      // normalize preset actions to canonical QMK keycodes
+      normalizePreset(preset)
+      writeFileSync(presetFile, JSON.stringify(preset, null, 2))
+      console.log(`normalized: ${presetFile}`)
+
       const keymap = generateKeymapC(device, preset)
       // write to qmk dir
       const keymapPath = join(QMK_DIR, 'kekboard-warrior', 'keymap.c')
