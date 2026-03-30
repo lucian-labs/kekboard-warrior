@@ -2474,24 +2474,49 @@ function rebuildCcToMatrix() {
 }
 
 if (navigator.requestMIDIAccess) {
-  navigator.requestMIDIAccess().then(midi => {
+  navigator.requestMIDIAccess({ sysex: false }).then(midi => {
+    const connEl = document.getElementById('connStatus')
     function listenToInputs() {
-      for (const input of midi.inputs.values()) {
+      const inputs = [...midi.inputs.values()]
+      if (inputs.length > 0) {
+        connEl.innerHTML = `<span class="dot green pulse"></span><span>MIDI: ${inputs.map(i => i.name).join(', ')}</span>`
+      }
+      for (const input of inputs) {
         input.onmidimessage = (e) => {
-          const [status, cc, val] = e.data
+          const [status, data1, data2] = e.data
           const ch = (status & 0x0F) + 1
-          if ((status & 0xF0) === 0xB0) {
+          const type = status & 0xF0
+          // CC message
+          if (type === 0xB0) {
             for (let li = 0; li < keymap.length; li++) {
-              const matrix = ccToMatrix[`${li}_cc${cc}_ch${ch}`]
-              if (matrix) { flashMatrix(matrix, val > 0); break }
+              const matrix = ccToMatrix[`${li}_cc${data1}_ch${ch}`]
+              if (matrix) { flashMatrix(matrix, data2 > 0); break }
             }
           }
+          // Note on/off
+          if (type === 0x90 || type === 0x80) {
+            const isOn = type === 0x90 && data2 > 0
+            // TODO: map notes to matrix when midi_note type is used
+          }
+          // show last message in status
+          const types = {0xB0:'CC',0x90:'NoteOn',0x80:'NoteOff',0xE0:'PitchBend'}
+          connEl.innerHTML = `<span class="dot green pulse"></span><span>MIDI ${types[type]||'?'} ch${ch} #${data1} val=${data2}</span>`
         }
       }
     }
     listenToInputs()
-    midi.onstatechange = listenToInputs
-  }).catch(() => {})
+    midi.onstatechange = () => {
+      const inputs = [...midi.inputs.values()]
+      if (inputs.length === 0) {
+        connEl.innerHTML = '<span class="dot red"></span><span>MIDI: no devices</span>'
+      }
+      listenToInputs()
+    }
+  }).catch(e => {
+    document.getElementById('connStatus').innerHTML = `<span class="dot red"></span><span>MIDI: ${e.message}</span>`
+  })
+} else {
+  document.getElementById('connStatus').innerHTML = '<span class="dot red"></span><span>Web MIDI not supported</span>'
 }
 
 // rebuild reverse maps when preset changes
