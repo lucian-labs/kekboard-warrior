@@ -771,12 +771,7 @@
   <!-- Key Mapping -->
   <div class="chord-panel" style="margin-bottom:16px;">
     <h2>Key Mapping <span style="font-size:11px;color:#888;font-weight:normal;">— press a key or click one above</span></h2>
-    <div class="chord-status">
-      <div>
-        <span style="color:#888;">Last pressed:</span>
-        <span id="lastPressed" style="font-weight:bold;color:#1a6a3a;">—</span>
-      </div>
-    </div>
+    <span id="lastPressed" style="display:none;"></span>
     <div id="keyMapEditor" style="display:none;padding:10px;background:#f8f8fa;border-radius:4px;margin-top:8px;">
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
         <span id="keyMapEditorLabel" style="font-weight:bold;color:#8b0000;min-width:40px;"></span>
@@ -854,6 +849,10 @@
       <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;">
         <label style="font-size:11px;color:#888;">Name:</label>
         <input id="presetNameInput" type="text" oninput="renamePreset(this.value)" style="flex:1;background:#fff;border:1px solid #ccc;padding:4px 8px;font-family:inherit;font-size:11px;border-radius:3px;color:#333;" />
+      </div>
+      <div style="margin-bottom:8px;">
+        <div style="font-size:11px;color:#888;margin-bottom:4px;">Firmware features:</div>
+        <div id="firmwareFeatures" style="display:flex;flex-wrap:wrap;gap:4px 10px;"></div>
       </div>
       <div id="rulesList" style="max-height:100px;overflow-y:auto;"></div>
       <div style="display:flex;gap:6px;margin-top:6px;">
@@ -1124,6 +1123,7 @@ function loadPreset(name) {
       if (profile.keymap) keymap = profile.keymap
       if (profile.presetRules) { presetRules = profile.presetRules; renderRules() }
       if (profile.deviceNotes) { deviceNotes = profile.deviceNotes; renderDeviceNotes() }
+      if (profile.features) { features = profile.features; renderFeatures() }
       activeLayer = profile.activeLayer || 0
       updateLayerDropdowns()
       syncLayerInputs()
@@ -1189,6 +1189,37 @@ function renderRules() {
 }
 
 renderRules()
+
+// ── Firmware Features ──
+const FIRMWARE_FEATURES = [
+  { key: 'midi', label: 'MIDI', rule: 'MIDI_ENABLE = yes' },
+  { key: 'mousekeys', label: 'Mouse Keys', rule: 'MOUSEKEY_ENABLE = yes' },
+  { key: 'rgb', label: 'RGB', rule: 'RGB_MATRIX_ENABLE = yes' },
+  { key: 'audio', label: 'Audio', rule: 'AUDIO_ENABLE = yes' },
+  { key: 'oled', label: 'OLED', rule: 'OLED_ENABLE = yes' },
+  { key: 'extrakeys', label: 'Media/System Keys', rule: 'EXTRAKEY_ENABLE = yes' },
+]
+
+let features = {}
+
+function toggleFeature(key) {
+  features[key] = !features[key]
+  renderFeatures()
+  saveProfile()
+}
+
+function renderFeatures() {
+  const el = document.getElementById('firmwareFeatures')
+  if (!el) return
+  el.innerHTML = FIRMWARE_FEATURES.map(f => {
+    const on = features[f.key]
+    return `<label style="display:flex;align-items:center;gap:3px;font-size:11px;color:${on ? '#1a6a3a' : '#888'};cursor:pointer;">
+      <input type="checkbox" ${on ? 'checked' : ''} onchange="toggleFeature('${f.key}')" style="cursor:pointer;" />${f.label}
+    </label>`
+  }).join('')
+}
+
+renderFeatures()
 
 // ── Device Notes ──
 let deviceNotes = []
@@ -1269,9 +1300,9 @@ if (location.protocol !== 'file:') {
 
 function onGamepadKeyForMapping(btn) {
   lastPressedBtn = btn
-  lastPressedLayer = activeLayer
+  lastPressedLayer = heldBtnLayers[btn] != null ? heldBtnLayers[btn] : activeLayer
   const matrix = btnToMatrix[btn] || btn
-  const layerName = (layers[activeLayer] && layers[activeLayer].name) || `layer ${activeLayer}`
+  const layerName = (layers[lastPressedLayer] && layers[lastPressedLayer].name) || `layer ${lastPressedLayer}`
   const currentLabel = `${layerName} — ${matrix}`
   document.getElementById('lastPressed').textContent = currentLabel
   document.getElementById('keyMapEditor').style.display = ''
@@ -1302,12 +1333,22 @@ function autoSaveKeyMap() {
   if (lastPressedBtn === null) return
   const matrix = btnToMatrix[lastPressedBtn] || lastPressedBtn
   lastKeyMapType = document.getElementById('keyMapType').value
+  const action = document.getElementById('keyMapAction').value
   setKey(lastPressedLayer, matrix, {
     type: lastKeyMapType,
-    action: document.getElementById('keyMapAction').value,
+    action,
     label: document.getElementById('keyMapLabel').value,
     note: document.getElementById('keyMapNote').value,
   })
+  // auto-create layers referenced by layer keys
+  if (['layer_mo', 'layer_tg', 'layer_tap', 'oneshot_layer'].includes(lastKeyMapType) && action) {
+    const idx = parseLayerNum(action)
+    if (!isNaN(idx) && idx >= 0) {
+      while (layers.length <= idx) layers.push({ name: `layer ${layers.length}`, color: '#e0e8f8' })
+      updateLayerDropdowns()
+      syncLayerInputs()
+    }
+  }
   saveProfile()
   scheduleUIUpdate()
 }
@@ -1520,7 +1561,7 @@ function updateKeyLabels() {
     const a = getKey(activeLayer, matrix)
     if (a && (a.action || a.label)) {
       const label = a.label || friendlyAction(a.type, a.action)
-      el.innerHTML = `${label}<span style="position:absolute;top:1px;left:2px;font-size:7px;color:#aaa;">${matrix}</span>`
+      el.innerHTML = `<span style="text-align:center;line-height:1.1;word-break:break-word;max-width:100%;padding:0 1px;">${label}</span><span style="position:absolute;top:1px;left:2px;font-size:7px;color:#aaa;">${matrix}</span>`
     } else {
       el.innerHTML = matrix
     }
@@ -1559,7 +1600,16 @@ function pollGamepad() {
     if (gp.buttons[i].pressed) nowHeld.add(i)
   }
 
-  // ── Layer switching FIRST (before onButtonDown) so activeLayer is correct ──
+  // ── Capture layer for newly pressed buttons BEFORE layer switch ──
+  const newlyPressed = []
+  for (const btn of nowHeld) {
+    if (!heldButtons.has(btn)) {
+      heldBtnLayers[btn] = activeLayer
+      newlyPressed.push(btn)
+    }
+  }
+
+  // ── Layer switching ──
   let heldLayer = null
   for (const btn of nowHeld) {
     const matrix = btnToMatrix[btn]
@@ -1580,18 +1630,13 @@ function pollGamepad() {
     activeLayer = targetLayer
     const sel = document.getElementById('keyMapLayerSelect')
     if (sel) sel.value = activeLayer
+    syncLayerInputs()
     updateKeyLabels()
   }
 
-  // ── Detect press/release (after layer switch, so activeLayer is current) ──
-  for (const btn of nowHeld) {
-    if (!heldButtons.has(btn)) {
-      // capture layer at press time — layer_mo keys are always on base layer
-      const matrix = btnToMatrix[btn]
-      const a = matrix && getKey(_baseLayer, matrix)
-      heldBtnLayers[btn] = (a && (a.type === 'layer_mo' || a.type === 'layer_tap')) ? _baseLayer : activeLayer
-      onButtonDown(btn)
-    }
+  // ── Fire onButtonDown after layer switch (so activeLayer is current for editor) ──
+  for (const btn of newlyPressed) {
+    onButtonDown(btn)
   }
 
   for (const btn of heldButtons) {
@@ -1656,11 +1701,7 @@ function onButtonDown(btn) {
   }
 
   if (currentMode === 'mapping') {
-    // skip editor open for layer keys — you're switching layers, not editing the hold key
-    const mA = matrix && (getKey(_baseLayer, matrix) || getKey(activeLayer, matrix))
-    if (!mA || (mA.type !== 'layer_mo' && mA.type !== 'layer_tap')) {
-      onGamepadKeyForMapping(btn)
-    }
+    onGamepadKeyForMapping(btn)
   }
 
   clearTimeout(sequenceTimeout)
@@ -1986,7 +2027,7 @@ let _saveTimeout = null
 let _serverSaveEnabled = false // only save to server after first successful load
 function saveProfile() {
   const presetName = document.getElementById('presetNameInput')?.value || ''
-  const data = { name: presetName, layers, sequences, keymap, activeLayer, presetRules, deviceNotes }
+  const data = { name: presetName, layers, sequences, keymap, activeLayer, presetRules, deviceNotes, features }
   localStorage.setItem('kekboard-profile', JSON.stringify(data))
 
   // debounced server save — only if user has made changes after load
@@ -2012,6 +2053,7 @@ function loadProfile() {
     if (saved.keymap) { keymap = saved.keymap; updateKeyLabels() }
     if (saved.presetRules) { presetRules = saved.presetRules; renderRules() }
     if (saved.deviceNotes) { deviceNotes = saved.deviceNotes; renderDeviceNotes() }
+    if (saved.features) { features = saved.features; renderFeatures() }
     if (saved.sequences) {
       for (const entry of saved.sequences) {
         addSequenceEntry(entry.seq, entry.seqLayers || null)
@@ -2104,8 +2146,8 @@ function updateURLParams() {
   }
 })()
 
-// Boot: hold MO(2) thumb + press 4,6 extra key
-const BOOT_BTNS = [21, 0] // 7,4 (MO2 thumb) + 4,6 (extra key)
+// Boot: hold MO(2) thumb + press 7,3 inner thumb
+const BOOT_BTNS = [21, 20] // 7,4 (MO2) + 7,3 (inner thumb)
 
 function showFirmwareStatus(msg, color) {
   const panel = document.getElementById('firmwareStatus')
@@ -2116,7 +2158,7 @@ function showFirmwareStatus(msg, color) {
 }
 
 function enterBootMode() {
-  showFirmwareStatus('Hold 7,4 (layer 2 thumb) + press 4,6 (top extra key)', '#a06800')
+  showFirmwareStatus('Hold 7,4 (layer 2) + press 7,3 = bootloader', '#a06800')
 
   // highlight boot keys
   document.querySelectorAll('#layout-corne-r .key[data-btn]').forEach(el => {

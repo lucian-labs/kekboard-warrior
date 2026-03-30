@@ -227,8 +227,8 @@ function generateKeymapC(device, preset) {
     const rightCodes = rightSlots.map(matrix => {
       const entry = layerKeys[matrix]
       if (entry) return actionToQMK(entry.type, entry.action)
-      // inject QK_BOOT on layer 2 at 4,6 (hold MO(2) + press extra key = bootloader)
-      if (li === 2 && matrix === '4,6') return 'QK_BOOT'
+      // inject QK_BOOT on layer 2 at 7,3 (hold MO(2) [7,4] + press 7,3 = bootloader)
+      if (li === 2 && matrix === '7,3') return 'QK_BOOT'
       return 'KC_NO'
     })
 
@@ -278,7 +278,7 @@ ${layerColors}
 
 #include QMK_KEYBOARD_H
 
-// Bootloader: hold MO(2) + press 4,6 (top extra key)
+// Bootloader: hold MO(2) [7,4] + press 7,3
 
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -288,7 +288,20 @@ ${layerStrings.join(',\n\n')}
 `
 
   // Also generate rules.mk and config.h for keyboard mode (no joystick)
-  const rulesContent = `# no combos — zero latency\n`
+  // Build rules.mk from preset features
+  const featureMap = {
+    midi: 'MIDI_ENABLE = yes',
+    mousekeys: 'MOUSEKEY_ENABLE = yes',
+    rgb: 'RGB_MATRIX_ENABLE = yes',
+    audio: 'AUDIO_ENABLE = yes',
+    oled: 'OLED_ENABLE = yes',
+    extrakeys: 'EXTRAKEY_ENABLE = yes',
+  }
+  const presetFeatures = preset.features || {}
+  const featureLines = Object.entries(featureMap)
+    .filter(([k]) => presetFeatures[k])
+    .map(([, v]) => v)
+  const rulesContent = featureLines.join('\n') + '\n'
   const configContent = `#pragma once\n`
 
   return { keymapC, rulesContent, configContent }
