@@ -761,6 +761,14 @@
 
 <!-- ══ DISCOVERY MODE ══ -->
 <div id="discoverySection">
+  <div style="margin-bottom:12px;">
+    <h2 style="font-size:13px;color:#555;margin-bottom:6px;">Key Tester — click below and type</h2>
+    <textarea id="keyTester" placeholder="Focus here and press keys on the Corne to test output..." style="width:100%;height:80px;background:#fff;border:1px solid #ccc;border-radius:6px;padding:10px;font-family:inherit;font-size:13px;color:#333;resize:vertical;"></textarea>
+    <div style="display:flex;gap:8px;margin-top:4px;">
+      <button class="chord-record-btn" onclick="document.getElementById('keyTester').value=''" style="padding:3px 10px;font-size:11px;">Clear</button>
+      <span id="keyTesterStatus" style="font-size:11px;color:#888;align-self:center;"></span>
+    </div>
+  </div>
   <div class="panels">
     <div class="panel">
       <h2><span class="dot orange"></span> Unknown / Unmatched Keys</h2>
@@ -1038,7 +1046,21 @@ function connect() {
   status.innerHTML = '<span class="dot green"></span><span>gamepad mode</span>'
 }
 
-// keyboard capture removed — using Gamepad API for input
+// ── Key tester: log keystrokes in discovery mode ──
+;(function() {
+  const tester = document.getElementById('keyTester')
+  const status = document.getElementById('keyTesterStatus')
+  if (!tester) return
+  tester.addEventListener('keydown', (e) => {
+    const parts = []
+    if (e.ctrlKey) parts.push('Ctrl')
+    if (e.shiftKey) parts.push('Shift')
+    if (e.altKey) parts.push('Alt')
+    if (e.metaKey) parts.push('Gui')
+    parts.push(e.key)
+    status.textContent = parts.join('+') + ` (code: ${e.code})`
+  })
+})()
 
 // ── Mode Toggle ──
 let currentMode = 'discovery'
