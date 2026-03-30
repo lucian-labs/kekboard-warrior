@@ -578,7 +578,8 @@
   <label style="margin-left:8px;">preset:</label>
   <select id="presetSelect" onchange="loadPreset(this.value)" style="background:#fff;color:#333;border:1px solid #ccc;padding:5px 10px;font-family:inherit;font-size:12px;border-radius:4px;">
     <option value="">— none —</option>
-    <option value="kekboard">Kekboard Mapping</option>
+    <option value="waveloop-v0.1">WaveLoop v0.1</option>
+    <option value="kekboard">Kekboard Default</option>
   </select>
   <div style="margin-left:auto;display:flex;gap:4px;">
     <button class="chord-record-btn" id="modeDiscovery" onclick="setMode('discovery')" style="background:#e0f5ea;border-color:#4aea8a;color:#1a6a3a;">Discovery</button>
@@ -1145,6 +1146,50 @@ function setMode(mode) {
 // ── Presets ──
 function loadPreset(name) {
   if (!name) return
+
+  // try loading from presets/ folder
+  if (name !== 'kekboard') {
+    fetch(`presets/${name}.json`)
+      .then(r => r.ok ? r.json() : null)
+      .then(profile => {
+        if (!profile) return
+        activeDevice = 'corne-r'
+        document.getElementById('deviceSelect').value = 'corne-r'
+        switchDevice('corne-r')
+        setMode('mapping')
+
+        if (profile.layers) layers = profile.layers
+        if (profile.keyAssignments) keyAssignments = profile.keyAssignments
+        if (profile.presetRules) { presetRules = profile.presetRules; renderRules() }
+        activeLayer = 0
+        updateLayerDropdowns()
+
+        // rebuild sequences
+        clearChords()
+        if (profile.sequences) {
+          for (const entry of profile.sequences) {
+            addSequenceEntry(entry.seq)
+            const seqKey = seqToKey(entry.seq)
+            const el = document.querySelector(`.chord-entry[data-combo="${seqKey}"]`)
+            if (el) {
+              el.querySelector('select').value = entry.type
+              el.querySelector('input').value = entry.action || ''
+              const noteInput = el.querySelector('.seq-note')
+              if (noteInput) noteInput.value = entry.note || ''
+            }
+            const m = sequences.find(s => seqToKey(s.seq) === seqKey)
+            if (m) { m.type = entry.type; m.action = entry.action; m.layer = entry.layer; m.note = entry.note }
+          }
+        }
+
+        saveProfile()
+        updateKeyMapList()
+        updateKeyLabels()
+      })
+      .catch(() => {})
+    return
+  }
+
   if (name === 'kekboard') {
     // select Corne right half
     activeDevice = 'corne-r'
@@ -1628,6 +1673,7 @@ function addSequenceEntry(seq) {
         <option value="command">Command</option>
       </select>
       <input type="text" placeholder="e.g. Ctrl+R" onchange="updateSeqAction(this, '${seqKey}')" />
+      <input type="text" placeholder="note" class="seq-note" onchange="updateSeqNote(this, '${seqKey}')" style="width:100px;color:#aaa;" />
     </div>
     <button class="chord-delete" onclick="removeSeq('${seqKey}', this)">\u00d7</button>
   `
@@ -1648,6 +1694,11 @@ function updateSeqType(select, seqKey) {
 function updateSeqAction(input, seqKey) {
   const entry = sequences.find(s => seqToKey(s.seq) === seqKey)
   if (entry) { entry.action = input.value; saveProfile() }
+}
+
+function updateSeqNote(input, seqKey) {
+  const entry = sequences.find(s => seqToKey(s.seq) === seqKey)
+  if (entry) { entry.note = input.value; saveProfile() }
 }
 
 function removeSeq(seqKey, btn) {
@@ -1714,9 +1765,11 @@ function loadProfile() {
         if (el) {
           el.querySelector('select').value = entry.type
           el.querySelector('input').value = entry.action || ''
+          const noteInput = el.querySelector('.seq-note')
+          if (noteInput) noteInput.value = entry.note || ''
         }
         const m = sequences.find(s => seqToKey(s.seq) === seqKey)
-        if (m) { m.type = entry.type; m.action = entry.action; m.layer = entry.layer }
+        if (m) { m.type = entry.type; m.action = entry.action; m.layer = entry.layer; m.note = entry.note }
       }
     }
   } catch (e) {}
