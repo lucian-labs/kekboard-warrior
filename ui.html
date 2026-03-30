@@ -1360,16 +1360,19 @@ function updateLayerDropdowns() {
 }
 
 function updateKeyLabels() {
-  document.querySelectorAll('#layout-corne-r .key').forEach(el => {
+  document.querySelectorAll('#layout-corne-r .key[data-js]').forEach(el => {
     const jsLabel = el.dataset.js
-    if (!jsLabel) return
+    const matrixLabel = el.getAttribute('data-matrix-pos') || el.textContent
+    // store original matrix label once
+    if (!el.dataset.matrixPos) el.dataset.matrixPos = el.textContent
+
     const key = `${activeLayer}_${jsLabel}`
     const a = keyAssignments[key]
     if (a && a.action) {
-      el.textContent = a.action.length > 5 ? a.action.slice(0, 5) : a.action
+      const actionLabel = a.action.length > 5 ? a.action.slice(0, 5) : a.action
+      el.innerHTML = `${actionLabel}<span style="position:absolute;top:1px;left:2px;font-size:7px;color:#aaa;">${el.dataset.matrixPos}</span>`
     } else {
-      // show matrix position as default
-      el.textContent = el.dataset.matrix || el.dataset.js
+      el.innerHTML = el.dataset.matrixPos
     }
   })
 }
