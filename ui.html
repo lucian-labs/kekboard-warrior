@@ -1242,6 +1242,7 @@ function loadPreset(name) {
 
       // save to localStorage as cache
       localStorage.setItem('kekboard-profile', JSON.stringify(profile))
+      _profileLoaded = true
       updateKeyMapList()
       updateKeyLabels()
     })
@@ -1876,7 +1877,9 @@ function matchSequence(seq) {
 
 // ── Persistence ──
 let _saveTimeout = null
+let _profileLoaded = false // don't auto-save until preset is loaded
 function saveProfile() {
+  if (!_profileLoaded) return
   const data = { layers, sequences, keyAssignments, activeLayer, presetRules, deviceNotes }
   localStorage.setItem('kekboard-profile', JSON.stringify(data))
 
@@ -1918,6 +1921,7 @@ function loadProfile() {
         if (m) { m.type = entry.type; m.action = entry.action; m.layer = entry.layer; m.note = entry.note }
       }
     }
+    _profileLoaded = true
   } catch (e) {}
 }
 

@@ -42,6 +42,13 @@ const server = createServer(async (req, res) => {
 
   if (req.method === 'OPTIONS') { cors(res); res.writeHead(204); res.end(); return }
 
+  // ── API: keycodes ──
+  if (path === '/api/keycodes' && req.method === 'GET') {
+    const f = join(CONFIG_DIR, 'keycodes.json')
+    if (existsSync(f)) return json(res, JSON.parse(readFileSync(f, 'utf8')))
+    return json(res, {})
+  }
+
   // ── API: list devices ──
   if (path === '/api/devices' && req.method === 'GET') {
     const devices = readdirSync(CONFIG_DIR, { withFileTypes: true })

@@ -1,0 +1,88 @@
+{
+  "basic": [
+    "KC_A", "KC_B", "KC_C", "KC_D", "KC_E", "KC_F", "KC_G", "KC_H", "KC_I",
+    "KC_J", "KC_K", "KC_L", "KC_M", "KC_N", "KC_O", "KC_P", "KC_Q", "KC_R",
+    "KC_S", "KC_T", "KC_U", "KC_V", "KC_W", "KC_X", "KC_Y", "KC_Z",
+    "KC_1", "KC_2", "KC_3", "KC_4", "KC_5", "KC_6", "KC_7", "KC_8", "KC_9", "KC_0",
+    "KC_ENTER", "KC_ESCAPE", "KC_BACKSPACE", "KC_TAB", "KC_SPACE",
+    "KC_MINUS", "KC_EQUAL", "KC_LEFT_BRACKET", "KC_RIGHT_BRACKET", "KC_BACKSLASH",
+    "KC_SEMICOLON", "KC_QUOTE", "KC_GRAVE", "KC_COMMA", "KC_DOT", "KC_SLASH",
+    "KC_CAPS_LOCK", "KC_PRINT_SCREEN", "KC_SCROLL_LOCK", "KC_PAUSE",
+    "KC_INSERT", "KC_DELETE",
+    "KC_F1", "KC_F2", "KC_F3", "KC_F4", "KC_F5", "KC_F6",
+    "KC_F7", "KC_F8", "KC_F9", "KC_F10", "KC_F11", "KC_F12",
+    "KC_F13", "KC_F14", "KC_F15", "KC_F16", "KC_F17", "KC_F18",
+    "KC_F19", "KC_F20", "KC_F21", "KC_F22", "KC_F23", "KC_F24"
+  ],
+  "nav": [
+    "KC_UP", "KC_DOWN", "KC_LEFT", "KC_RIGHT",
+    "KC_HOME", "KC_END", "KC_PAGE_UP", "KC_PAGE_DOWN"
+  ],
+  "mod": [
+    "KC_LEFT_CTRL", "KC_LEFT_SHIFT", "KC_LEFT_ALT", "KC_LEFT_GUI",
+    "KC_RIGHT_CTRL", "KC_RIGHT_SHIFT", "KC_RIGHT_ALT", "KC_RIGHT_GUI",
+    "LCTL(kc)", "LSFT(kc)", "LALT(kc)", "LGUI(kc)",
+    "RCTL(kc)", "RSFT(kc)", "RALT(kc)", "RGUI(kc)",
+    "C(kc)", "S(kc)", "A(kc)", "G(kc)",
+    "LCA(kc)", "LSA(kc)", "SGUI(kc)", "MEH(kc)", "HYPR(kc)"
+  ],
+  "layer_mo": [
+    "MO(0)", "MO(1)", "MO(2)", "MO(3)", "MO(4)", "MO(5)", "MO(6)", "MO(7)"
+  ],
+  "layer_tg": [
+    "TG(0)", "TG(1)", "TG(2)", "TG(3)", "TG(4)", "TG(5)", "TG(6)", "TG(7)"
+  ],
+  "layer_tap": [
+    "LT(0,kc)", "LT(1,kc)", "LT(2,kc)", "LT(3,kc)", "LT(4,kc)", "LT(5,kc)"
+  ],
+  "mod_tap": [
+    "MT(MOD_LCTL,kc)", "MT(MOD_LSFT,kc)", "MT(MOD_LALT,kc)", "MT(MOD_LGUI,kc)",
+    "LCTL_T(kc)", "LSFT_T(kc)", "LALT_T(kc)", "LGUI_T(kc)",
+    "RCTL_T(kc)", "RSFT_T(kc)", "RALT_T(kc)", "RGUI_T(kc)"
+  ],
+  "oneshot_mod": [
+    "OSM(MOD_LSFT)", "OSM(MOD_LCTL)", "OSM(MOD_LALT)", "OSM(MOD_LGUI)",
+    "OSM(MOD_RSFT)", "OSM(MOD_RCTL)", "OSM(MOD_RALT)", "OSM(MOD_RGUI)"
+  ],
+  "oneshot_layer": [
+    "OSL(0)", "OSL(1)", "OSL(2)", "OSL(3)", "OSL(4)", "OSL(5)"
+  ],
+  "media": [
+    "KC_MEDIA_PLAY_PAUSE", "KC_MEDIA_STOP", "KC_MEDIA_NEXT_TRACK", "KC_MEDIA_PREV_TRACK",
+    "KC_AUDIO_VOL_UP", "KC_AUDIO_VOL_DOWN", "KC_AUDIO_MUTE",
+    "KC_MEDIA_EJECT", "KC_MEDIA_FAST_FORWARD", "KC_MEDIA_REWIND",
+    "KC_BRIGHTNESS_UP", "KC_BRIGHTNESS_DOWN"
+  ],
+  "mouse": [
+    "MS_BTN1", "MS_BTN2", "MS_BTN3", "MS_BTN4", "MS_BTN5",
+    "MS_UP", "MS_DOWN", "MS_LEFT", "MS_RIGHT",
+    "MS_WHLU", "MS_WHLD", "MS_WHLL", "MS_WHLR",
+    "MS_ACL0", "MS_ACL1", "MS_ACL2"
+  ],
+  "midi_note": [
+    "MI_C", "MI_Cs", "MI_D", "MI_Ds", "MI_E", "MI_F",
+    "MI_Fs", "MI_G", "MI_Gs", "MI_A", "MI_As", "MI_B",
+    "MI_OCT_N2", "MI_OCT_N1", "MI_OCT_0", "MI_OCT_1", "MI_OCT_2",
+    "MI_OCT_3", "MI_OCT_4", "MI_OCT_5", "MI_OCT_6", "MI_OCT_7",
+    "MI_OCTD", "MI_OCTU",
+    "MI_TRNSD", "MI_TRNSU"
+  ],
+  "midi_cc": [
+    "MI_VELD", "MI_VELU",
+    "MI_CHD", "MI_CHU",
+    "MI_ALLOFF", "MI_SUS", "MI_PORT", "MI_SOST", "MI_SOFT", "MI_LEG",
+    "MI_MOD", "MI_MODSD", "MI_MODSU",
+    "MI_BENDD", "MI_BENDU"
+  ],
+  "special": [
+    "KC_NO", "KC_TRANSPARENT", "QK_BOOT", "QK_REBOOT",
+    "QK_CLEAR_EEPROM", "QK_LOCK"
+  ],
+  "rgb": [
+    "RGB_TOG", "RGB_MODE_FORWARD", "RGB_MODE_REVERSE",
+    "RGB_HUI", "RGB_HUD", "RGB_SAI", "RGB_SAD", "RGB_VAI", "RGB_VAD",
+    "RGB_SPI", "RGB_SPD",
+    "RGB_MODE_PLAIN", "RGB_MODE_BREATHE", "RGB_MODE_RAINBOW", "RGB_MODE_SWIRL",
+    "RGB_MODE_SNAKE", "RGB_MODE_KNIGHT", "RGB_MODE_GRADIENT"
+  ]
+}
