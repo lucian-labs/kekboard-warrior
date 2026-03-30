@@ -581,6 +581,7 @@
     <option value="waveloop-v0.1">WaveLoop v0.1</option>
     <option value="kekboard">Kekboard Default</option>
   </select>
+  <button class="chord-record-btn" onclick="savePreset()" style="padding:5px 10px;font-size:11px;">Save Preset</button>
   <div style="margin-left:auto;display:flex;gap:4px;">
     <button class="chord-record-btn" id="modeDiscovery" onclick="setMode('discovery')" style="background:#e0f5ea;border-color:#4aea8a;color:#1a6a3a;">Discovery</button>
     <button class="chord-record-btn" id="modeMapping" onclick="setMode('mapping')">Mapping</button>
@@ -600,8 +601,9 @@
 <div class="keyboard-container">
   <!-- ── Corne Right Half ── -->
   <div class="device-layout corne-right active" id="layout-corne-r">
-    <div class="layer-tabs" id="corneLayers">
+    <div class="layer-tabs" id="corneLayers" style="display:flex;align-items:center;gap:8px;">
       <div class="layer-tab active" data-layer="0">JOYSTICK — 23 buttons</div>
+      <span id="layerPreviewIndicator" style="display:none;font-size:11px;color:#8b0000;font-weight:bold;"></span>
     </div>
     <div class="corne-inner">
       <div class="corne-body">
@@ -1159,8 +1161,41 @@ function setMode(mode) {
 }
 
 // ── Presets ──
+function savePreset() {
+  const currentPreset = document.getElementById('presetSelect').value
+  let name = currentPreset || prompt('Preset name (e.g. waveloop-v0.2):')
+  if (!name) return
+
+  const profile = {
+    name,
+    device: activeDevice,
+    buttons: 23,
+    layers, sequences, keyAssignments, presetRules,
+    exported: new Date().toISOString(),
+  }
+
+  // download as file
+  const blob = new Blob([JSON.stringify(profile, null, 2)], { type: 'application/json' })
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(blob)
+  a.download = `${name}.json`
+  a.click()
+
+  // add to dropdown if new
+  const sel = document.getElementById('presetSelect')
+  if (![...sel.options].some(o => o.value === name)) {
+    const opt = document.createElement('option')
+    opt.value = name
+    opt.textContent = name
+    sel.appendChild(opt)
+  }
+  sel.value = name
+  updateURLParams()
+}
+
 function loadPreset(name) {
   if (!name) return
+  updateURLParams()
 
   // try loading from presets/ folder
   if (name !== 'kekboard') {
@@ -1432,6 +1467,7 @@ function updateLayerDropdowns() {
 }
 
 function updateKeyLabels() {
+  _lastDisplayLayer = -1 // force refresh on next poll
   document.querySelectorAll('#layout-corne-r .key[data-btn]').forEach(el => {
     const matrix = el.dataset.matrix
     const key = `${activeLayer}_${matrix}`
@@ -1512,8 +1548,65 @@ function pollGamepad() {
     if (nowHeld.has(btnIdx)) el.classList.add('discovered')
   })
 
+  // ── Live layer preview ──
+  // check if any held key is a layer switch
+  let previewLayer = null
+  for (const btn of nowHeld) {
+    const matrix = btnToMatrix[btn]
+    if (!matrix) continue
+    const key = `${activeLayer}_${matrix}`
+    const a = keyAssignments[key]
+    if (a && (a.type === 'layer_mo' || a.type === 'layer_tap') && a.action) {
+      const layerIdx = parseInt(a.action)
+      if (!isNaN(layerIdx) && layerIdx >= 0 && layerIdx < layers.length) {
+        previewLayer = layerIdx
+        break
+      }
+    }
+  }
+
+  // check for toggle layers that were activated by sequences
+  // (activeLayer already reflects those)
+
+  const displayLayer = previewLayer != null ? previewLayer : activeLayer
+  if (displayLayer !== _lastDisplayLayer) {
+    _lastDisplayLayer = displayLayer
+    // temporarily show the preview layer's key labels
+    document.querySelectorAll('#layout-corne-r .key[data-btn]').forEach(el => {
+      const matrix = el.dataset.matrix
+      const key = `${displayLayer}_${matrix}`
+      const a = keyAssignments[key]
+      if (a && a.action) {
+        const actionLabel = a.action.length > 5 ? a.action.slice(0, 5) : a.action
+        el.innerHTML = `${actionLabel}<span style="position:absolute;top:1px;left:2px;font-size:7px;color:#aaa;">${matrix}</span>`
+      } else if (displayLayer !== activeLayer) {
+        // show base layer assignment if preview layer has nothing
+        const baseKey = `${activeLayer}_${matrix}`
+        const baseA = keyAssignments[baseKey]
+        if (baseA && baseA.action) {
+          const label = baseA.action.length > 5 ? baseA.action.slice(0, 5) : baseA.action
+          el.innerHTML = `<span style="opacity:0.4">${label}</span><span style="position:absolute;top:1px;left:2px;font-size:7px;color:#aaa;">${matrix}</span>`
+        } else {
+          el.innerHTML = matrix
+        }
+      } else {
+        el.innerHTML = matrix
+      }
+    })
+
+    // show which layer is being previewed
+    const layerName = layers[displayLayer] ? layers[displayLayer].name : displayLayer
+    const indicator = document.getElementById('layerPreviewIndicator')
+    if (indicator) {
+      indicator.textContent = previewLayer != null ? `previewing: ${layerName}` : ''
+      indicator.style.display = previewLayer != null ? '' : 'none'
+    }
+  }
+
   requestAnimationFrame(pollGamepad)
 }
+
+let _lastDisplayLayer = -1 // track to avoid redundant DOM updates
 
 let lastCompletedSeq = null // the latest completed sequence (array of steps)
 
@@ -1842,6 +1935,8 @@ function updateURLParams() {
   const params = new URLSearchParams()
   if (activeDevice) params.set('device', activeDevice)
   if (currentMode) params.set('mode', currentMode)
+  const preset = document.getElementById('presetSelect').value
+  if (preset) params.set('preset', preset)
   const qs = params.toString()
   history.replaceState(null, '', qs ? '?' + qs : location.pathname)
 }
@@ -1850,12 +1945,17 @@ function updateURLParams() {
   const params = new URLSearchParams(location.search)
   const device = params.get('device') || localStorage.getItem('kekboard-device')
   const mode = params.get('mode') || localStorage.getItem('kekboard-mode')
+  const preset = params.get('preset')
   if (device) {
     activeDevice = device
     document.getElementById('deviceSelect').value = device
     switchDevice(device)
   }
   if (mode) setMode(mode)
+  if (preset) {
+    document.getElementById('presetSelect').value = preset
+    loadPreset(preset)
+  }
 })()
 
 // ── Corne right half layer definitions ──
