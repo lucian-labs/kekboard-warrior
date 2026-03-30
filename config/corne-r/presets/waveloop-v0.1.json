@@ -1,0 +1,72 @@
+{
+  "name": "waveloop-v0.1",
+  "device": "corne-r",
+  "buttons": 23,
+  "layers": [
+    {
+      "name": "base",
+      "color": "#e0f5ea"
+    },
+    {
+      "name": "nav",
+      "color": "#e0e8f8"
+    },
+    {
+      "name": "media",
+      "color": "#f8e8e0"
+    }
+  ],
+  "sequences": [
+    {
+      "seq": [
+        [
+          22
+        ],
+        [
+          21
+        ]
+      ],
+      "type": "layer_tg",
+      "action": "1",
+      "layer": 0,
+      "note": "switch to nav"
+    },
+    {
+      "seq": [
+        [
+          21
+        ],
+        [
+          22
+        ]
+      ],
+      "type": "layer_tg",
+      "action": "2",
+      "layer": 0,
+      "note": "switch to media"
+    },
+    {
+      "seq": [
+        [
+          20
+        ],
+        [
+          21
+        ]
+      ],
+      "type": "layer_tg",
+      "action": "0",
+      "layer": 2,
+      "note": "back to base"
+    }
+  ],
+  "keyAssignments": {},
+  "activeLayer": 0,
+  "presetRules": [
+    "thumb keys are layer modifiers on base layer",
+    "extra keys (4,6 / 5,6) are global modifiers across all layers",
+    "boot combo: 7,5 +> 7,4 +> 4,6 +> 5,6"
+  ],
+  "deviceNotes": [],
+  "savedAt": "2026-03-30T14:22:15.452Z"
+}
