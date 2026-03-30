@@ -890,7 +890,7 @@
     <div id="keyMapEditor" style="display:none;padding:10px;background:#f8f8fa;border-radius:4px;margin-top:8px;">
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
         <span id="keyMapLabel" style="font-weight:bold;color:#8b0000;min-width:40px;"></span>
-        <select id="keyMapType" onchange="autoSaveKeyMap()" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;">
+        <select id="keyMapType" onchange="autoSaveKeyMap();updateKeycodeHints(this,document.getElementById('keyMapAction'))" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;">
           <option value="basic">Basic Key</option>
           <option value="mod">Modifier + Key</option>
           <option value="layer_mo">Layer (hold)</option>
@@ -932,7 +932,7 @@
           <span style="color:#aaa;font-size:11px;">press buttons on the device...</span>
         </div>
         <div id="lastSeqEditor" style="display:none;margin-left:auto;display:flex;gap:6px;align-items:center;">
-          <select id="seqType" onchange="autoSaveLastSeq()" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;">
+          <select id="seqType" onchange="autoSaveLastSeq();updateKeycodeHints(this,document.getElementById('seqAction'))" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;">
             <option value="layer_mo">Layer (hold)</option>
             <option value="layer_tg">Layer (toggle)</option>
             <option value="basic">Basic Key</option>
@@ -1242,7 +1242,7 @@ function loadPreset(name) {
 
       // save to localStorage as cache
       localStorage.setItem('kekboard-profile', JSON.stringify(profile))
-      _profileLoaded = true
+      _serverSaveEnabled = true
       updateKeyMapList()
       updateKeyLabels()
     })
@@ -1330,6 +1330,36 @@ document.querySelectorAll('#layout-corne-r .key[data-btn]').forEach(el => {
   btnToMatrix[parseInt(el.dataset.btn)] = el.dataset.matrix
 })
 
+// ── Keycodes autocomplete ──
+let allKeycodes = {}
+const typeToKeycodeCategory = {
+  basic: 'basic', mod: 'mod', layer_mo: 'layer_mo', layer_tg: 'layer_tg',
+  layer_tap: 'layer_tap', mod_tap: 'mod_tap', oneshot_mod: 'oneshot_mod',
+  oneshot_layer: 'oneshot_layer', media: 'media', mouse: 'mouse',
+  midi_note: 'midi_note', midi_cc: 'midi_cc', macro: 'basic',
+  transparent: 'special', none: 'special', bootloader: 'special',
+}
+
+function updateKeycodeHints(selectEl, inputEl) {
+  const type = selectEl.value
+  const cat = typeToKeycodeCategory[type]
+  const codes = allKeycodes[cat] || []
+  // find or create datalist
+  let dl = inputEl.list
+  if (!dl) {
+    dl = document.createElement('datalist')
+    dl.id = 'kc_hints_' + inputEl.id
+    inputEl.setAttribute('list', dl.id)
+    inputEl.parentElement.appendChild(dl)
+  }
+  dl.innerHTML = codes.map(c => `<option value="${c}">`).join('')
+}
+
+// load keycodes from server
+if (location.protocol !== 'file:') {
+  fetch('/api/keycodes').then(r => r.json()).then(data => { allKeycodes = data }).catch(() => {})
+}
+
 function onGamepadKeyForMapping(btn) {
   lastPressedBtn = btn
   const matrix = btnToMatrix[btn] || btn
@@ -1340,9 +1370,12 @@ function onGamepadKeyForMapping(btn) {
   // load existing assignment, or use last type for unmapped keys
   const key = `${activeLayer}_${matrix}`
   const a = keyAssignments[key]
-  document.getElementById('keyMapType').value = a ? a.type : lastKeyMapType
-  document.getElementById('keyMapAction').value = a ? a.action : ''
+  const typeEl = document.getElementById('keyMapType')
+  const actionEl = document.getElementById('keyMapAction')
+  typeEl.value = a ? a.type : lastKeyMapType
+  actionEl.value = a ? a.action : ''
   document.getElementById('keyMapNote').value = a ? (a.note || '') : ''
+  updateKeycodeHints(typeEl, actionEl)
 
   // bump touchedAt so it sorts to top
   if (a) { a.touchedAt = Date.now(); saveProfile() }
@@ -1877,17 +1910,16 @@ function matchSequence(seq) {
 
 // ── Persistence ──
 let _saveTimeout = null
-let _profileLoaded = false // don't auto-save until preset is loaded
+let _serverSaveEnabled = false // only save to server after first successful load
 function saveProfile() {
-  if (!_profileLoaded) return
   const data = { layers, sequences, keyAssignments, activeLayer, presetRules, deviceNotes }
   localStorage.setItem('kekboard-profile', JSON.stringify(data))
 
-  // debounced server save
+  // debounced server save — only if user has made changes after load
   clearTimeout(_saveTimeout)
   _saveTimeout = setTimeout(() => {
     const preset = document.getElementById('presetSelect').value
-    if (preset && activeDevice && location.protocol !== 'file:') {
+    if (_serverSaveEnabled && preset && activeDevice && location.protocol !== 'file:' && Object.keys(keyAssignments).length > 0) {
       fetch(`/api/config/${activeDevice}/presets/${preset}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -1921,7 +1953,7 @@ function loadProfile() {
         if (m) { m.type = entry.type; m.action = entry.action; m.layer = entry.layer; m.note = entry.note }
       }
     }
-    _profileLoaded = true
+    _serverSaveEnabled = true
   } catch (e) {}
 }
 

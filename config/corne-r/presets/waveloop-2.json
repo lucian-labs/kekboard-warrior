@@ -124,9 +124,130 @@
       "layer": 0
     }
   ],
-  "keyAssignments": {},
-  "activeLayer": 0,
+  "keyAssignments": {
+    "0_5,0": {
+      "type": "key",
+      "action": "up",
+      "note": "",
+      "touchedAt": 1774879456547
+    },
+    "0_5,1": {
+      "type": "key",
+      "action": "down",
+      "note": ""
+    },
+    "0_6,1": {
+      "type": "key",
+      "action": "left",
+      "note": "",
+      "touchedAt": 1774879457130
+    },
+    "0_4,1": {
+      "type": "key",
+      "action": "right",
+      "note": ""
+    },
+    "0_4,0": {
+      "type": "key",
+      "action": "enter",
+      "note": "",
+      "touchedAt": 1774879456164
+    },
+    "0_6,0": {
+      "type": "key",
+      "action": "esc",
+      "note": ""
+    },
+    "0_4,6": {
+      "type": "key",
+      "action": "r",
+      "note": "",
+      "touchedAt": 1774879736299
+    },
+    "0_5,6": {
+      "type": "key",
+      "action": "w",
+      "note": "",
+      "touchedAt": 1774879737149
+    },
+    "0_7,3": {
+      "type": "key",
+      "action": "space",
+      "note": ""
+    },
+    "0_6,4": {
+      "type": "key",
+      "action": "f5",
+      "note": ""
+    },
+    "0_5,4": {
+      "type": "key",
+      "action": "f6",
+      "note": ""
+    },
+    "0_4,4": {
+      "type": "key",
+      "action": "f7",
+      "note": ""
+    },
+    "0_6,5": {
+      "type": "key",
+      "action": "f9",
+      "note": ""
+    },
+    "0_5,5": {
+      "type": "key",
+      "action": "f10",
+      "note": ""
+    },
+    "0_4,5": {
+      "type": "key",
+      "action": "f11",
+      "note": ""
+    },
+    "0_7,5": {
+      "type": "layer_mo",
+      "action": "1",
+      "note": "layer 1 while held - leds red",
+      "touchedAt": 1774879989987
+    },
+    "0_7,4": {
+      "type": "layer_mo",
+      "action": "2",
+      "note": "layer 2 while held - leds gold",
+      "touchedAt": 1774879731716
+    },
+    "0_6,2": {
+      "type": "key",
+      "action": "1",
+      "note": ""
+    },
+    "0_5,2": {
+      "type": "key",
+      "action": "2",
+      "note": ""
+    },
+    "0_4,2": {
+      "type": "key",
+      "action": "3",
+      "note": ""
+    },
+    "0_6,3": {
+      "type": "key",
+      "action": "4",
+      "note": ""
+    },
+    "0_5,3": {
+      "type": "key",
+      "action": "5",
+      "note": ""
+    },
+    "0_4,3": {
+      "type": "key",
+      "action": "6",
+      "note": ""
+    }
+  },
   "presetRules": [],
-  "deviceNotes": [],
-  "savedAt": "2026-03-30T14:28:35.376Z"
+  "exported": "2026-03-30T14:13:15.969Z"
 }
