@@ -900,13 +900,24 @@
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
         <span id="keyMapLabel" style="font-weight:bold;color:#8b0000;min-width:40px;"></span>
         <select id="keyMapType" onchange="autoSaveKeyMap()" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;">
-          <option value="key">Keystroke</option>
+          <option value="basic">Basic Key</option>
+          <option value="mod">Modifier + Key</option>
+          <option value="layer_mo">Layer (hold)</option>
+          <option value="layer_tg">Layer (toggle)</option>
+          <option value="layer_tap">Layer Tap (hold=layer, tap=key)</option>
+          <option value="mod_tap">Mod Tap (hold=mod, tap=key)</option>
+          <option value="oneshot_mod">One-Shot Modifier</option>
+          <option value="oneshot_layer">One-Shot Layer</option>
+          <option value="media">Media Key</option>
+          <option value="mouse">Mouse Key</option>
           <option value="midi_note">MIDI Note</option>
           <option value="midi_cc">MIDI CC</option>
-          <option value="osc">OSC</option>
-          <option value="command">Command</option>
+          <option value="macro">Macro</option>
+          <option value="transparent">Transparent (pass-through)</option>
+          <option value="none">No Action</option>
+          <option value="bootloader">Bootloader</option>
         </select>
-        <input id="keyMapAction" type="text" placeholder="e.g. Ctrl+R" oninput="autoSaveKeyMap()" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;width:160px;" />
+        <input id="keyMapAction" type="text" placeholder="e.g. KC_A, LCTL(KC_R)" oninput="autoSaveKeyMap()" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;width:180px;" />
       </div>
       <input id="keyMapNote" type="text" placeholder="label / note" oninput="autoSaveKeyMap()" style="background:#fff;border:1px solid #ddd;padding:4px 8px;font-family:inherit;font-size:11px;border-radius:3px;width:100%;margin-top:6px;color:#666;" />
     </div>
@@ -931,12 +942,15 @@
         </div>
         <div id="lastSeqEditor" style="display:none;margin-left:auto;display:flex;gap:6px;align-items:center;">
           <select id="seqType" onchange="autoSaveLastSeq()" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;">
-            <option value="key">Keystroke</option>
-            <option value="layer">Activate Layer</option>
+            <option value="layer_mo">Layer (hold)</option>
+            <option value="layer_tg">Layer (toggle)</option>
+            <option value="basic">Basic Key</option>
+            <option value="mod">Modifier + Key</option>
+            <option value="media">Media Key</option>
+            <option value="macro">Macro</option>
             <option value="midi_note">MIDI Note</option>
             <option value="midi_cc">MIDI CC</option>
-            <option value="osc">OSC</option>
-            <option value="command">Command</option>
+            <option value="bootloader">Bootloader</option>
           </select>
           <input id="seqAction" type="text" placeholder="e.g. Ctrl+R" oninput="autoSaveLastSeq()" style="background:#fff;border:1px solid #ccc;padding:3px 8px;font-family:inherit;font-size:11px;border-radius:3px;width:140px;" />
         </div>
@@ -1212,10 +1226,10 @@ function loadPreset(name) {
     // [[22],[21]] = JS22 → JS21 (sequential)
     // [[22,21]] = JS22 +> JS21 (chord)
     sequences = [
-      { seq: [[22],[21]], type: 'layer', action: '1', layer: 0 },
-      { seq: [[21],[22]], type: 'layer', action: '2', layer: 0 },
-      { seq: [[20],[21]], type: 'layer', action: '0', layer: 1 },
-      { seq: [[20],[21]], type: 'layer', action: '0', layer: 2 },
+      { seq: [[22],[21]], type: 'layer_tg', action: '1', layer: 0 },
+      { seq: [[21],[22]], type: 'layer_tg', action: '2', layer: 0 },
+      { seq: [[20],[21]], type: 'layer_tg', action: '0', layer: 1 },
+      { seq: [[20],[21]], type: 'layer_tg', action: '0', layer: 2 },
     ]
 
     // rebuild sequence UI
@@ -1366,7 +1380,7 @@ const SEQ_TIMEOUT = 500    // ms after last release to finalize sequence
 // layers
 let layers = [{ name: 'base', color: '#e0f5ea' }]
 let activeLayer = 0
-// sequences: [{seq: [22,21], type: 'layer', action: '1', layer: 0}]
+// sequences: [{seq: [22,21], type: 'layer_tg', action: '1', layer: 0}]
 let sequences = []
 // key assignments: {'0_JS2': {type:'key', action:'r'}}
 let keyAssignments = {}
@@ -1665,12 +1679,15 @@ function addSequenceEntry(seq) {
     <span class="chord-arrow">\u2192</span>
     <div class="chord-action">
       <select onchange="updateSeqType(this, '${seqKey}')">
-        <option value="key">Keystroke</option>
-        <option value="layer">Activate Layer</option>
+        <option value="layer_mo">Layer (hold)</option>
+        <option value="layer_tg">Layer (toggle)</option>
+        <option value="basic">Basic Key</option>
+        <option value="mod">Modifier + Key</option>
+        <option value="media">Media Key</option>
+        <option value="macro">Macro</option>
         <option value="midi_note">MIDI Note</option>
         <option value="midi_cc">MIDI CC</option>
-        <option value="osc">OSC</option>
-        <option value="command">Command</option>
+        <option value="bootloader">Bootloader</option>
       </select>
       <input type="text" placeholder="e.g. Ctrl+R" onchange="updateSeqAction(this, '${seqKey}')" />
       <input type="text" placeholder="note" class="seq-note" onchange="updateSeqNote(this, '${seqKey}')" style="width:100px;color:#aaa;" />
@@ -1725,7 +1742,7 @@ function matchSequence(seq) {
     || sequences.find(s => seqToKey(s.seq) === seqKey)
   if (!entry || !entry.action) return
 
-  if (entry.type === 'layer') {
+  if (entry.type === 'layer_mo' || entry.type === 'layer_tg') {
     const idx = parseInt(entry.action)
     if (idx >= 0 && idx < layers.length) {
       activeLayer = idx
